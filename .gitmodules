@@ -1,0 +1,6 @@
+[submodule "GreenOrange/dependencies/imgui"]
+	path = GreenOrange/dependencies/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "GreenOrange/dependencies/glfw"]
+	path = GreenOrange/dependencies/glfw
+	url = https://github.com/glfw/glfw

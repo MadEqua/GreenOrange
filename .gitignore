@@ -1,0 +1,14 @@
+.vs/
+*.db
+*.opendb
+*.user
+*.sln
+*.vcxproj
+*.filters
+*.ini
+
+bin/
+bin-int/
+
+.idea/
+cmake*/
