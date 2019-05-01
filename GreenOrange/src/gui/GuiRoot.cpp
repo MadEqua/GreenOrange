@@ -1,10 +1,15 @@
-#include "MainWindow.h"
+#include "GuiRoot.h"
 
 #include <stdio.h>
 #include <limits>
 
+#include <glad/glad.h>
+#include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+#include "../Constants.h"
+
 
 static void glfwErrorCallback(int error, const char* description) {
     printf("GLFW Error %d: %s\n", error, description);
@@ -90,7 +95,21 @@ static void GLAPIENTRY openglCallbackFunction(GLenum source, GLenum type, GLuint
     printf("OpenGL Debug - Id: %d. Source: %s, Type: %s, Severity: %s.\n", id, sourceString, typeString, severityString);
 }
 
-bool MainWindow::initGlfw() {
+
+GuiRoot::GuiRoot(GreenOrange &greenOrange) :
+    greenOrange(greenOrange) {
+}
+
+bool GuiRoot::init() {
+    return initGlfw() && initGlad() && initImGui();
+}
+
+void GuiRoot::deinit() {
+    deinitImGui();
+    deinitGlfw();
+}
+
+bool GuiRoot::initGlfw() {
     glfwSetErrorCallback(glfwErrorCallback);
     if(!glfwInit())
         return false;
@@ -115,10 +134,16 @@ bool MainWindow::initGlfw() {
 
     glfwMakeContextCurrent(glfwWindow);
     glfwSwapInterval(1); //Enable vsync
+
     return true;
 }
 
-bool MainWindow::initOpenGL() {
+void GuiRoot::deinitGlfw() {
+    glfwDestroyWindow(glfwWindow);
+    glfwTerminate();
+}
+
+bool GuiRoot::initGlad() {
     if(!gladLoadGL()) {
         printf("Failed to initialize glad!\n");
         return false;
@@ -178,12 +203,7 @@ bool MainWindow::initOpenGL() {
     return true;
 }
 
-void MainWindow::deinitGlfw() {
-    glfwDestroyWindow(glfwWindow);
-    glfwTerminate();
-}
-
-bool MainWindow::initImGui() {
+bool GuiRoot::initImGui() {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -216,22 +236,13 @@ bool MainWindow::initImGui() {
     return true;
 }
 
-void MainWindow::deinitImGui() {
+void GuiRoot::deinitImGui() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
-bool MainWindow::mainLoop() {
-    if(!initGlfw())
-        return false;
-
-    if(!initOpenGL())
-        return false;
-
-    if(!initImGui())
-        return false;
-
+void GuiRoot::run() {
     while(!glfwWindowShouldClose(glfwWindow)) {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -241,6 +252,7 @@ bool MainWindow::mainLoop() {
         glfwPollEvents();
 
         glfwMakeContextCurrent(glfwWindow);
+        int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
 
         // Start the Dear ImGui frame
@@ -248,26 +260,22 @@ bool MainWindow::mainLoop() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        draw();
+        drawGui(width, height);
 
         // Rendering
         ImGui::Render();
         glViewport(0, 0, width, height);
-        glClearColor(CLEAR_COLOR.x, CLEAR_COLOR.y, CLEAR_COLOR.z, CLEAR_COLOR.w);
+        const ImVec4 WINDOW_CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        glClearColor(WINDOW_CLEAR_COLOR.x, WINDOW_CLEAR_COLOR.y, WINDOW_CLEAR_COLOR.z, WINDOW_CLEAR_COLOR.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwMakeContextCurrent(glfwWindow);
         glfwSwapBuffers(glfwWindow);
     }
-
-    deinitImGui();
-    deinitGlfw();
-
-    return true;
 }
 
-void MainWindow::draw() {
+void GuiRoot::drawGui(int windowWidth, int windowHeight) {
 
     float menuBarHeight;
     
@@ -292,87 +300,50 @@ void MainWindow::draw() {
         ImGui::EndMainMenuBar();
     }
 
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize;
-
-    //Scene Manager Window
-    ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight));
-    ImGui::Begin("Scene Manager", 0, window_flags);
-    {
-        const char* items[] = {"Scene 1", "Scene 2", "Scene 3", "Scene 4"};
-        static const char* item_current = items[0];
-        static int listbox_item_current = 0;
-        ImGui::ListBox("##sceneList", &listbox_item_current, items, IM_ARRAYSIZE(items));
-
-        if(ImGui::Button("Create")) {
-
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Rename")) {
-            char name[16];
-            if(ImGui::BeginPopupContextItem()) {
-                ImGui::Text("Edit name:");
-                ImGui::InputText("##edit", name, IM_ARRAYSIZE(name));
-                ImGui::Separator();
-                if(ImGui::Button("Confirm")) {
-                    ImGui::CloseCurrentPopup();
-                }
-                if(ImGui::Button("Cancel")) {
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Delete")) {
-            ImGui::OpenPopup("Delete##popup");
-        }
-
-        if(ImGui::BeginPopupModal("Delete##popup", 0, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("Delete the scene <insert name>?.\nThis operation cannot be undone!\n\n");
-            ImGui::Separator();
-
-            if(ImGui::Button("Yep", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-            ImGui::SetItemDefaultFocus();
-            ImGui::SameLine();
-            if(ImGui::Button("Hell No!", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-            ImGui::EndPopup();
+    if(!greenOrange.hasCurrentProject()) {
+        ImGui::Text("No project open.");
+        if(ImGui::Button("Open")) {
         }
     }
-    ImGui::End();
+    else {
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize;
 
-    //Scene Objects Window
-    ImGui::SetNextWindowPos(ImVec2(0, 200));
-    ImGui::Begin("Scene Objects", 0, window_flags);
-    {
-        if(ImGui::TreeNode("Basic trees")) {
-            for(int i = 0; i < 5; i++) {
-                if(ImGui::TreeNode((void*) (intptr_t) i, "Child %d", i)) {
-                    if(ImGui::Selectable("blah blah")) {
-                        //TODO
+        //Scene Objects Window
+        ImGui::SetNextWindowPos(ImVec2(0, 200));
+        ImGui::Begin("Scene Objects", 0, window_flags);
+        {
+            if(ImGui::TreeNode("Basic trees")) {
+                for(int i = 0; i < 5; i++) {
+                    if(ImGui::TreeNode((void*) (intptr_t) i, "Child %d", i)) {
+                        if(ImGui::Selectable("blah blah")) {
+                            //TODO
+                        }
+                        ImGui::TreePop();
                     }
-                    ImGui::TreePop();
                 }
+                ImGui::TreePop();
             }
-            ImGui::TreePop();
         }
-    }
-    ImGui::End();
+        ImGui::End();
 
-    //Inspector Window
-    static float vec[4] = {0.10f, 0.20f, 0.30f, 0.44f};
-    ImGui::SetNextWindowPos(ImVec2(width - 400, menuBarHeight));
-    ImGui::Begin("Object Inspector", 0, window_flags);
-    {
-        ImGui::DragFloat3("World Position", vec, 0.01f, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
-        ImGui::DragFloat3("Orientation", vec, 0.01f, 0.0f, 359.0f);
-        ImGui::DragFloat3("Size (boxes)", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
-        ImGui::DragFloat("Radius (spheres)", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
-    }
-    ImGui::End();
+        //Inspector Window
+        static float vec[4] = {0.10f, 0.20f, 0.30f, 0.44f};
+        ImGui::SetNextWindowPos(ImVec2(windowWidth - 400, menuBarHeight));
+        ImGui::Begin("Object Inspector", 0, window_flags);
+        {
+            ImGui::DragFloat3("World Position", vec, 0.01f, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+            ImGui::DragFloat3("Orientation", vec, 0.01f, 0.0f, 359.0f);
+            ImGui::DragFloat3("Size (boxes)", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
+            ImGui::DragFloat("Radius (spheres)", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
+        }
+        ImGui::End();
 
+        projectPanel.drawGui(*greenOrange.getCurrentProject());
+        scenePanel.drawGui();
+    }
 
 
     bool showDemoWindow = true;
     if(showDemoWindow)
         ImGui::ShowDemoWindow(&showDemoWindow);
-}
+} 

@@ -1,9 +1,18 @@
-#include "MainWindow.h"
+#include "GreenOrange.h"
+#include "gui/GuiRoot.h"
 
 int main(int argc, char** argv) {
-    MainWindow mainWindow;
-    if(mainWindow.mainLoop())
-        return 0;
-    else
+
+    GreenOrange greenOrange;
+    greenOrange.openProject(); //TODO: remove
+
+    GuiRoot guiRoot(greenOrange);
+
+    if(!guiRoot.init())
         return 1;
+
+    guiRoot.run();
+
+    guiRoot.deinit();
+    return 0;
 }
