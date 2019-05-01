@@ -19,9 +19,6 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
 }
 
 void ProjectPanel::drawGui(Project &project) {
-    float menuBarHeight = ImGui::GetWindowHeight();
-
-    //Scene Manager Window
     ImGui::SetNextWindowPos(ImVec2(0, 20)); //TODO: de-hardcode
     std::string title("Project - ");
     ImGui::Begin((title + project.getName()).c_str(), 0, ImGuiWindowFlags_AlwaysAutoResize);

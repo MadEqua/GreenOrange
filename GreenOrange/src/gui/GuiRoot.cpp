@@ -282,12 +282,11 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("Open..", "Ctrl+O")) {
-                printf("OPEN");
+                greenOrange.openProject();
             }
             if(ImGui::MenuItem("Save", "Ctrl+S")) {
             }
             if(ImGui::MenuItem("Close", "Ctrl+W")) { 
-                //my_tool_active = false;
             }
             ImGui::EndMenu();
         }
@@ -319,4 +318,4 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
     bool showDemoWindow = true;
     if(showDemoWindow)
         ImGui::ShowDemoWindow(&showDemoWindow);
-} 
+}

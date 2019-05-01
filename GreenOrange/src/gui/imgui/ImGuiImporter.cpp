@@ -1,5 +1,4 @@
 //Doing this to use the example implementations that come with ImGui
-//This way they will be automatically updated by simply doing a git submodule update
-
+//This way we get easy updates by simply updating the submodule
 #include "imgui_impl_opengl3.cpp"
 #include "imgui_impl_glfw.cpp"
