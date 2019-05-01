@@ -5,7 +5,7 @@
 
 #include "../Project.h"
 #include "../Scene.h"
-#include "ImGuiUtils.h"
+#include "imgui/ImGuiUtils.h"
 
 static bool sceneItemsGetter(void* data, int i, const char** string) {
     if(data != nullptr) {

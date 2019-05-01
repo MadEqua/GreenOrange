@@ -1,7 +1,6 @@
 #include "GuiRoot.h"
 
 #include <stdio.h>
-#include <limits>
 
 #include <glad/glad.h>
 #include <imgui.h>
@@ -301,45 +300,19 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
     }
 
     if(!greenOrange.hasCurrentProject()) {
+        ImGui::Begin("GreenOrange", 0, ImGuiWindowFlags_AlwaysAutoResize);
+
         ImGui::Text("No project open.");
         if(ImGui::Button("Open")) {
+            greenOrange.openProject();
         }
+
+        ImGui::End();
     }
     else {
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize;
-
-        //Scene Objects Window
-        ImGui::SetNextWindowPos(ImVec2(0, 200));
-        ImGui::Begin("Scene Objects", 0, window_flags);
-        {
-            if(ImGui::TreeNode("Basic trees")) {
-                for(int i = 0; i < 5; i++) {
-                    if(ImGui::TreeNode((void*) (intptr_t) i, "Child %d", i)) {
-                        if(ImGui::Selectable("blah blah")) {
-                            //TODO
-                        }
-                        ImGui::TreePop();
-                    }
-                }
-                ImGui::TreePop();
-            }
-        }
-        ImGui::End();
-
-        //Inspector Window
-        static float vec[4] = {0.10f, 0.20f, 0.30f, 0.44f};
-        ImGui::SetNextWindowPos(ImVec2(windowWidth - 400, menuBarHeight));
-        ImGui::Begin("Object Inspector", 0, window_flags);
-        {
-            ImGui::DragFloat3("World Position", vec, 0.01f, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
-            ImGui::DragFloat3("Orientation", vec, 0.01f, 0.0f, 359.0f);
-            ImGui::DragFloat3("Size (boxes)", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
-            ImGui::DragFloat("Radius (spheres)", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
-        }
-        ImGui::End();
-
         projectPanel.drawGui(*greenOrange.getCurrentProject());
         scenePanel.drawGui();
+        inspectorPanel.drawGui();
     }
 
 

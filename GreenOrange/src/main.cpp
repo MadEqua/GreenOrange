@@ -4,8 +4,6 @@
 int main(int argc, char** argv) {
 
     GreenOrange greenOrange;
-    greenOrange.openProject(); //TODO: remove
-
     GuiRoot guiRoot(greenOrange);
 
     if(!guiRoot.init())
