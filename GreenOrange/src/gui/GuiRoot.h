@@ -5,7 +5,7 @@
 #include "ScenePanel.h"
 #include "ProjectPanel.h"
 #include "InspectorPanel.h"
-#include "../GreenOrange.h"
+#include "../model/GreenOrange.h"
 #include "GuiSharedData.h"
 
 class GuiRoot

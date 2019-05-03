@@ -3,8 +3,8 @@
 #include <string.h>
 #include <imgui.h>
 
-#include "../Project.h"
-#include "../Scene.h"
+#include "../model/Project.h"
+#include "../model/Scene.h"
 #include "GuiSharedData.h"
 #include "imgui/ImGuiUtils.h"
 
@@ -23,7 +23,7 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
     //ImGui::SetNextWindowPos(ImVec2(0, 20)); //TODO: de-hardcode
     ImGui::Begin("Project", 0, 0);
     {
-        ImGui::ListBox("##sceneList", &selectedSceneIdx, sceneItemsGetter, &project, project.getSceneCount());
+        ImGui::ListBox("##sceneList", &selectedSceneIdx, sceneItemsGetter, &project, static_cast<int>(project.getSceneCount()));
         
         if(ImGui::Button("Create Scene")) {
             ImGui::OpenPopup("Create Scene");

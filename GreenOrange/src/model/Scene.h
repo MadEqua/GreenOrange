@@ -21,8 +21,8 @@ public:
     bool hasOperator() const { return static_cast<bool>(op); }
     bool hasObject() const { return static_cast<bool>(object); }
 
-    Object* getObject() { return object.get(); }
-    Operator* getOperator() { return op.get(); }
+    Object* getObject() const { return object.get(); }
+    Operator* getOperator() const { return op.get(); }
 
 private:
     int id; //Unique

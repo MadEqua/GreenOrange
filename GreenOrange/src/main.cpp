@@ -1,4 +1,4 @@
-#include "GreenOrange.h"
+#include "model/GreenOrange.h"
 #include "gui/GuiRoot.h"
 
 int main(int argc, char** argv) {

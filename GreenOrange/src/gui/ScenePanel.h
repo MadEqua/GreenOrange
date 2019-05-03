@@ -9,6 +9,6 @@ public:
     void drawGui(Scene &scene);
 
 private:
-    void doOperatorNode(Operator *op) const;
+    void doOperatorNode(Operator &op) const;
 };
 

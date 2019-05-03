@@ -13,7 +13,7 @@ void Project::addScene(const char* name) {
     scenes.emplace_back(std::make_unique<Scene>(getUnusedSceneId(), name));
 }
 
-int Project::getUnusedSceneId() const {
+uint32 Project::getUnusedSceneId() const {
     int maxId = -1;
     for(auto &scenePtr : scenes) {
         if(scenePtr->getId() > maxId)

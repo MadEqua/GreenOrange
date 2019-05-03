@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "../Types.h"
+#include "../Assert.h"
 #include "Scene.h"
 
 class Project
@@ -13,17 +15,17 @@ public:
 
     void addScene(const char* name);
     
-    int getSceneCount() { return scenes.size(); }
-    Scene& getScene(int i) { return *scenes[i]; }
+    size_t getSceneCount() const { return scenes.size(); }
+    Scene& getScene(uint32 idx) { GO_ASSERT(idx < scenes.size()); return *scenes[idx]; }
 
     const std::string& getName() const { return name; }
 
-    void deleteScene(int i) { scenes.erase(scenes.begin() + i); }
+    void deleteScene(uint32 idx) { GO_ASSERT(idx < scenes.size()); scenes.erase(scenes.begin() + idx); }
 
 private:
     std::string name;
     std::vector<std::unique_ptr<Scene>> scenes;
 
-    int getUnusedSceneId() const;
+    uint32 getUnusedSceneId() const;
 };
 
