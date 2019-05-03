@@ -208,6 +208,8 @@ bool GuiRoot::initImGui() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void) io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigDockingWithShift = false;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -264,9 +266,9 @@ void GuiRoot::run() {
         // Rendering
         ImGui::Render();
         glViewport(0, 0, width, height);
-        const ImVec4 WINDOW_CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        /*const ImVec4 WINDOW_CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
         glClearColor(WINDOW_CLEAR_COLOR.x, WINDOW_CLEAR_COLOR.y, WINDOW_CLEAR_COLOR.z, WINDOW_CLEAR_COLOR.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);*/
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwMakeContextCurrent(glfwWindow);
@@ -276,46 +278,65 @@ void GuiRoot::run() {
 
 void GuiRoot::drawGui(int windowWidth, int windowHeight) {
 
-    float menuBarHeight;
-    
-    //Menu Bar
-    if(ImGui::BeginMainMenuBar()) {
-        if(ImGui::BeginMenu("File")) {
-            if(ImGui::MenuItem("Open..", "Ctrl+O")) {
-                greenOrange.openProject();
-            }
-            if(ImGui::MenuItem("Save", "Ctrl+S")) {
-            }
-            if(ImGui::MenuItem("Close", "Ctrl+W")) { 
-            }
-            ImGui::EndMenu();
-        }
-        
-        if(ImGui::BeginMenu("About")) {
-            ImGui::EndMenu();
-        }
-        menuBarHeight = ImGui::GetWindowHeight();
-        ImGui::EndMainMenuBar();
-    }
+    ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
 
-    if(!greenOrange.hasCurrentProject()) {
+    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+    // because it would be confusing to have two docking targets within each others.
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+    ImGui::Begin("RootWindow", 0, window_flags);
+    {
+        ImGui::PopStyleVar(3);
+
+        ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+
+        float menuBarHeight;
+        if(ImGui::BeginMainMenuBar()) {
+            if(ImGui::BeginMenu("File")) {
+                if(ImGui::MenuItem("Open..", "Ctrl+O")) {
+                    greenOrange.openProject();
+                }
+                if(ImGui::MenuItem("Save", "Ctrl+S")) {
+                }
+                if(ImGui::MenuItem("Close", "Ctrl+W")) {
+                }
+                ImGui::EndMenu();
+            }
+            if(ImGui::BeginMenu("About")) {
+                ImGui::EndMenu();
+            }
+            menuBarHeight = ImGui::GetWindowHeight();
+            ImGui::EndMainMenuBar();
+        }
         ImGui::Begin("GreenOrange", 0, ImGuiWindowFlags_AlwaysAutoResize);
+        {
+            if(!greenOrange.hasCurrentProject()) {
+                ImGui::Text("No project open.");
+                if(ImGui::Button("Open")) {
+                    greenOrange.openProject();
+                }
+            }
+            else {
+                projectPanel.drawGui(*greenOrange.getCurrentProject(), guiSharedData.selectedSceneIdx);
+                scenePanel.drawGui(greenOrange.getCurrentProject()->getScene(guiSharedData.selectedSceneIdx));
+                inspectorPanel.drawGui();
+            }
 
-        ImGui::Text("No project open.");
-        if(ImGui::Button("Open")) {
-            greenOrange.openProject();
+            bool showDemoWindow = true;
+            if(showDemoWindow)
+                ImGui::ShowDemoWindow(&showDemoWindow);
         }
-
         ImGui::End();
     }
-    else {
-        projectPanel.drawGui(*greenOrange.getCurrentProject());
-        scenePanel.drawGui();
-        inspectorPanel.drawGui();
-    }
-
-
-    bool showDemoWindow = true;
-    if(showDemoWindow)
-        ImGui::ShowDemoWindow(&showDemoWindow);
+    ImGui::End();
 }

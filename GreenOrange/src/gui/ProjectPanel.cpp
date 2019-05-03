@@ -5,6 +5,7 @@
 
 #include "../Project.h"
 #include "../Scene.h"
+#include "GuiSharedData.h"
 #include "imgui/ImGuiUtils.h"
 
 static bool sceneItemsGetter(void* data, int i, const char** string) {
@@ -18,10 +19,9 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
     return false;
 }
 
-void ProjectPanel::drawGui(Project &project) {
-    ImGui::SetNextWindowPos(ImVec2(0, 20)); //TODO: de-hardcode
-    std::string title("Project - ");
-    ImGui::Begin((title + project.getName()).c_str(), 0, ImGuiWindowFlags_AlwaysAutoResize);
+void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
+    //ImGui::SetNextWindowPos(ImVec2(0, 20)); //TODO: de-hardcode
+    ImGui::Begin("Project", 0, 0);
     {
         ImGui::ListBox("##sceneList", &selectedSceneIdx, sceneItemsGetter, &project, project.getSceneCount());
         

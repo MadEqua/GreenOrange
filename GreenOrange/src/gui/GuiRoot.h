@@ -6,6 +6,7 @@
 #include "ProjectPanel.h"
 #include "InspectorPanel.h"
 #include "../GreenOrange.h"
+#include "GuiSharedData.h"
 
 class GuiRoot
 {
@@ -33,4 +34,6 @@ private:
     ProjectPanel projectPanel;
     ScenePanel scenePanel;
     InspectorPanel inspectorPanel;
+
+    GuiSharedData guiSharedData;
 };

@@ -1,12 +1,6 @@
 #include "Object.h"
 
 
-
-Object::Object()
-{
-}
-
-
-Object::~Object()
-{
+Object::Object(const char *name) :
+    name(name) {
 }

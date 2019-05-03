@@ -15,4 +15,3 @@ public:
 private:
     std::unique_ptr<Project> currentProject;
 };
-

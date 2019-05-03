@@ -7,9 +7,8 @@ class Project;
 class ProjectPanel
 {
 public:
-    void drawGui(Project &project);
+    void drawGui(Project &project, int &selectedSceneIdx);
 
 private:
-    int selectedSceneIdx = 0; //TODO: this should be shared with other Panels
     char buffer[STRING_MAX_SIZE] = "";
 };
