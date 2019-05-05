@@ -17,7 +17,7 @@ namespace ImGuiUtils
 
     bool InputTextPopup(const char* label, const char* text, char* buffer, int bufferSize) {
         bool result = false;
-        if(ImGui::BeginPopupContextItem(label)) {
+        if(ImGui::BeginPopup(label)) {
             ImGui::Text(text);
             ImGui::Separator();
 
@@ -43,7 +43,7 @@ namespace ImGuiUtils
 
     bool YesNoPopup(const char* label, const char* text) {
         bool result = false;
-        if(ImGui::BeginPopupContextItem(label)) {
+        if(ImGui::BeginPopup(label)) {
             ImGui::Text(text);
             ImGui::Separator();
 
@@ -64,7 +64,7 @@ namespace ImGuiUtils
 
     bool OkPopup(const char* label, const char* text) {
         bool result = false;
-        if(ImGui::BeginPopupContextItem(label)) {
+        if(ImGui::BeginPopup(label)) {
             ImGui::Text(text);
             ImGui::Separator();
 

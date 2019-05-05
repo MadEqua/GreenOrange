@@ -16,11 +16,11 @@ public:
     void addScene(const char* name);
     
     size_t getSceneCount() const { return scenes.size(); }
-    Scene& getScene(uint32 idx) { GO_ASSERT(idx < scenes.size()); return *scenes[idx]; }
+    Scene& getScene(uint32 idx);
 
     const std::string& getName() const { return name; }
 
-    void deleteScene(uint32 idx) { GO_ASSERT(idx < scenes.size()); scenes.erase(scenes.begin() + idx); }
+    void deleteScene(uint32 idx);
 
 private:
     std::string name;

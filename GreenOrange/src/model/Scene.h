@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "Object.h"
-#include "Operator.h"
+#include "CsgOperator.h"
 
 class Scene
 {
@@ -22,14 +22,14 @@ public:
     bool hasObject() const { return static_cast<bool>(object); }
 
     Object* getObject() const { return object.get(); }
-    Operator* getOperator() const { return op.get(); }
+    CsgOperator* getOperator() const { return op.get(); }
 
 private:
     int id; //Unique
     std::string name;
     
-    //A Scene has either one Operator or one Object
-    std::unique_ptr<Operator> op;
+    //A Scene has either one CsgOperator or one Object
+    std::unique_ptr<CsgOperator> op;
     std::unique_ptr<Object> object;
 };
 

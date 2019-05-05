@@ -8,6 +8,7 @@
 #include "GuiSharedData.h"
 #include "imgui/ImGuiUtils.h"
 
+
 static bool sceneItemsGetter(void* data, int i, const char** string) {
     if(data != nullptr) {
         Project *project = static_cast<Project*>(data);

@@ -1,5 +1,6 @@
 #include "Project.h"
 
+
 Project::Project(const char* name) :
     name(name) {
     addScene("Scene1");
@@ -11,6 +12,16 @@ Project::Project(const char* name) :
 
 void Project::addScene(const char* name) {
     scenes.emplace_back(std::make_unique<Scene>(getUnusedSceneId(), name));
+}
+
+Scene& Project::getScene(uint32 idx) { 
+    GO_ASSERT(idx < scenes.size());
+    return *scenes[idx];
+}
+
+void Project::deleteScene(uint32 idx) { 
+    GO_ASSERT(idx < scenes.size()); 
+    scenes.erase(scenes.begin() + idx);
 }
 
 uint32 Project::getUnusedSceneId() const {
