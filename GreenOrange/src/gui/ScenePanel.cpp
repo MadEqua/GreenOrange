@@ -29,8 +29,10 @@ void ScenePanel::drawGui(Scene &scene) {
 }
 
 void ScenePanel::doOperatorNode(CsgOperator &op) const {
-    if(ImGui::TreeNode(op.getName().c_str())) {
-        doOperatorContextMenu(op);
+    bool treeNodeOpen = ImGui::TreeNode(op.getName().c_str());
+    doOperatorContextMenu(op);
+
+    if(treeNodeOpen) {
         if(op.hasOperators()) {
             for(uint32 i = 0; i < op.getOperatorCount(); ++i) {
                 doOperatorNode(op.getOperator(i));
@@ -49,6 +51,9 @@ void ScenePanel::doOperatorNode(CsgOperator &op) const {
 }
 
 void ScenePanel::doOperatorContextMenu(CsgOperator &op) const {
+    bool openRenamePopup = false;
+    bool openDeletePopup = false;
+
     if(ImGui::BeginPopupContextItem()) {
         if(ImGui::BeginMenu("New CSG Operator")) {
             for(uint32 i = 0; i < CSG_OPERATOR_LIST_SIZE; ++i) {
@@ -60,18 +65,25 @@ void ScenePanel::doOperatorContextMenu(CsgOperator &op) const {
         }
         if(ImGui::Selectable("Rename")) {
             strcpy_s(buffer, op.getName().c_str());
-            ImGui::OpenPopup("Rename Operator");
+            openRenamePopup = true;
         }
         if(ImGui::Selectable("Delete")) {
-            ImGui::OpenPopup("Delete Operator");
+            openDeletePopup = true;
         }
+
         ImGui::EndPopup();
     }
     
-    //TODO: not working
+    if(openRenamePopup) {
+        ImGui::OpenPopup("Rename Operator");
+    }
     if(ImGuiUtils::InputTextPopup("Rename Operator", "Enter a new name for the operator.", buffer, STRING_MAX_SIZE)) {
         op.setName(buffer);
         buffer[0] = 0;
+    }
+
+    if(openDeletePopup) {
+        ImGui::OpenPopup("Delete Operator");
     }
     if(ImGuiUtils::YesNoPopup("Delete Operator", "Delete the operator?\nThis operation cannot be undone!")) {
         //TODO
