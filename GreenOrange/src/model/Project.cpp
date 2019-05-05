@@ -11,12 +11,12 @@ Project::Project(const char* name) :
 }
 
 void Project::addScene(const char* name) {
-    scenes.emplace_back(std::make_unique<Scene>(getUnusedSceneId(), name));
+    scenes.emplace_back(getUnusedSceneId(), name);
 }
 
 Scene& Project::getScene(uint32 idx) { 
     GO_ASSERT(idx < scenes.size());
-    return *scenes[idx];
+    return scenes[idx];
 }
 
 void Project::deleteScene(uint32 idx) { 
@@ -26,9 +26,9 @@ void Project::deleteScene(uint32 idx) {
 
 uint32 Project::getUnusedSceneId() const {
     int maxId = -1;
-    for(auto &scenePtr : scenes) {
-        if(scenePtr->getId() > maxId)
-            maxId = scenePtr->getId();
+    for(auto &scene : scenes) {
+        if(scene.getId() > maxId)
+            maxId = scene.getId();
     }
     return maxId + 1;
 }

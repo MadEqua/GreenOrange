@@ -5,6 +5,7 @@
 #include "../model/Scene.h"
 #include "../model/Object.h"
 #include "../model/CsgOperator.h"
+#include "../model/DataRepo.h"
 #include "imgui/ImGuiUtils.h"
 
 
@@ -29,7 +30,7 @@ void ScenePanel::drawGui(Scene &scene) {
 }
 
 void ScenePanel::doOperatorNode(CsgOperator &op) const {
-    bool treeNodeOpen = ImGui::TreeNode(op.getName().c_str());
+    bool treeNodeOpen = ImGui::TreeNode(op.getName().c_str()); //TODO: this makes the id change when name is changed (and lose the stored properties by ImGui)
     doOperatorContextMenu(op);
 
     if(treeNodeOpen) {
@@ -56,9 +57,9 @@ void ScenePanel::doOperatorContextMenu(CsgOperator &op) const {
 
     if(ImGui::BeginPopupContextItem()) {
         if(ImGui::BeginMenu("New CSG Operator")) {
-            for(uint32 i = 0; i < CSG_OPERATOR_LIST_SIZE; ++i) {
-                if(ImGui::MenuItem(CSG_OPERATOR_LIST[i].name.c_str())) {
-                    op.createOperator("New operator", CSG_OPERATOR_LIST[i]);
+            for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
+                if(ImGui::MenuItem(CsgTypeStrings[i])) {
+                    op.createChildOperator("New operator", static_cast<CsgType>(i));
                 }
             }
             ImGui::EndMenu();

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <string>
 
 #include "../Types.h"
 #include "../Assert.h"
 #include "Scene.h"
+
 
 class Project
 {
@@ -24,7 +24,7 @@ public:
 
 private:
     std::string name;
-    std::vector<std::unique_ptr<Scene>> scenes;
+    std::vector<Scene> scenes;
 
     uint32 getUnusedSceneId() const;
 };

@@ -7,6 +7,7 @@
 class GreenOrange
 {
 public:
+    GreenOrange();
     void openProject();
 
     Project* getCurrentProject() const { return currentProject.get(); }
