@@ -7,9 +7,9 @@ CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
     name(name),
     type(type) {
 
-    childObjects.emplace_back("o1");
+    /*childObjects.emplace_back("o1");
     childObjects.emplace_back("o2");
-    childObjects.emplace_back("o3");
+    childObjects.emplace_back("o3");*/
 }
 
 Object& CsgOperator::getObjectByIndex(uint32 idx) {
@@ -39,5 +39,6 @@ void CsgOperator::addChildOperator(CsgOperator &&op) {
 }
 
 void CsgOperator::deleteChildOperator(CsgOperator &op) {
-    childOperators.erase(std::find(childOperators.begin(), childOperators.end(), op));
+    if(!childOperators.empty())
+        childOperators.erase(std::find(childOperators.begin(), childOperators.end(), op));
 }

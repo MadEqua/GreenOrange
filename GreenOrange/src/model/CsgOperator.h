@@ -36,6 +36,7 @@ public:
     CsgType getType() const { return type; }
 
     bool operator==(const CsgOperator& other) { return id == other.id; }
+    bool operator!=(const CsgOperator& other) { return id != other.id; }
 
 protected:
     uint32 id;

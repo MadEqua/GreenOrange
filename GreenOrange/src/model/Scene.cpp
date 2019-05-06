@@ -10,6 +10,10 @@ Scene::Scene(const char* name) :
     name(name),
     unionOperator(0, "Union", CsgType::Union),
     nextId(1) {
+
+    //TODO: remove
+    unionOperator.createChildOperator(generateId(), "Intersection", CsgType::Intersection);
+    unionOperator.createChildOperator(generateId(), "Subtraction", CsgType::Subtraction);
 }
 
 void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &parent) {
@@ -51,14 +55,21 @@ void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
             CsgOperator &child = current.getOperatorByIndex(i);
             if(child == opToMove) {
                 parent = &current;
-                break;
+
+                if(*parent == destination) return;
+                else break;
             }
             queue.push(&child);
         }
 
         if(parent) {
+            /*CsgOperator cpy = opToMove;
+            parent->deleteChildOperator(opToMove);
+            destination.addChildOperator(cpy);*/
+
             destination.addChildOperator(std::move(opToMove));
             parent->deleteChildOperator(opToMove);
+            return;
         }
     }
 }

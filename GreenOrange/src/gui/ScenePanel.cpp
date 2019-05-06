@@ -19,8 +19,28 @@ void ScenePanel::drawGui(Scene &scene) {
 }
 
 void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {
+    constexpr const char *DND_PAYLOAD = "DND_PAYLOAD";
+
     uint32 id = op.getId();
+    ImGui::PushID(id);
     bool treeNodeOpen = ImGui::TreeNode(&id, "%s", op.getName().c_str());
+
+    if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+        CsgOperator* ptr = &op;
+        ImGui::SetDragDropPayload(DND_PAYLOAD, &ptr, sizeof(CsgOperator*));
+        ImGui::Text(op.getName().c_str());
+        ImGui::EndDragDropSource();
+    }
+    if(ImGui::BeginDragDropTarget()) {
+        if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
+            GO_ASSERT(payload->DataSize == sizeof(CsgOperator*));
+            CsgOperator **castedPayload = static_cast<CsgOperator**>(payload->Data);
+            scene.moveCsgOperator(**castedPayload, op);
+        }
+        ImGui::EndDragDropTarget();
+    }
+    ImGui::PopID();
+
     doOperatorContextMenu(scene, op);
 
     if(treeNodeOpen) {
