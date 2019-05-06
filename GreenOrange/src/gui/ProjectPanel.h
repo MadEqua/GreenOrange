@@ -10,5 +10,6 @@ public:
     void drawGui(Project &project, int &selectedSceneIdx);
 
 private:
-    mutable char buffer[STRING_MAX_SIZE] = "";
+    mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
+    mutable char stringBuffer[STRING_BUFFER_MAX_SIZE] = "";
 };

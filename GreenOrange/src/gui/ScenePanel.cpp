@@ -75,7 +75,6 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {
             ImGui::EndMenu();
         }
         if(ImGui::Selectable("Rename")) {
-            strcpy_s(buffer, op.getName().c_str());
             openRenamePopup = true;
         }
         if(ImGui::Selectable("Delete")) {
@@ -86,17 +85,21 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {
     }
     
     if(openRenamePopup) {
+        strcpy_s(inputBuffer, op.getName().c_str());
         ImGui::OpenPopup("Rename Operator");
     }
-    if(ImGuiUtils::InputTextPopup("Rename Operator", "Enter a new name for the operator.", buffer, STRING_MAX_SIZE)) {
-        op.setName(buffer);
-        buffer[0] = 0;
+    const char *newNameString = "Enter a new name for the operator %s.";
+    sprintf_s(stringBuffer, newNameString, op.getName().c_str());
+    if(ImGuiUtils::InputTextPopup("Rename Operator", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
+        op.setName(inputBuffer);
     }
 
     if(openDeletePopup) {
         ImGui::OpenPopup("Delete Operator");
     }
-    if(ImGuiUtils::YesNoPopup("Delete Operator", "Delete the operator?\nThis operation cannot be undone!")) {
+    const char *deleteString = "Delete the operator %s?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, deleteString, op.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Operator", stringBuffer)) {
         scene.deleteCsgOperator(op);
     }
 }

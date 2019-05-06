@@ -24,31 +24,49 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
     //ImGui::SetNextWindowPos(ImVec2(0, 20)); //TODO: de-hardcode
     ImGui::Begin("Project", 0, 0);
     {
-        ImGui::ListBox("##sceneList", &selectedSceneIdx, sceneItemsGetter, &project, static_cast<int>(project.getSceneCount()));
+        bool openCreatePopup = false;
+        bool openRenamePopup = false;
+        bool openDeletePopup = false;
         
-        if(ImGui::Button("Create Scene")) {
-            ImGui::OpenPopup("Create Scene");
-        }
-        if(ImGuiUtils::InputTextPopup("Create Scene", "Enter a name for the new scene.", buffer, STRING_MAX_SIZE)) {
-            project.addScene(buffer);
-            buffer[0] = 0;
+        ImGui::ListBox("##sceneList", &selectedSceneIdx, sceneItemsGetter, &project, static_cast<int>(project.getSceneCount()));
+        if(ImGui::BeginPopupContextItem("##sceneList")) {
+            if(ImGui::Selectable("New Scene")) {
+                openCreatePopup = true;
+            }
+            if(ImGui::Selectable("Rename")) {
+                openRenamePopup = true;
+            }
+            if(ImGui::Selectable("Delete")) {
+                openDeletePopup = true;
+            }
+            ImGui::EndPopup();
         }
 
-        ImGui::SameLine();
-        if(ImGui::Button("Rename Scene")) {
-            strcpy_s(buffer, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
+        if(ImGui::Button("New Scene") || openCreatePopup) {
+            inputBuffer[0] = 0;
+            ImGui::OpenPopup("New Scene");
+        }
+        if(openRenamePopup) {
+            strcpy_s(inputBuffer, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
             ImGui::OpenPopup("Rename Scene");
         }
-        if(ImGuiUtils::InputTextPopup("Rename Scene", "Enter a new name for the scene.", buffer, STRING_MAX_SIZE)) {
-            project.getSceneByIndex(selectedSceneIdx).setName(buffer);
-            buffer[0] = 0;
-        }
-
-        ImGui::SameLine();
-        if(ImGui::Button("Delete Scene")) {
+        if(openDeletePopup) {
             ImGui::OpenPopup("Delete Scene");
         }
-        if(ImGuiUtils::YesNoPopup("Delete Scene", "Delete the scene?\nThis operation cannot be undone!")) {
+
+        if(ImGuiUtils::InputTextPopup("New Scene", "Enter a name for the new scene.", inputBuffer, INPUT_STRING_MAX_SIZE)) {
+            project.addScene(inputBuffer);
+        }
+
+        const char *newNameString = "Enter a new name for %s.";
+        sprintf_s(stringBuffer, newNameString, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
+        if(ImGuiUtils::InputTextPopup("Rename Scene", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
+            project.getSceneByIndex(selectedSceneIdx).setName(inputBuffer);
+        }
+
+        const char *deleteSceneString = "Delete the scene %s?\nThis operation cannot be undone!";
+        sprintf_s(stringBuffer, deleteSceneString, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
+        if(ImGuiUtils::YesNoPopup("Delete Scene", stringBuffer)) {
             project.deleteSceneByIndex(selectedSceneIdx);
         }
     }

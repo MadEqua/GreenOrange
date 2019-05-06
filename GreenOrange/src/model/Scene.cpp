@@ -42,6 +42,9 @@ void Scene::deleteCsgOperator(CsgOperator &toDelete) {
 }
 
 void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
+    if(isCsgOperatorDescendentOf(destination, opToMove))
+        return;
+
     std::queue<CsgOperator*> queue;
     queue.push(&unionOperator);
 
@@ -72,4 +75,23 @@ void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
             return;
         }
     }
+}
+
+bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {
+    std::queue<CsgOperator*> queue;
+    queue.push(&op2);
+
+    while(!queue.empty()) {
+        CsgOperator &current = *queue.front();
+        queue.pop();
+
+        for(uint32 i = 0; i < current.getOperatorCount(); ++i) {
+            CsgOperator &child = current.getOperatorByIndex(i);
+            if(child == op1) {
+                return true;
+            }
+            queue.push(&child);
+        }
+    }
+    return false;
 }

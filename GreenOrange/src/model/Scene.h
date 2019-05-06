@@ -29,5 +29,7 @@ private:
     CsgOperator unionOperator;
 
     uint32 nextId;
+
+    bool isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2);
 };
 
