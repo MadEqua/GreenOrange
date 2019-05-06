@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "Object.h"
 #include "CsgOperator.h"
@@ -31,5 +32,9 @@ private:
     uint32 nextId;
 
     bool isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2);
+
+    //The visitFunction will receive the Node and its parent, in this order
+    //If visitFunction returns true the traversal will stop
+    void traverseCsgOperatorTree(CsgOperator &root, const std::function<bool(CsgOperator&, CsgOperator*)> &visitFunction);
 };
 

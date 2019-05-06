@@ -23,63 +23,52 @@ void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &paren
 void Scene::deleteCsgOperator(CsgOperator &toDelete) {
     if(toDelete == unionOperator) return;
 
-    std::queue<CsgOperator*> queue;
-    queue.push(&unionOperator);
-
-    while(!queue.empty()) {
-        CsgOperator &current = *queue.front();
-        queue.pop();
-
-        for(uint32 i = 0; i < current.getOperatorCount(); ++i) {
-            CsgOperator &child = current.getOperatorByIndex(i);
-            if(child == toDelete) {
-                current.deleteChildOperator(toDelete);
-                return;
-            }
-            queue.push(&child);
+    traverseCsgOperatorTree(unionOperator, [&toDelete](CsgOperator &op, CsgOperator *parent) -> bool {
+        if(parent && op == toDelete) {
+            parent->deleteChildOperator(op);
+            return true;
         }
-    }
+        return false;
+    });
 }
 
 void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
     if(isCsgOperatorDescendentOf(destination, opToMove))
         return;
 
-    std::queue<CsgOperator*> queue;
-    queue.push(&unionOperator);
+    traverseCsgOperatorTree(unionOperator, [&opToMove, &destination](CsgOperator &op, CsgOperator *parent) -> bool {
+        if(parent && op == opToMove && *parent != destination) {
 
-    CsgOperator *parent = nullptr;
-
-    while(!queue.empty()) {
-        CsgOperator &current = *queue.front();
-        queue.pop();
-
-        for(uint32 i = 0; i < current.getOperatorCount(); ++i) {
-            CsgOperator &child = current.getOperatorByIndex(i);
-            if(child == opToMove) {
-                parent = &current;
-
-                if(*parent == destination) return;
-                else break;
-            }
-            queue.push(&child);
-        }
-
-        if(parent) {
             /*CsgOperator cpy = opToMove;
             parent->deleteChildOperator(opToMove);
             destination.addChildOperator(cpy);*/
 
             destination.addChildOperator(std::move(opToMove));
             parent->deleteChildOperator(opToMove);
-            return;
+            return true;
         }
-    }
+        return false;
+    });
 }
 
 bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {
+    bool result = false;
+    traverseCsgOperatorTree(op2, [&op1, &result](CsgOperator &op, CsgOperator *parent) -> bool {
+        if(op == op1) {
+            result = true;
+            return true;
+        }
+        return false;
+    });
+    return result;
+}
+
+void Scene::traverseCsgOperatorTree(CsgOperator &root, const std::function<bool(CsgOperator&, CsgOperator*)> &visitFunction) {
     std::queue<CsgOperator*> queue;
-    queue.push(&op2);
+    queue.push(&root);
+
+    if(visitFunction(root, nullptr))
+        return;
 
     while(!queue.empty()) {
         CsgOperator &current = *queue.front();
@@ -87,11 +76,9 @@ bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {
 
         for(uint32 i = 0; i < current.getOperatorCount(); ++i) {
             CsgOperator &child = current.getOperatorByIndex(i);
-            if(child == op1) {
-                return true;
-            }
+            if(visitFunction(child, &current))
+                return;
             queue.push(&child);
         }
     }
-    return false;
 }
