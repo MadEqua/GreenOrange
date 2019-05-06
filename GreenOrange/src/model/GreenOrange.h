@@ -8,7 +8,7 @@ class GreenOrange
 {
 public:
     GreenOrange();
-    void openProject();
+    void openProject(const char *path);
 
     Project* getCurrentProject() const { return currentProject.get(); }
     bool hasCurrentProject() const { return currentProject.get() != nullptr; }

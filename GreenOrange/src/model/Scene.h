@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "Object.h"
 #include "CsgOperator.h"
@@ -10,26 +9,25 @@
 class Scene
 {
 public:
-    explicit Scene(int id, const char* name);
+    Scene(const char* name);
 
     const std::string& getName() const { return name; }
     void setName(const char* newName) { name = newName; }
 
-    int getId() const { return id; }
+    CsgOperator& getRootOperator() { return unionOperator; }
 
-    bool isEmpty() const { return op && object; }
-    bool hasOperator() const { return static_cast<bool>(op); }
-    bool hasObject() const { return static_cast<bool>(object); }
+    void createCsgOperator(const char *name, CsgType type, CsgOperator &parent);
+    void deleteCsgOperator(CsgOperator &toDelete);
+    void moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination);
 
-    Object* getObject() const { return object.get(); }
-    CsgOperator* getOperator() const { return op.get(); }
+    uint32 generateId() { return nextId++; }
 
 private:
-    int id; //Unique
     std::string name;
-    
-    //A Scene has either one CsgOperator or one Object
-    std::unique_ptr<CsgOperator> op;
-    std::unique_ptr<Object> object;
+
+    //A Scene has a Union CsgOperator by default
+    CsgOperator unionOperator;
+
+    uint32 nextId;
 };
 

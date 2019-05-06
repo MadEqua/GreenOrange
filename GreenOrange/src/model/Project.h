@@ -11,21 +11,19 @@
 class Project
 {
 public:
-    explicit Project(const char* name);
+    explicit Project(const char *path);
 
-    void addScene(const char* name);
+    void addScene(const char *name);
     
     size_t getSceneCount() const { return scenes.size(); }
-    Scene& getScene(uint32 idx);
+    Scene& getSceneByIndex(uint32 idx);
+    void deleteSceneByIndex(uint32 idx);
 
     const std::string& getName() const { return name; }
 
-    void deleteScene(uint32 idx);
-
 private:
+    std::string path;
     std::string name;
     std::vector<Scene> scenes;
-
-    uint32 getUnusedSceneId() const;
 };
 

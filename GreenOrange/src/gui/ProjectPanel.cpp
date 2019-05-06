@@ -13,7 +13,7 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
     if(data != nullptr) {
         Project *project = static_cast<Project*>(data);
         if(i < project->getSceneCount()) {
-            (*string) = project->getScene(i).getName().c_str();
+            (*string) = project->getSceneByIndex(i).getName().c_str();
             return true;
         }
     }
@@ -36,11 +36,11 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
 
         ImGui::SameLine();
         if(ImGui::Button("Rename Scene")) {
-            strcpy_s(buffer, project.getScene(selectedSceneIdx).getName().c_str());
+            strcpy_s(buffer, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
             ImGui::OpenPopup("Rename Scene");
         }
         if(ImGuiUtils::InputTextPopup("Rename Scene", "Enter a new name for the scene.", buffer, STRING_MAX_SIZE)) {
-            project.getScene(selectedSceneIdx).setName(buffer);
+            project.getSceneByIndex(selectedSceneIdx).setName(buffer);
             buffer[0] = 0;
         }
 
@@ -49,7 +49,7 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
             ImGui::OpenPopup("Delete Scene");
         }
         if(ImGuiUtils::YesNoPopup("Delete Scene", "Delete the scene?\nThis operation cannot be undone!")) {
-            project.deleteScene(selectedSceneIdx);
+            project.deleteSceneByIndex(selectedSceneIdx);
         }
     }
     ImGui::End();

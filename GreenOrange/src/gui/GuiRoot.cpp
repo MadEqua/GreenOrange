@@ -304,7 +304,7 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
         if(ImGui::BeginMainMenuBar()) {
             if(ImGui::BeginMenu("File")) {
                 if(ImGui::MenuItem("Open..", "Ctrl+O")) {
-                    greenOrange.openProject();
+                    greenOrange.openProject("TODO");
                 }
                 if(ImGui::MenuItem("Save", "Ctrl+S")) {
                 }
@@ -323,12 +323,12 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
             if(!greenOrange.hasCurrentProject()) {
                 ImGui::Text("No project open.");
                 if(ImGui::Button("Open")) {
-                    greenOrange.openProject();
+                    greenOrange.openProject("TODO");
                 }
             }
             else {
                 projectPanel.drawGui(*greenOrange.getCurrentProject(), guiSharedData.selectedSceneIdx);
-                scenePanel.drawGui(greenOrange.getCurrentProject()->getScene(guiSharedData.selectedSceneIdx));
+                scenePanel.drawGui(greenOrange.getCurrentProject()->getSceneByIndex(guiSharedData.selectedSceneIdx));
                 inspectorPanel.drawGui();
             }
 

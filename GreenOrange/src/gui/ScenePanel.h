@@ -11,8 +11,8 @@ public:
     void drawGui(Scene &scene);
 
 private:
-    void doOperatorNode(CsgOperator &op) const;
-    void doOperatorContextMenu(CsgOperator &op) const;
+    void doOperatorNode(Scene &scene, CsgOperator &op) const;
+    void doOperatorContextMenu(Scene &scene, CsgOperator &op) const;
 
     mutable char buffer[STRING_MAX_SIZE] = "";
 };

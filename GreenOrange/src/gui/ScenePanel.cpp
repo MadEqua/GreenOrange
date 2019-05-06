@@ -13,35 +13,25 @@ void ScenePanel::drawGui(Scene &scene) {
     //ImGui::SetNextWindowPos(ImVec2(0, 200));
     ImGui::Begin("Scene", 0, 0);
     {
-        if(scene.isEmpty()) {
-            ImGui::Text("Empty Scene. Add an operator or an object.");
-        }
-        else if(scene.hasOperator()) {
-            doOperatorNode(*scene.getOperator());
-        }
-        else {
-            Object *obj = scene.getObject();
-            if(ImGui::Selectable(obj->getName().c_str())) {
-                //TODO
-            }
-        }
+        doOperatorNode(scene, scene.getRootOperator());
     }
     ImGui::End();
 }
 
-void ScenePanel::doOperatorNode(CsgOperator &op) const {
-    bool treeNodeOpen = ImGui::TreeNode(op.getName().c_str()); //TODO: this makes the id change when name is changed (and lose the stored properties by ImGui)
-    doOperatorContextMenu(op);
+void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {
+    uint32 id = op.getId();
+    bool treeNodeOpen = ImGui::TreeNode(&id, "%s", op.getName().c_str());
+    doOperatorContextMenu(scene, op);
 
     if(treeNodeOpen) {
         if(op.hasOperators()) {
             for(uint32 i = 0; i < op.getOperatorCount(); ++i) {
-                doOperatorNode(op.getOperator(i));
+                doOperatorNode(scene, op.getOperatorByIndex(i));
             }
         }
         if(op.hasObjects()) {
             for(uint32 i = 0; i < op.getObjectCount(); ++i) {
-                const Object &obj = op.getObject(i);
+                const Object &obj = op.getObjectByIndex(i);
                 if(ImGui::Selectable(obj.getName().c_str())) {
                     //TODO: click on object
                 }
@@ -51,7 +41,7 @@ void ScenePanel::doOperatorNode(CsgOperator &op) const {
     }
 }
 
-void ScenePanel::doOperatorContextMenu(CsgOperator &op) const {
+void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {
     bool openRenamePopup = false;
     bool openDeletePopup = false;
 
@@ -59,7 +49,7 @@ void ScenePanel::doOperatorContextMenu(CsgOperator &op) const {
         if(ImGui::BeginMenu("New CSG Operator")) {
             for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
                 if(ImGui::MenuItem(CsgTypeStrings[i])) {
-                    op.createChildOperator("New operator", static_cast<CsgType>(i));
+                    scene.createCsgOperator(CsgTypeStrings[i], static_cast<CsgType>(i), op);
                 }
             }
             ImGui::EndMenu();
@@ -87,6 +77,6 @@ void ScenePanel::doOperatorContextMenu(CsgOperator &op) const {
         ImGui::OpenPopup("Delete Operator");
     }
     if(ImGuiUtils::YesNoPopup("Delete Operator", "Delete the operator?\nThis operation cannot be undone!")) {
-        //TODO
+        scene.deleteCsgOperator(op);
     }
 }

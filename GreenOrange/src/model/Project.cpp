@@ -1,8 +1,9 @@
 #include "Project.h"
 
 
-Project::Project(const char* name) :
-    name(name) {
+Project::Project(const char *path) :
+    name(path), //TODO: get name from file
+    path(path) {
     addScene("Scene1");
     addScene("Scene2");
     addScene("Scene3");
@@ -10,25 +11,16 @@ Project::Project(const char* name) :
     addScene("Scene5");
 }
 
-void Project::addScene(const char* name) {
-    scenes.emplace_back(getUnusedSceneId(), name);
+void Project::addScene(const char *name) {
+    scenes.emplace_back(name);
 }
 
-Scene& Project::getScene(uint32 idx) { 
+Scene& Project::getSceneByIndex(uint32 idx) { 
     GO_ASSERT(idx < scenes.size());
     return scenes[idx];
 }
 
-void Project::deleteScene(uint32 idx) { 
+void Project::deleteSceneByIndex(uint32 idx) { 
     GO_ASSERT(idx < scenes.size()); 
     scenes.erase(scenes.begin() + idx);
-}
-
-uint32 Project::getUnusedSceneId() const {
-    int maxId = -1;
-    for(auto &scene : scenes) {
-        if(scene.getId() > maxId)
-            maxId = scene.getId();
-    }
-    return maxId + 1;
 }

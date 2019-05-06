@@ -7,7 +7,7 @@ GreenOrange::GreenOrange() {
     initDataRepo();
 }
 
-void GreenOrange::openProject() {
+void GreenOrange::openProject(const char *path) {
     //TODO
     currentProject = std::make_unique<Project>("Test project");
 }

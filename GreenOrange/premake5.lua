@@ -4,9 +4,9 @@ project "GreenOrange"
     cppdialect "C++17"
     staticruntime "on"
 
-    targetdir("bin/" .. outputDir .. "/%{prj.name}")
-    debugdir("bin/" .. outputDir .. "/%{prj.name}")
-    objdir("bin-int/" .. outputDir .. "/%{prj.name}")
+    targetdir("bin/" .. outputDir)
+    debugdir("bin/" .. outputDir)
+    objdir("bin-int/" .. outputDir)
 
     -- Include directories relative to root folder (solution directory)
     includeDir = {}
