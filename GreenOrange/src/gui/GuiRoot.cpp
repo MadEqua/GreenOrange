@@ -310,9 +310,21 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
             if(ImGui::BeginMenu("About")) {
                 ImGui::EndMenu();
             }
+
+#ifndef GO_DIST
+            static bool showDemoWindow = false;
+            if(ImGui::BeginMenu("ImGui Demo")) {
+                showDemoWindow = !showDemoWindow;
+                ImGui::EndMenu();
+            }
+            if(showDemoWindow)
+                ImGui::ShowDemoWindow(&showDemoWindow);
+#endif
+            
             menuBarHeight = ImGui::GetWindowHeight();
             ImGui::EndMainMenuBar();
         }
+
         ImGui::Begin("GreenOrange", 0, ImGuiWindowFlags_AlwaysAutoResize);
         {
             if(!greenOrange.hasCurrentProject()) {
@@ -326,10 +338,6 @@ void GuiRoot::drawGui(int windowWidth, int windowHeight) {
                 scenePanel.drawGui(greenOrange.getCurrentProject()->getSceneByIndex(guiSharedData.selectedSceneIdx));
                 inspectorPanel.drawGui();
             }
-
-            bool showDemoWindow = true;
-            if(showDemoWindow)
-                ImGui::ShowDemoWindow(&showDemoWindow);
         }
         ImGui::End();
     }
