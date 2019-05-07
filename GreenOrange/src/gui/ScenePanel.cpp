@@ -23,7 +23,10 @@ void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {
 
     uint32 id = op.getId();
     ImGui::PushID(id);
-    bool treeNodeOpen = ImGui::TreeNode(&id, "%s", op.getName().c_str());
+
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+    if(op.isEmpty()) flags |= ImGuiTreeNodeFlags_Leaf;
+    bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, op.getName().c_str(), "");
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         CsgOperator* ptr = &op;
