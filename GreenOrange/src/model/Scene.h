@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "CsgOperator.h"
 
+
 class Scene
 {
 public:
@@ -19,7 +20,11 @@ public:
 
     void createCsgOperator(const char *name, CsgType type, CsgOperator &parent);
     void deleteCsgOperator(CsgOperator &toDelete);
-    void moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination);
+    void moveCsgOperator(CsgOperator &toMove, CsgOperator &destination);
+
+    void createObject(const char *name, ObjectType type, CsgOperator &parent);
+    void deleteObject(Object &toDelete);
+    void moveObject(Object &toMove, CsgOperator &destination);
 
     uint32 generateId() { return nextId++; }
 
@@ -35,6 +40,6 @@ private:
 
     //The visitFunction will receive the Node and its parent, in this order
     //If visitFunction returns true the traversal will stop
-    void traverseCsgOperatorTree(CsgOperator &root, const std::function<bool(CsgOperator&, CsgOperator*)> &visitFunction);
+    void traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
 };
 

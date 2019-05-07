@@ -1,15 +1,18 @@
 #pragma once
 
-#include <string>
+#include "SceneEntity.h"
 
-class Object
+#include "../Types.h"
+#include "DataRepo.h"
+
+
+class Object : public SceneEntity
 {
 public:
-    Object(const char *name);
+    Object(uint32 id, const char *name, ObjectType type);
 
-    const std::string& getName() const { return name; }
-    void setName(const char* newName) { name = newName; }
+    ObjectType getType() const { return type; }
 
 private:
-    std::string name;
+    ObjectType type;
 };

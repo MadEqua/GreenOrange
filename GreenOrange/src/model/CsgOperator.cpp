@@ -3,9 +3,9 @@
 #include <algorithm>
 #include "GreenOrange.h"
 
+
 CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
-    id(id),
-    name(name),
+    SceneEntity(id, name),
     type(type) {
 
     /*childObjects.emplace_back("o1");
@@ -23,8 +23,23 @@ CsgOperator& CsgOperator::getChildOperatorByIndex(uint32 idx) {
     return *childOperators[idx]; 
 }
 
-void CsgOperator::createChildObject(const char *name) {
-    childObjects.emplace_back(std::make_unique<Object>(name));
+void CsgOperator::createChildObject(uint32 id, const char *name, ObjectType type) {
+    childObjects.emplace_back(std::make_unique<Object>(id, name, type));
+}
+
+void CsgOperator::deleteChildObject(Object &object) {
+    auto it = findChildObject(object);
+    if(it != childObjects.end()) {
+        childObjects.erase(it);
+    }
+}
+
+void CsgOperator::moveChildObject(CsgOperator &parentToMoveFrom, Object&toMove) {
+    auto toMoveIt = parentToMoveFrom.findChildObject(toMove);
+    if(toMoveIt != parentToMoveFrom.childObjects.end()) {
+        std::move(toMoveIt, toMoveIt + 1, std::back_inserter(childObjects));
+        parentToMoveFrom.childObjects.erase(toMoveIt);
+    }
 }
 
 void CsgOperator::createChildOperator(uint32 id, const char *name, CsgType type) {
@@ -32,7 +47,7 @@ void CsgOperator::createChildOperator(uint32 id, const char *name, CsgType type)
 }
 
 void CsgOperator::moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &toMove) {
-    auto toMoveIt = parentToMoveFrom.findChildOperatorById(toMove);
+    auto toMoveIt = parentToMoveFrom.findChildOperator(toMove);
     if(toMoveIt != parentToMoveFrom.childOperators.end()) {
         std::move(toMoveIt, toMoveIt + 1, std::back_inserter(childOperators));
         parentToMoveFrom.childOperators.erase(toMoveIt);
@@ -40,13 +55,22 @@ void CsgOperator::moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &
 }
 
 void CsgOperator::deleteChildOperator(CsgOperator &op) {
-    auto it = findChildOperatorById(op);
+    auto it = findChildOperator(op);
     if(it != childOperators.end()) {
         childOperators.erase(it);
     }
 }
 
-std::vector<std::unique_ptr<CsgOperator>>::iterator CsgOperator::findChildOperatorById(const CsgOperator &op) {
+std::vector<std::unique_ptr<Object>>::iterator CsgOperator::findChildObject(const Object &op) {
+    for(auto it = childObjects.begin(); it != childObjects.end(); ++it) {
+        if((*it)->getId() == op.getId()) {
+            return it;
+        }
+    }
+    return childObjects.end();
+}
+
+std::vector<std::unique_ptr<CsgOperator>>::iterator CsgOperator::findChildOperator(const CsgOperator &op) {
     for(auto it = childOperators.begin(); it != childOperators.end(); ++it) {
         if((*it)->getId() == op.getId()) {
             return it;

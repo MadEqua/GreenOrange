@@ -1,6 +1,7 @@
 #include "Object.h"
 
 
-Object::Object(const char *name) :
-    name(name) {
+Object::Object(uint32 id, const char *name, ObjectType type) :
+    SceneEntity(id, name),
+    type(type) {
 }

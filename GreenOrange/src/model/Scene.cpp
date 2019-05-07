@@ -23,22 +23,46 @@ void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &paren
 void Scene::deleteCsgOperator(CsgOperator &toDelete) {
     if(toDelete == unionOperator) return;
 
-    traverseCsgOperatorTree(unionOperator, [&toDelete](CsgOperator &op, CsgOperator *parent) -> bool {
+    traverseTreeBfs(unionOperator, [&toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == toDelete) {
-            parent->deleteChildOperator(op);
+            parent->deleteChildOperator(dynamic_cast<CsgOperator&>(op));
             return true;
         }
         return false;
     });
 }
 
-void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
-    if(isCsgOperatorDescendentOf(destination, opToMove))
+void Scene::moveCsgOperator(CsgOperator &toMove, CsgOperator &destination) {
+    if(isCsgOperatorDescendentOf(destination, toMove))
         return;
 
-    traverseCsgOperatorTree(unionOperator, [&opToMove, &destination](CsgOperator &op, CsgOperator *parent) -> bool {
+    traverseTreeBfs(unionOperator, [&toMove, &destination](SceneEntity &op, CsgOperator *parent) -> bool {
+        if(parent && op == toMove && *parent != destination) {
+            destination.moveChildOperator(*parent, toMove);
+            return true;
+        }
+        return false;
+    });
+}
+
+void Scene::createObject(const char *name, ObjectType type, CsgOperator &parent) {
+    parent.createChildObject(generateId(), name, type);
+}
+
+void Scene::deleteObject(Object &toDelete) {
+    traverseTreeBfs(unionOperator, [&toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
+        if(parent && op == toDelete) {
+            parent->deleteChildObject(dynamic_cast<Object&>(op));
+            return true;
+        }
+        return false;
+    });
+}
+
+void Scene::moveObject(Object &opToMove, CsgOperator &destination) {
+    traverseTreeBfs(unionOperator, [&opToMove, &destination](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == opToMove && *parent != destination) {
-            destination.moveChildOperator(*parent, opToMove);
+            destination.moveChildObject(*parent, opToMove);
             return true;
         }
         return false;
@@ -47,7 +71,7 @@ void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
 
 bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {
     bool result = false;
-    traverseCsgOperatorTree(op2, [&op1, &result](CsgOperator &op, CsgOperator *parent) -> bool {
+    traverseTreeBfs(op2, [&op1, &result](SceneEntity &op, CsgOperator *parent) -> bool {
         if(op == op1) {
             result = true;
             return true;
@@ -57,7 +81,7 @@ bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {
     return result;
 }
 
-void Scene::traverseCsgOperatorTree(CsgOperator &root, const std::function<bool(CsgOperator&, CsgOperator*)> &visitFunction) {
+void Scene::traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction) {
     std::queue<CsgOperator*> queue;
     queue.push(&root);
 
@@ -73,6 +97,12 @@ void Scene::traverseCsgOperatorTree(CsgOperator &root, const std::function<bool(
             if(visitFunction(op, &current))
                 return;
             queue.push(&op);
+        }
+
+        for(uint32 i = 0; i < current.getChildObjectCount(); ++i) {
+            auto &op = current.getChildObjectByIndex(i);
+            if(visitFunction(op, &current))
+                return;
         }
     }
 }
