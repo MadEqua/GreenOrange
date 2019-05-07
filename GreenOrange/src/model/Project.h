@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <string>
 
 #include "../Types.h"
@@ -24,6 +25,6 @@ public:
 private:
     std::string path;
     std::string name;
-    std::vector<Scene> scenes;
+    std::vector<std::unique_ptr<Scene>> scenes;
 };
 

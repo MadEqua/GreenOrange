@@ -38,13 +38,7 @@ void Scene::moveCsgOperator(CsgOperator &opToMove, CsgOperator &destination) {
 
     traverseCsgOperatorTree(unionOperator, [&opToMove, &destination](CsgOperator &op, CsgOperator *parent) -> bool {
         if(parent && op == opToMove && *parent != destination) {
-
-            /*CsgOperator cpy = opToMove;
-            parent->deleteChildOperator(opToMove);
-            destination.addChildOperator(cpy);*/
-
-            destination.addChildOperator(std::move(opToMove));
-            parent->deleteChildOperator(opToMove);
+            destination.moveChildOperator(*parent, opToMove);
             return true;
         }
         return false;
@@ -74,11 +68,11 @@ void Scene::traverseCsgOperatorTree(CsgOperator &root, const std::function<bool(
         CsgOperator &current = *queue.front();
         queue.pop();
 
-        for(uint32 i = 0; i < current.getOperatorCount(); ++i) {
-            CsgOperator &child = current.getOperatorByIndex(i);
-            if(visitFunction(child, &current))
+        for(uint32 i = 0; i < current.getChildOperatorCount(); ++i) {
+            auto &op = current.getChildOperatorByIndex(i);
+            if(visitFunction(op, &current))
                 return;
-            queue.push(&child);
+            queue.push(&op);
         }
     }
 }

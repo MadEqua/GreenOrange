@@ -12,12 +12,12 @@ Project::Project(const char *path) :
 }
 
 void Project::addScene(const char *name) {
-    scenes.emplace_back(name);
+    scenes.emplace_back(std::make_unique<Scene>(name));
 }
 
 Scene& Project::getSceneByIndex(uint32 idx) { 
     GO_ASSERT(idx < scenes.size());
-    return scenes[idx];
+    return *scenes[idx];
 }
 
 void Project::deleteSceneByIndex(uint32 idx) { 

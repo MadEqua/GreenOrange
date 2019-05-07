@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <vector>
 
 #include "../Types.h"
@@ -17,18 +18,19 @@ public:
     uint32 getId() const { return id; }
     bool isEmpty() const { return childObjects.empty() && childOperators.empty(); }
 
-    size_t getObjectCount() const { return childObjects.size(); }
-    bool hasObjects() const { return !childObjects.empty(); }
-    Object& getObjectByIndex(uint32 idx);
+    size_t getChildObjectCount() const { return childObjects.size(); }
+    bool hasChildObjects() const { return !childObjects.empty(); }
+    Object& getChildObjectByIndex(uint32 idx);
     void createChildObject(const char *name);
 
-    size_t getOperatorCount() const { return childOperators.size(); }
-    bool hasOperators() const { return !childOperators.empty(); }
-    CsgOperator& getOperatorByIndex(uint32 idx);
+    size_t getChildOperatorCount() const { return childOperators.size(); }
+    bool hasChildOperators() const { return !childOperators.empty(); }
+    CsgOperator& getChildOperatorByIndex(uint32 idx);
     void createChildOperator(uint32 id, const char *name, CsgType type);
-    void addChildOperator(CsgOperator &op);
-    void addChildOperator(CsgOperator &&op);
     void deleteChildOperator(CsgOperator &op);
+
+    //Move CsgOperator into this one
+    void moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &toMove);
 
     const std::string& getName() const { return name; }
     void setName(const char* newName) { name = newName; }
@@ -43,6 +45,8 @@ protected:
     std::string name;
     CsgType type;
 
-    std::vector<Object> childObjects;
-    std::vector<CsgOperator> childOperators;
+    std::vector<std::unique_ptr<Object>> childObjects;
+    std::vector<std::unique_ptr<CsgOperator>> childOperators;
+
+    std::vector<std::unique_ptr<CsgOperator>>::iterator findChildOperatorById(const CsgOperator &op);
 };

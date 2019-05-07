@@ -13,7 +13,7 @@ void ScenePanel::drawGui(Scene &scene) {
     //ImGui::SetNextWindowPos(ImVec2(0, 200));
     ImGui::Begin("Scene", 0, 0);
     {
-        doOperatorNode(scene, scene.getRootOperator());
+        doOperatorNode(scene, scene.getRootCsgOperator());
     }
     ImGui::End();
 }
@@ -39,26 +39,21 @@ void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {
         }
         ImGui::EndDragDropTarget();
     }
-    ImGui::PopID();
 
     doOperatorContextMenu(scene, op);
 
     if(treeNodeOpen) {
-        if(op.hasOperators()) {
-            for(uint32 i = 0; i < op.getOperatorCount(); ++i) {
-                doOperatorNode(scene, op.getOperatorByIndex(i));
-            }
+        for(uint32 i = 0; i < op.getChildOperatorCount(); ++i) {
+            doOperatorNode(scene, op.getChildOperatorByIndex(i));
         }
-        if(op.hasObjects()) {
-            for(uint32 i = 0; i < op.getObjectCount(); ++i) {
-                const Object &obj = op.getObjectByIndex(i);
-                if(ImGui::Selectable(obj.getName().c_str())) {
-                    //TODO: click on object
-                }
+        for(uint32 i = 0; i < op.getChildObjectCount(); ++i) {
+            if(ImGui::Selectable(op.getChildObjectByIndex(i).getName().c_str())) {
+                //TODO: click on object
             }
         }
         ImGui::TreePop();
     }
+    ImGui::PopID();
 }
 
 void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {

@@ -15,7 +15,7 @@ public:
     const std::string& getName() const { return name; }
     void setName(const char* newName) { name = newName; }
 
-    CsgOperator& getRootOperator() { return unionOperator; }
+    CsgOperator& getRootCsgOperator() { return unionOperator; }
 
     void createCsgOperator(const char *name, CsgType type, CsgOperator &parent);
     void deleteCsgOperator(CsgOperator &toDelete);
