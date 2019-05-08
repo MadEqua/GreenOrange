@@ -11,7 +11,6 @@
 
 
 void ScenePanel::drawGui(Scene &scene) {
-    //ImGui::SetNextWindowPos(ImVec2(0, 200));
     ImGui::Begin("Scene", 0, 0);
     {
         doOperatorNode(scene, scene.getRootCsgOperator());

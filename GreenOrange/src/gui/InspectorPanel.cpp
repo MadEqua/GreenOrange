@@ -6,7 +6,6 @@
 
 void InspectorPanel::drawGui() {
     static float vec[4] = {0.10f, 0.20f, 0.30f, 0.44f};
-    //ImGui::SetNextWindowPos(ImVec2(600, 20));
     ImGui::Begin("Object Inspector", 0, 0);
     {
         ImGui::DragFloat3("World Position", vec, 0.01f, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());

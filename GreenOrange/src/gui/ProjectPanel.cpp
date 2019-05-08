@@ -21,7 +21,6 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
 }
 
 void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
-    //ImGui::SetNextWindowPos(ImVec2(0, 20)); //TODO: de-hardcode
     ImGui::Begin("Project", 0, 0);
     {
         bool openCreatePopup = false;

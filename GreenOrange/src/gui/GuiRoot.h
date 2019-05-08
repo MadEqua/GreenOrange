@@ -5,35 +5,29 @@
 #include "ScenePanel.h"
 #include "ProjectPanel.h"
 #include "InspectorPanel.h"
+#include "PreviewPanel.h"
 #include "../model/GreenOrange.h"
 #include "GuiSharedData.h"
 
 class GuiRoot
 {
 public:
-    GuiRoot(GreenOrange &greenOrange);
+    GuiRoot(GreenOrange &greenOrange, GLFWwindow &glfwWindow);
 
     bool init();
     void deinit();
 
-    void run();
-    void drawGui(int windowWidth, int windowHeight);
-
+    void drawFrame();
 private:
-    bool initGlfw();
-    void deinitGlfw();
-
-    bool initGlad();
-
-    bool initImGui();
-    void deinitImGui();
-
     GreenOrange &greenOrange;
-    GLFWwindow *glfwWindow;
+    GLFWwindow &glfwWindow;
     
     ProjectPanel projectPanel;
     ScenePanel scenePanel;
     InspectorPanel inspectorPanel;
+    PreviewPanel previewPanel;
 
     GuiSharedData guiSharedData;
+
+    void drawGui();
 };
