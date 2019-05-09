@@ -10,6 +10,7 @@ public:
     void drawGui();
 
 private:
+    float width, height;
     PreviewRenderer previewRenderer;
 };
 

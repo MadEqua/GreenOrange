@@ -1,7 +1,8 @@
 #include "PreviewRenderer.h"
 
 
-PreviewRenderer::PreviewRenderer(const char *fs) :
+PreviewRenderer::PreviewRenderer(uint32 width, uint32 height, const char *fs) :
+    fbo(width, height),
     shader(fs) {
     glGenVertexArrays(1, &dummyVao);
 }
