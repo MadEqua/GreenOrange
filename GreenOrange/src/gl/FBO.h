@@ -4,10 +4,12 @@
 
 #include "../Types.h"
 
+//FBO that contains only a color texture.
+//To use first call setDimensions() with the correct dimensions.
 class FBO
 {
 public:
-    FBO(uint32 width, uint32 height);
+    FBO();
     ~FBO();
 
     void bind() const;

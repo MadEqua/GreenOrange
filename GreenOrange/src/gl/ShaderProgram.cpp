@@ -6,37 +6,29 @@
 #include "../Constants.h"
 
 
-ShaderProgram::ShaderProgram(const char *fs) {
+ShaderProgram::ShaderProgram() {
     vsId = glCreateShader(GL_VERTEX_SHADER);
     fsId = glCreateShader(GL_FRAGMENT_SHADER);
 
     //Full screen triangle
-    const char *DEFAULT_VS =
-        "void main() {"\
+    const char * const DEFAULT_VS =
+        "void main() {"
             "vec2 c = vec2(gl_VertexID << 1 & 2, gl_VertexID & 2);"
-            "gl_Position = vec4(c * vec2(2, -2) + vec2(-1, 1), 0.0f, 1.0f);"\
+            "gl_Position = vec4(c * vec2(2, -2) + vec2(-1, 1), 0.0f, 1.0f);"
         "}";
 
     std::string vs(GLSL_VERSION);
     vs.append("\n").append(DEFAULT_VS);
-    const char *vsc = vs.c_str();
+    const char * const vsc = vs.c_str();
 
     glShaderSource(vsId, 1, &vsc, nullptr);
     glCompileShader(vsId);
     if(!checkCompilation(vsId))
         return;
 
-    glShaderSource(fsId, 1, &fs, nullptr);
-    glCompileShader(fsId);
-    if(!checkCompilation(fsId))
-        return;
-
     id = glCreateProgram();
     glAttachShader(id, vsId);
     glAttachShader(id, fsId);
-    glLinkProgram(id);
-    if(!checkLinking(id))
-        return;
 }
 
 ShaderProgram::~ShaderProgram() {
@@ -91,8 +83,15 @@ void ShaderProgram::bind() const {
     glUseProgram(id);
 }
 
-void ShaderProgram::updateFragmentShader(const char *fs) {
+bool ShaderProgram::setFragmentShader(const char *fs) {
     glShaderSource(fsId, 1, &fs, nullptr);
     glCompileShader(fsId);
+    if(!checkCompilation(fsId))
+        return false;
+
     glLinkProgram(id);
+    if(!checkLinking(id))
+        return false;
+
+    return true;
 }

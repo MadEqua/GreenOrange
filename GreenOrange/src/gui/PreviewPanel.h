@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui.h>
+
 #include "../gl/PreviewRenderer.h"
 
 class PreviewPanel
@@ -10,7 +12,11 @@ public:
     void drawGui();
 
 private:
-    float width, height;
     PreviewRenderer previewRenderer;
+
+    ImVec2 previousSize;
+
+    ImVec2 imagePos;
+    ImVec2 imageSize;
 };
 

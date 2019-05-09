@@ -9,11 +9,13 @@
 class PreviewRenderer
 {
 public:
-    PreviewRenderer(uint32 width, uint32 height, const char *fs);
+    PreviewRenderer();
     ~PreviewRenderer();
 
-    void render() const;
     void setDimensions(uint32 width, uint32 height) { fbo.setDimensions(width, height); }
+    bool setFragmentShader(const char *fs) { return shader.setFragmentShader(fs); };
+    void render() const;
+    
     GLuint getRenderedImageId() const { return fbo.getColorTextureId(); }
 
 private:

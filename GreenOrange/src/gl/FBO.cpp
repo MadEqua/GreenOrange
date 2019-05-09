@@ -1,19 +1,13 @@
 #include "FBO.h"
 
 
-FBO::FBO(uint32 width, uint32 height) {
+FBO::FBO() {
     glGenFramebuffers(1, &id);
-
     glGenTextures(1, &colorTexId);
-    setDimensions(width, height);
 
+    glBindTexture(GL_TEXTURE_2D, colorTexId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    bind();
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexId, 0);
-    bindDefault();
-
 }
 
 FBO::~FBO() {
@@ -35,4 +29,8 @@ void FBO::setDimensions(uint32 width, uint32 height) {
     this->height = height;
     glBindTexture(GL_TEXTURE_2D, colorTexId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    bind();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexId, 0);
+    bindDefault();
 }
