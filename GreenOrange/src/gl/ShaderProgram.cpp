@@ -7,8 +7,8 @@
 
 
 ShaderProgram::ShaderProgram() {
-    vsId = glCreateShader(GL_VERTEX_SHADER);
-    fsId = glCreateShader(GL_FRAGMENT_SHADER);
+    vsHandle = glCreateShader(GL_VERTEX_SHADER);
+    fsHandle = glCreateShader(GL_FRAGMENT_SHADER);
 
     //Full screen triangle
     const char * const DEFAULT_VS =
@@ -21,20 +21,20 @@ ShaderProgram::ShaderProgram() {
     vs.append("\n").append(DEFAULT_VS);
     const char * const vsc = vs.c_str();
 
-    glShaderSource(vsId, 1, &vsc, nullptr);
-    glCompileShader(vsId);
-    if(!checkCompilation(vsId))
+    glShaderSource(vsHandle, 1, &vsc, nullptr);
+    glCompileShader(vsHandle);
+    if(!checkCompilation(vsHandle))
         return;
 
-    id = glCreateProgram();
-    glAttachShader(id, vsId);
-    glAttachShader(id, fsId);
+    handle = glCreateProgram();
+    glAttachShader(handle, vsHandle);
+    glAttachShader(handle, fsHandle);
 }
 
 ShaderProgram::~ShaderProgram() {
-    glDeleteShader(vsId);
-    glDeleteShader(fsId);
-    glDeleteProgram(id);
+    glDeleteShader(vsHandle);
+    glDeleteShader(fsHandle);
+    glDeleteProgram(handle);
 }
 
 bool ShaderProgram::checkCompilation(GLuint id) const {
@@ -80,18 +80,45 @@ bool ShaderProgram::checkLinking(GLuint id) const {
 }
 
 void ShaderProgram::bind() const {
-    glUseProgram(id);
+    glUseProgram(handle);
 }
 
 bool ShaderProgram::setFragmentShader(const char *fs) {
-    glShaderSource(fsId, 1, &fs, nullptr);
-    glCompileShader(fsId);
-    if(!checkCompilation(fsId))
+    glShaderSource(fsHandle, 1, &fs, nullptr);
+    glCompileShader(fsHandle);
+    if(!checkCompilation(fsHandle))
         return false;
 
-    glLinkProgram(id);
-    if(!checkLinking(id))
+    glLinkProgram(handle);
+    if(!checkLinking(handle))
         return false;
 
     return true;
+}
+
+bool ShaderProgram::addUniform(const char *name) {
+    GLint id = glGetUniformLocation(handle, name);
+    if(id >= 0) {
+        uniformsByName[name] = id;
+        return true;
+    }
+    return false;
+}
+
+bool ShaderProgram::setUniformFloat(const char *name, float v) {
+    if(uniformsByName.find(name) != uniformsByName.end()) {
+        bind();
+        glUniform1f(uniformsByName[name], v);
+        return true;
+    }
+    return false;
+}
+
+bool ShaderProgram::setUniformVec2(const char *name, float x, float y) {
+    if(uniformsByName.find(name) != uniformsByName.end()) {
+        bind();
+        glUniform2f(uniformsByName[name], x, y);
+        return true;
+    }
+    return false;
 }

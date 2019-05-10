@@ -12,8 +12,8 @@ public:
     PreviewRenderer();
     ~PreviewRenderer();
 
-    void setDimensions(uint32 width, uint32 height) { fbo.setDimensions(width, height); }
-    bool setFragmentShader(const char *fs) { return shader.setFragmentShader(fs); };
+    void setDimensions(float width, float height);
+    bool setFragmentShader(const char *fs);
     void render() const;
     
     GLuint getRenderedImageId() const { return fbo.getColorTextureId(); }

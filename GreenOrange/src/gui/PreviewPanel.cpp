@@ -3,14 +3,15 @@
 
 const char* FS_TEMP = "#version 430 core\n"
 "out vec4 fragColor;"
+"uniform vec2 dimensions;"
 "void main() {"
-    "fragColor = vec4(gl_FragCoord.xy / vec2(800, 450), 0.0f, 1.0f);"
+    "fragColor = vec4(gl_FragCoord.xy / dimensions, 0.0f, 1.0f);"
     //"fragColor = vec4(gl_FragCoord.y > gl_FragCoord.x ? vec3(0) : vec3(1), 1.0f);"
 "}";
 
 
 PreviewPanel::PreviewPanel() :
-    previousSize(-1.0f, 1.0f) {
+    previousSize(-1.0f, -1.0f) {
 
     //TODO: set shader with every change
     previewRenderer.setFragmentShader(FS_TEMP);
@@ -40,7 +41,7 @@ void PreviewPanel::drawGui() {
                     imagePos.x += size.x * 0.5f - imageSize.x * 0.5f;
                 }
 
-                previewRenderer.setDimensions(static_cast<uint32>(imageSize.x), static_cast<uint32>(imageSize.y));
+                previewRenderer.setDimensions(imageSize.x, imageSize.y);
             }
 
             previewRenderer.render();

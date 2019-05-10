@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <unordered_map>
+#include <string>
 
 
 //This creates a program with a fixed full screen triangle vertex shader.
@@ -13,11 +15,17 @@ public:
 
     void bind() const;
     bool setFragmentShader(const char *fs);
+    
+    bool addUniform(const char *name);
+    bool setUniformFloat(const char *name, float v);
+    bool setUniformVec2(const char *name, float x, float y);
 
 private:
-    GLuint id;
-    GLuint vsId;
-    GLuint fsId;
+    GLuint handle;
+    GLuint vsHandle;
+    GLuint fsHandle;
+
+    std::unordered_map<std::string, GLuint> uniformsByName;
 
     bool checkCompilation(GLuint id) const;
     bool checkLinking(GLuint id) const;
