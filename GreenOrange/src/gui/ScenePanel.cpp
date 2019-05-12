@@ -10,7 +10,7 @@
 #include "imgui/ImGuiUtils.h"
 
 
-void ScenePanel::drawGui(Scene &scene) {
+void ScenePanel::drawGui(Scene &scene) const {
     ImGui::Begin("Scene", 0, 0);
     {
         doOperatorNode(scene, scene.getRootCsgOperator());

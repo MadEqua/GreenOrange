@@ -7,7 +7,7 @@ class Project;
 class ProjectPanel
 {
 public:
-    void drawGui(Project &project, int &selectedSceneIdx);
+    void drawGui(Project &project, int &selectedSceneIdx) const;
 
 private:
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";

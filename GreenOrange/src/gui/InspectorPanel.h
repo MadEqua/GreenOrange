@@ -3,6 +3,6 @@
 class InspectorPanel
 {
 public:
-    void drawGui();
+    void drawGui() const;
 };
 

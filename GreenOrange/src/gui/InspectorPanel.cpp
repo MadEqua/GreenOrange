@@ -4,7 +4,7 @@
 
 #include <imgui.h>
 
-void InspectorPanel::drawGui() {
+void InspectorPanel::drawGui() const {
     static float vec[4] = {0.10f, 0.20f, 0.30f, 0.44f};
     ImGui::Begin("Object Inspector", 0, 0);
     {

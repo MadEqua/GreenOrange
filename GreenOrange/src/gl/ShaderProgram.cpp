@@ -101,19 +101,19 @@ bool ShaderProgram::addUniform(const char *name) {
     return false;
 }
 
-bool ShaderProgram::setUniformFloat(const char *name, float v) {
+bool ShaderProgram::setUniformFloat(const char *name, float v) const {
     if(uniformsByName.find(name) != uniformsByName.end()) {
         bind();
-        glUniform1f(uniformsByName[name], v);
+        glUniform1f(uniformsByName.at(name), v);
         return true;
     }
     return false;
 }
 
-bool ShaderProgram::setUniformVec2(const char *name, float x, float y) {
+bool ShaderProgram::setUniformVec2(const char *name, float x, float y) const {
     if(uniformsByName.find(name) != uniformsByName.end()) {
         bind();
-        glUniform2f(uniformsByName[name], x, y);
+        glUniform2f(uniformsByName.at(name), x, y);
         return true;
     }
     return false;

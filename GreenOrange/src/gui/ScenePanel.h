@@ -12,7 +12,7 @@ constexpr int DND_CSG_OPERATOR = 1;
 class ScenePanel
 {
 public:
-    void drawGui(Scene &scene);
+    void drawGui(Scene &scene) const;
 
 private:
     void doOperatorNode(Scene &scene, CsgOperator &op) const;

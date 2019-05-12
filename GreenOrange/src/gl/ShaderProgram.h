@@ -17,8 +17,8 @@ public:
     bool setFragmentShader(const char *fs);
     
     bool addUniform(const char *name);
-    bool setUniformFloat(const char *name, float v);
-    bool setUniformVec2(const char *name, float x, float y);
+    bool setUniformFloat(const char *name, float v) const;
+    bool setUniformVec2(const char *name, float x, float y) const;
 
 private:
     GLuint handle;

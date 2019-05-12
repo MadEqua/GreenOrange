@@ -67,7 +67,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
 
         //At this point we know that the next stackElement is a CsgOperator
         if(!operands.empty()) {
-            std::string code = generateOperator(dynamic_cast<CsgOperator&>(*stack.top().sceneEntity), operands, 0, operands.size());
+            std::string code = generateOperator(dynamic_cast<CsgOperator&>(*stack.top().sceneEntity), operands, 0, static_cast<uint32>(operands.size()));
             stack.pop();
 
             //The result of the operator will go back to the stack as generated code
@@ -87,7 +87,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     }
 }
 
-std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, int startIdx, int endIdx) {
+std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, uint32 startIdx, uint32 endIdx) {
     std::stringstream sstream;
 
     int size = endIdx - startIdx;

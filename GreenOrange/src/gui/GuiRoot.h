@@ -27,7 +27,7 @@ private:
     InspectorPanel inspectorPanel;
     PreviewPanel previewPanel;
 
-    GuiSharedData guiSharedData;
+    mutable GuiSharedData guiSharedData;
 
     void drawGui();
 };

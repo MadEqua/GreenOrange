@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "Types.h"
+
 class Project;
 class CsgOperator;
 class Object;
@@ -35,6 +37,6 @@ private:
     bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 
     std::string generateScene(Scene &scene);
-    std::string generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, int startIdx, int endIdx);
+    std::string generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, uint32 startIdx, uint32 endIdx);
     std::string generateOperand(const StackElement &stackElement);
 };

@@ -20,7 +20,7 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
     return false;
 }
 
-void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
+void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) const {
     ImGui::Begin("Project", 0, 0);
     {
         bool openCreatePopup = false;
