@@ -2,6 +2,6 @@
 
 
 Object::Object(uint32 id, const char *name, ObjectType type) :
-    SceneEntity(id, name),
+    SceneEntity(SceneEntityType::Object, id, name),
     type(type) {
 }

@@ -5,12 +5,11 @@
 
 
 CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
-    SceneEntity(id, name),
+    SceneEntity(SceneEntityType::CsgOperator, id, name),
     type(type) {
 
-    /*childObjects.emplace_back("o1");
-    childObjects.emplace_back("o2");
-    childObjects.emplace_back("o3");*/
+    createChildObject(999, "sphere", ObjectType::Sphere);
+    createChildObject(1000, "box", ObjectType::Box);
 }
 
 Object& CsgOperator::getChildObjectByIndex(uint32 idx) {

@@ -1,7 +1,8 @@
 #include "SceneEntity.h"
 
 
-SceneEntity::SceneEntity(uint32 id, const char *name) :
+SceneEntity::SceneEntity(SceneEntityType type, uint32 id, const char *name) :
+    type(type),
     id(id),
     name(name) {
 }

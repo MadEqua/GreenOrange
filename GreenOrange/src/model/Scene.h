@@ -11,7 +11,7 @@
 class Scene
 {
 public:
-    Scene(const char* name);
+    explicit Scene(const char* name);
 
     const std::string& getName() const { return name; }
     void setName(const char* newName) { name = newName; }
@@ -28,6 +28,11 @@ public:
 
     uint32 generateId() { return nextId++; }
 
+    //The visitFunction will receive the Node and its parent, in this order
+    //If visitFunction returns true the traversal will stop
+    void traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
+    void traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
+
 private:
     std::string name;
 
@@ -37,9 +42,5 @@ private:
     uint32 nextId;
 
     bool isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2);
-
-    //The visitFunction will receive the Node and its parent, in this order
-    //If visitFunction returns true the traversal will stop
-    void traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
 };
 

@@ -9,6 +9,10 @@
 #include "imgui/ImGuiUtils.h"
 
 
+//TODO for testing, delete
+#include "../gen/CodeGenerator.h"
+
+
 static bool sceneItemsGetter(void* data, int i, const char** string) {
     if(data != nullptr) {
         Project *project = static_cast<Project*>(data);
@@ -69,5 +73,14 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) {
             project.deleteSceneByIndex(selectedSceneIdx);
         }
     }
+
+
+    //TODO for testing, delete
+    if(ImGui::Button("GENERATE CODE!!!1!!")) {
+        CodeGenerator codeGen;
+        printf("%s\n", codeGen.generate(project).c_str());
+    }
+
+
     ImGui::End();
 }
