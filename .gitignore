@@ -9,6 +9,7 @@
 
 bin/
 bin-int/
+generated/
 
 .idea/
 cmake*/

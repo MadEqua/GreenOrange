@@ -1,20 +1,11 @@
 #include "PreviewRenderer.h"
 
 #include "../Constants.h"
-
+#include "../glsl/generated/fallback.frag.h"
 
 PreviewRenderer::PreviewRenderer() {
     glGenVertexArrays(1, &dummyVao);
-
-    const char* const FS_FALLBACK =
-        "out vec4 fragColor;"
-        "uniform vec2 dimensions;"
-        "void main() {"
-        "fragColor = vec4(gl_FragCoord.xy / dimensions, 0.0f, 1.0f);"
-        "}";
-
-    fallbackFragShader = GLSL_VERSION;
-    fallbackFragShader.append("\n").append(FS_FALLBACK);
+    fallbackFragShader.append(GLSL_VERSION).append("\n").append(fallback_frag);
 }
 
 PreviewRenderer::~PreviewRenderer() {

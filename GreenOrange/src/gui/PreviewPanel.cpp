@@ -1,6 +1,6 @@
 #include "PreviewPanel.h"
 
-#include "../gen/CodeGenerator.h"
+#include "../GlslGenerator.h"
 #include "../model/Project.h"
 #include "../Constants.h"
 

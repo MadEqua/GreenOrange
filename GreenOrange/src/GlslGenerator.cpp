@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include <stack>
 #include <sstream>
-#include <fstream>
 
-#include "../model/SceneEntity.h"
-#include "../model/Project.h"
-#include "../model/Scene.h"
-#include "../Constants.h"
+#include "model/SceneEntity.h"
+#include "model/Project.h"
+#include "model/Scene.h"
+#include "Constants.h"
+
+#include "glsl/generated/template.frag.h"
 
 
 GlslGenerator::StackElement::StackElement(SceneEntity &sceneEntity) :
@@ -22,7 +23,7 @@ GlslGenerator::StackElement::StackElement(std::string &&generatedCode) :
 }
 
 GlslGenerator::GlslGenerator() {
-    readTemplateFile();
+    templateGlsl.append(GLSL_VERSION).append("\n").append(template_frag);
 }
 
 const std::string& GlslGenerator::generate(Project &project) {
@@ -179,19 +180,6 @@ std::string GlslGenerator::generateOperand(const StackElement &stackElement) {
     }
 
     return sstream.str();
-}
-
-void GlslGenerator::readTemplateFile() {
-    std::ifstream file;
-    file.open("../../src/glsl/template.frag"); //TODO: figure out folder
-    if(!file.is_open()) {
-        printf("readTemplateFile(). Error opening file.");
-    }
-
-    std::stringstream ss;
-    ss << GLSL_VERSION << '\n' << file.rdbuf();
-    templateGlsl = ss.str();
-    file.close();
 }
 
 bool GlslGenerator::replace(std::string& str, const std::string& toReplace, const std::string& replacement) {

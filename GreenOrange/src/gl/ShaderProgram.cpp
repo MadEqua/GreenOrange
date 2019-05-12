@@ -5,20 +5,16 @@
 
 #include "../Constants.h"
 
+#include "../glsl/generated/fullScreen.vert.h"
+
 
 ShaderProgram::ShaderProgram() {
     vsHandle = glCreateShader(GL_VERTEX_SHADER);
     fsHandle = glCreateShader(GL_FRAGMENT_SHADER);
 
     //Full screen triangle
-    const char * const DEFAULT_VS =
-        "void main() {"
-            "vec2 c = vec2(gl_VertexID << 1 & 2, gl_VertexID & 2);"
-            "gl_Position = vec4(c * vec2(2, -2) + vec2(-1, 1), 0.0f, 1.0f);"
-        "}";
-
-    std::string vs(GLSL_VERSION);
-    vs.append("\n").append(DEFAULT_VS);
+    std::string vs;
+    vs.append(GLSL_VERSION).append("\n").append(fullScreen_vert);
     const char * const vsc = vs.c_str();
 
     glShaderSource(vsHandle, 1, &vsc, nullptr);

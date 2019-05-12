@@ -32,7 +32,6 @@ private:
 
     std::string templateGlsl;
 
-    void readTemplateFile();
     bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 
     std::string generateScene(Scene &scene);

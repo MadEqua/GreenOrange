@@ -8,7 +8,13 @@ project "GreenOrange"
     debugdir("bin/" .. outputDir)
     objdir("bin-int/" .. outputDir)
 
-    -- Include directories relative to root folder (solution directory)
+    dependson("GlslToHeader")
+    -- Not pretty. Find a better way.
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/template.frag" }
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/fullScreen.vert" }
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/fallback.frag" }
+
+    -- Include directories relative to root folder
     includeDir = {}
     includeDir["GLFW"] = "dependencies/GLFW/include"
     includeDir["glad"] = "dependencies/glad/include"
