@@ -4,12 +4,15 @@
 
 #include "../gl/PreviewRenderer.h"
 
+class Project;
+
+
 class PreviewPanel
 {
 public:
     PreviewPanel();
 
-    void drawGui();
+    void drawGui(Project &project, bool &hasChanges);
 
 private:
     PreviewRenderer previewRenderer;

@@ -11,3 +11,5 @@ constexpr const char *DND_PAYLOAD = "DND_PAYLOAD";
 
 constexpr const char *UNIFORM_DIMENSIONS = "dimensions";
 constexpr const char *UNIFORM_TIME = "time";
+
+constexpr const char *REPLACE_SCENES = "#GO_REPLACE_SCENES";

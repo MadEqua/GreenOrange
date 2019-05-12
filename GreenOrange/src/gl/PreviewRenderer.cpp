@@ -5,6 +5,16 @@
 
 PreviewRenderer::PreviewRenderer() {
     glGenVertexArrays(1, &dummyVao);
+
+    const char* const FS_FALLBACK =
+        "out vec4 fragColor;"
+        "uniform vec2 dimensions;"
+        "void main() {"
+        "fragColor = vec4(gl_FragCoord.xy / dimensions, 0.0f, 1.0f);"
+        "}";
+
+    fallbackFragShader = GLSL_VERSION;
+    fallbackFragShader.append("\n").append(FS_FALLBACK);
 }
 
 PreviewRenderer::~PreviewRenderer() {
@@ -15,8 +25,12 @@ bool PreviewRenderer::setFragmentShader(const char *fs) {
     bool result = shader.setFragmentShader(fs);
     if(result) {
         shader.addUniform(UNIFORM_TIME);
-        shader.addUniform(UNIFORM_DIMENSIONS);
     }
+    else {
+        shader.setFragmentShader(fallbackFragShader.c_str());
+    }
+
+    shader.addUniform(UNIFORM_DIMENSIONS);
     return result;
 }
 

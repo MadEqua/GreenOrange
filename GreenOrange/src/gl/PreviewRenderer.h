@@ -23,5 +23,7 @@ private:
     ShaderProgram shader;
 
     GLuint dummyVao;
+
+    std::string fallbackFragShader;
 };
 

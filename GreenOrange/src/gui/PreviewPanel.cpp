@@ -1,25 +1,23 @@
 #include "PreviewPanel.h"
 
-
-const char* FS_TEMP = "#version 430 core\n"
-"out vec4 fragColor;"
-"uniform vec2 dimensions;"
-"void main() {"
-    "fragColor = vec4(gl_FragCoord.xy / dimensions, 0.0f, 1.0f);"
-    //"fragColor = vec4(gl_FragCoord.y > gl_FragCoord.x ? vec3(0) : vec3(1), 1.0f);"
-"}";
+#include "../gen/CodeGenerator.h"
+#include "../model/Project.h"
+#include "../Constants.h"
 
 
 PreviewPanel::PreviewPanel() :
     previousSize(-1.0f, -1.0f) {
-
-    //TODO: set shader with every change
-    previewRenderer.setFragmentShader(FS_TEMP);
 }
 
-void PreviewPanel::drawGui() {
+//TODO project should be const
+void PreviewPanel::drawGui(Project &project, bool &hasChanges) {
     ImGui::Begin("Preview");
     {
+        //TODO for testing, delete
+        if(ImGui::Button("GENERATE CODE!!!1!!")) {
+            hasChanges = true;
+        }
+
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         if(size.x > 0.0f && size.y > 0.0f) {
@@ -42,6 +40,13 @@ void PreviewPanel::drawGui() {
                 }
 
                 previewRenderer.setDimensions(imageSize.x, imageSize.y);
+            }
+
+            if(hasChanges) {
+                GlslGenerator generator;
+                previewRenderer.setFragmentShader(generator.generate(project).c_str());
+                previewRenderer.setDimensions(imageSize.x, imageSize.y);
+                hasChanges = false;
             }
 
             previewRenderer.render();

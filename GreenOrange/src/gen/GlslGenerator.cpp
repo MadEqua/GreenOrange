@@ -1,26 +1,31 @@
-#include "CodeGenerator.h"
+#include "GlslGenerator.h"
 
 #include <stdio.h>
 #include <stack>
 #include <sstream>
+#include <fstream>
 
 #include "../model/SceneEntity.h"
 #include "../model/Project.h"
 #include "../model/Scene.h"
+#include "../Constants.h"
 
 
-CodeGenerator::StackElement::StackElement(SceneEntity &sceneEntity) :
+GlslGenerator::StackElement::StackElement(SceneEntity &sceneEntity) :
     sceneEntity(&sceneEntity),
     isGeneratedCode(false) {
 }
 
-CodeGenerator::StackElement::StackElement(std::string &&generatedCode) :
+GlslGenerator::StackElement::StackElement(std::string &&generatedCode) :
     generatedCode(std::move(generatedCode)),
     isGeneratedCode(true) {
 }
 
+GlslGenerator::GlslGenerator() {
+    readTemplateFile();
+}
 
-std::string CodeGenerator::generate(Project &project) {
+const std::string& GlslGenerator::generate(Project &project) {
     std::stringstream sstream;
 
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
@@ -29,10 +34,12 @@ std::string CodeGenerator::generate(Project &project) {
         sstream << "return " << generateScene(scene) << ";";
         sstream << std::endl << "}" << std::endl;
     }
-    return sstream.str();
+
+    replace(templateGlsl, REPLACE_SCENES, sstream.str());
+    return templateGlsl;
 }
 
-std::string CodeGenerator::generateScene(Scene &scene) {
+std::string GlslGenerator::generateScene(Scene &scene) {
     
     //This stack will contain the Scene data in reverse polish notation.
     std::stack<StackElement> stack;
@@ -79,7 +86,7 @@ std::string CodeGenerator::generateScene(Scene &scene) {
     }
 }
 
-std::string CodeGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, int startIdx, int endIdx) {
+std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, int startIdx, int endIdx) {
     std::stringstream sstream;
 
     int size = endIdx - startIdx;
@@ -144,14 +151,14 @@ std::string CodeGenerator::generateOperator(const CsgOperator &csgOperator, cons
          }
         break;
     default:
-        printf("generateOperator() trying to generate code for an unknown type.\n");
+        printf("generateOperator() trying replacement generate code for an unknown type.\n");
         break;
     }
 
     return sstream.str();
 }
 
-std::string CodeGenerator::generateOperand(const StackElement &stackElement) {
+std::string GlslGenerator::generateOperand(const StackElement &stackElement) {
     std::stringstream sstream;
 
     //This function relies on stackElements not being CsgOperators, only operands (Objects or generated code).
@@ -160,16 +167,37 @@ std::string CodeGenerator::generateOperand(const StackElement &stackElement) {
     else {
         switch(dynamic_cast<Object&>(*stackElement.sceneEntity).getType()) {
         case ObjectType::Box:
-            sstream << "box(p)";
+            sstream << "box(p, vec3(1., .5, .5))";
             break;
         case ObjectType::Sphere:
-            sstream << "sphere(p)";
+            sstream << "sphere(p, .9)";
             break;
         default:
-            printf("generateOperand() trying to generate code for an unknown type.\n");
+            printf("generateOperand() trying replacement generate code for an unknown type.\n");
             break;
         }
     }
 
     return sstream.str();
+}
+
+void GlslGenerator::readTemplateFile() {
+    std::ifstream file;
+    file.open("../../src/glsl/template.frag"); //TODO: figure out folder
+    if(!file.is_open()) {
+        printf("readTemplateFile(). Error opening file.");
+    }
+
+    std::stringstream ss;
+    ss << GLSL_VERSION << '\n' << file.rdbuf();
+    templateGlsl = ss.str();
+    file.close();
+}
+
+bool GlslGenerator::replace(std::string& str, const std::string& toReplace, const std::string& replacement) {
+    size_t start_pos = str.find(toReplace);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, toReplace.length(), replacement);
+    return true;
 }
