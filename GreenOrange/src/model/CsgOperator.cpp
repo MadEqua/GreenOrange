@@ -8,8 +8,8 @@ CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
     SceneEntity(SceneEntityType::CsgOperator, id, name),
     type(type) {
 
-    createChildObject(999, "sphere", ObjectType::Sphere);
-    createChildObject(1000, "box", ObjectType::Box);
+    createChildObject(999 + id, "sphere", ObjectType::Sphere);
+    createChildObject(1000 + id, "box", ObjectType::Box);
 }
 
 Object& CsgOperator::getChildObjectByIndex(uint32 idx) {
@@ -23,7 +23,17 @@ CsgOperator& CsgOperator::getChildOperatorByIndex(uint32 idx) {
 }
 
 void CsgOperator::createChildObject(uint32 id, const char *name, ObjectType type) {
-    childObjects.emplace_back(std::make_unique<Object>(id, name, type));
+    switch(type)
+    {
+    case ObjectType::Sphere:
+        childObjects.emplace_back(std::make_unique<Sphere>(id, name));
+        break;
+    case ObjectType::Box:
+        childObjects.emplace_back(std::make_unique<Box>(id, name));
+        break;
+    default:
+        break;
+    }
 }
 
 void CsgOperator::deleteChildObject(Object &object) {

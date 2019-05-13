@@ -9,7 +9,7 @@
 
 Scene::Scene(const char* name) :
     name(name),
-    unionOperator(0, "Union", CsgType::Union),
+    unionOperator(0, "Root Union", CsgType::Union),
     nextId(1) {
 
     //TODO: remove

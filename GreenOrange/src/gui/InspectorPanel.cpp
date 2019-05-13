@@ -24,7 +24,7 @@ void InspectorPanel::drawGui(SceneEntity *sceneEntity) const {
                 ImGui::NewLine();
             }
             else if(sceneEntity->isObject()) {
-                const Object &obj = dynamic_cast<const Object&>(*sceneEntity);
+                Object &obj = dynamic_cast<Object&>(*sceneEntity);
                 ImGui::Text("Object Type:");
                 ImGui::SameLine();
                 ImGui::Text(ObjectTypeStrings[static_cast<int>(obj.getType())]);
@@ -32,12 +32,22 @@ void InspectorPanel::drawGui(SceneEntity *sceneEntity) const {
                 
                 switch(obj.getType()) {
                 case ObjectType::Sphere:
-                    ImGui::DragFloat("Radius", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
+                {
+                    Sphere &sphere = dynamic_cast<Sphere&>(obj);
+                    float radius = sphere.getRadius();
+                    ImGui::DragFloat("Radius", &radius, 0.01f, 0.0f, std::numeric_limits<float>::max());
+                    sphere.setRadius(radius);
                     break;
+                }
 
                 case ObjectType::Box:
-                    ImGui::DragFloat3("Size", vec, 0.01f, 0.0f, std::numeric_limits<float>::max());
+                {
+                    Box &box = dynamic_cast<Box&>(obj);
+                    float *dims = box.getDimensions();
+                    ImGui::DragFloat3("Size", dims, 0.01f, 0.0f, std::numeric_limits<float>::max());
+                    box.setDimensions(dims);
                     break;
+                }
 
                 default:
                     break;

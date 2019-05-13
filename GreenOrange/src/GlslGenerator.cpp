@@ -101,14 +101,14 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
         else if(size == 2) {
             sstream << "min(";
             sstream << generateOperand(operands[startIdx]);
-            sstream << ",";
+            sstream << ", ";
             sstream << generateOperand(operands[startIdx + 1]);
             sstream << ")";
         }
         else if(size > 2) {
             sstream << "min(";
             sstream << generateOperator(csgOperator, operands, 0, 2);
-            sstream << ",";
+            sstream << ", ";
             sstream << generateOperator(csgOperator, operands, 2, size);
             sstream << ")";
         }
@@ -120,14 +120,14 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
         else if(size == 2) {
             sstream << "max(";
             sstream << generateOperand(operands[0]);
-            sstream << ",";
+            sstream << ", ";
             sstream << generateOperand(operands[1]);
             sstream << ")";
         }
         else if(size > 2) {
             sstream << "max(";
             sstream << generateOperator(csgOperator, operands, 0, 2);
-            sstream << ",";
+            sstream << ", ";
             sstream << generateOperator(csgOperator, operands, 2, size);
             sstream << ")";
         }
@@ -139,14 +139,14 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
         else if(size == 2) {
             sstream << "max(-";
             sstream << generateOperand(operands[0]);
-            sstream << ",";
+            sstream << ", ";
             sstream << generateOperand(operands[1]);
             sstream << ")";
         }
         else if(size > 2) {
             sstream << "max(-";
             sstream << generateOperator(csgOperator, operands, 0, 2);
-            sstream << ",";
+            sstream << ", ";
             sstream << generateOperator(csgOperator, operands, 2, size);
             sstream << ")";
          }
@@ -166,13 +166,26 @@ std::string GlslGenerator::generateOperand(const StackElement &stackElement) {
     if(stackElement.isGeneratedCode)
         sstream << stackElement.generatedCode;
     else {
-        switch(dynamic_cast<Object&>(*stackElement.sceneEntity).getType()) {
+        Object &obj = dynamic_cast<Object&>(*stackElement.sceneEntity);
+        
+        switch(obj.getType()) {
         case ObjectType::Box:
-            sstream << "box(p, vec3(1., .5, .5))";
+        {
+            sstream << "box(p, vec3(";
+            Box &box = dynamic_cast<Box&>(obj);
+            float *dims = box.getDimensions();
+            sstream << dims[0] << ", " << dims[1] << ", " << dims[2] << "))";
             break;
+        }
+
         case ObjectType::Sphere:
-            sstream << "sphere(p, .9)";
+        {
+            sstream << "sphere(p, ";
+            Sphere &sphere = dynamic_cast<Sphere&>(obj);
+            float r = sphere.getRadius();
+            sstream << r << ")";
             break;
+        }
         default:
             printf("generateOperand() trying replacement generate code for an unknown type.\n");
             break;
