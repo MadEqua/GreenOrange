@@ -22,12 +22,15 @@ GlslGenerator::StackElement::StackElement(std::string &&generatedCode) :
     isGeneratedCode(true) {
 }
 
-GlslGenerator::GlslGenerator() {
-    templateGlsl.append(GLSL_VERSION).append("\n").append(template_frag);
+void GlslGenerator::initGeneration() const {
+    glslCode.clear();
+    glslCode.append(GLSL_VERSION).append("\n").append(template_frag);
 }
 
-const std::string& GlslGenerator::generate(Project &project) {
+
+const std::string& GlslGenerator::generate(Project &project) const {
     std::stringstream sstream;
+    initGeneration();
 
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
         Scene &scene = project.getSceneByIndex(i);
@@ -36,8 +39,8 @@ const std::string& GlslGenerator::generate(Project &project) {
         sstream << std::endl << "}" << std::endl;
     }
 
-    replace(templateGlsl, REPLACE_SCENES, sstream.str());
-    return templateGlsl;
+    replace(glslCode, REPLACE_SCENES, sstream.str());
+    return glslCode;
 }
 
 std::string GlslGenerator::generateScene(Scene &scene) {

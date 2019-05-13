@@ -2,17 +2,18 @@
 
 #include <limits>
 #include <imgui.h>
+#include "../model/GreenOrange.h"
 #include "../model/CsgOperator.h"
 #include "../model/Object.h"
-#include "../model/DataRepo.h"
+#include "../DataRepo.h"
 
 
-void InspectorPanel::drawGui(SceneEntity *sceneEntity) const {
-    static float vec[4] = {0.10f, 0.20f, 0.30f, 0.44f};
-    ImGui::Begin("Inspector", 0, 0);
+bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
+    SceneEntity *sceneEntity = greenOrange.getCurrentProject()->getSelectedScene().getSelectedEntity();
+    bool open;
+    
+    ImGui::Begin("Inspector", &open);
     {
-        //ImGui::DragFloat3("World Position", vec, 0.01f, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
-        //ImGui::DragFloat3("Orientation", vec, 0.01f, 0.0f, 359.0f);
         if(sceneEntity != nullptr) {
             ImGui::Text(sceneEntity->getName().c_str());
 
@@ -54,6 +55,11 @@ void InspectorPanel::drawGui(SceneEntity *sceneEntity) const {
                 }
             }
         }
+        else {
+            ImGui::Text("Nothing selected");
+        }
     }
     ImGui::End();
+
+    return open;
 }

@@ -5,7 +5,6 @@
 #include <string>
 
 #include "../Types.h"
-#include "../Assert.h"
 #include "Scene.h"
 
 
@@ -15,6 +14,8 @@ public:
     explicit Project(const char *path);
 
     void addScene(const char *name);
+
+    const std::string& getName() const { return name; }
     
     size_t getSceneCount() const { return scenes.size(); }
     Scene& getSceneByIndex(uint32 idx);
@@ -23,8 +24,6 @@ public:
     void setSelectedSceneIdx(uint32 idx) { selectedSceneIdx = idx; }
     uint32 getSelectedSceneIdx() const { return selectedSceneIdx; }
     Scene& getSelectedScene() { return getSceneByIndex(selectedSceneIdx); }
-
-    const std::string& getName() const { return name; }
 
 private:
     std::string path;

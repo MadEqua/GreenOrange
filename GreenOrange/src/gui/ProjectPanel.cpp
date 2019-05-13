@@ -3,6 +3,7 @@
 #include <string.h>
 #include <imgui.h>
 
+#include "../model/GreenOrange.h"
 #include "../model/Project.h"
 #include "../model/Scene.h"
 #include "imgui/ImGuiUtils.h"
@@ -19,8 +20,11 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
     return false;
 }
 
-void ProjectPanel::drawGui(Project &project) const {
-    ImGui::Begin("Project", 0, 0);
+bool ProjectPanel::internalDrawGui(const GreenOrange &greenOrange) {
+    Project &project = *greenOrange.getCurrentProject();
+    bool open;
+
+    ImGui::Begin("Project", &open);
     {
         bool openCreatePopup = false;
         bool openRenamePopup = false;
@@ -76,4 +80,6 @@ void ProjectPanel::drawGui(Project &project) const {
         }
     }
     ImGui::End();
+
+    return open;
 }

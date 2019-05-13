@@ -4,7 +4,7 @@
 #include <stack>
 
 #include "CsgOperator.h"
-#include "DataRepo.h"
+#include "../DataRepo.h"
 
 
 Scene::Scene(const char* name) :

@@ -7,11 +7,23 @@
 #include <imgui_impl_opengl3.h>
 
 #include "../Constants.h"
+#include "../model/GreenOrange.h"
+#include "ScenePanel.h"
+#include "ProjectPanel.h"
+#include "InspectorPanel.h"
+#include "PreviewPanel.h"
+#include "GeneratedGlslPanel.h"
 
 
 GuiRoot::GuiRoot(GreenOrange &greenOrange, GLFWwindow &glfwWindow) :
     greenOrange(greenOrange),
-    glfwWindow(glfwWindow){
+    glfwWindow(glfwWindow) {
+
+    panels.emplace_back(std::make_unique<ProjectPanel>());
+    panels.emplace_back(std::make_unique<ScenePanel>());
+    panels.emplace_back(std::make_unique<InspectorPanel>());
+    panels.emplace_back(std::make_unique<PreviewPanel>());
+    panels.emplace_back(std::make_unique<GeneratedGlslPanel>());
 }
 
 bool GuiRoot::init() {
@@ -85,52 +97,54 @@ void GuiRoot::drawGui() {
         ImGuiID dockspace_id = ImGui::GetID("DockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 
-        float menuBarHeight;
-        if(ImGui::BeginMainMenuBar()) {
-            if(ImGui::BeginMenu("File")) {
-                if(ImGui::MenuItem("Open..", "Ctrl+O")) {
-                    greenOrange.openProject("TODO");
-                }
-                if(ImGui::MenuItem("Save", "Ctrl+S")) {
-                }
-                if(ImGui::MenuItem("Close", "Ctrl+W")) {
-                }
-                ImGui::EndMenu();
-            }
-            if(ImGui::BeginMenu("About")) {
-                ImGui::EndMenu();
-            }
+        drawMenuBar();
 
-#ifndef GO_DIST
-            static bool showDemoWindow = false;
-            if(ImGui::BeginMenu("ImGui Demo")) {
-                showDemoWindow = !showDemoWindow;
-                ImGui::EndMenu();
-            }
-            if(showDemoWindow)
-                ImGui::ShowDemoWindow(&showDemoWindow);
-#endif
-            
-            menuBarHeight = ImGui::GetWindowHeight();
-            ImGui::EndMainMenuBar();
-        }
-
-        ImGui::Begin("GreenOrange", 0, ImGuiWindowFlags_AlwaysAutoResize);
-        {
-            if(!greenOrange.hasCurrentProject()) {
-                ImGui::Text("No project open.");
-                if(ImGui::Button("Open")) {
-                    greenOrange.openProject("TODO");
-                }
-            }
-            else {
-                projectPanel.drawGui(*greenOrange.getCurrentProject());
-                scenePanel.drawGui(greenOrange.getCurrentProject()->getSelectedScene());
-                previewPanel.drawGui(*greenOrange.getCurrentProject());
-                inspectorPanel.drawGui(greenOrange.getCurrentProject()->getSelectedScene().getSelectedEntity());
+        if(greenOrange.hasCurrentProject()) {
+            for(auto &panelPtr : panels) {
+                panelPtr->drawGui(greenOrange);
             }
         }
-        ImGui::End();
     }
     ImGui::End();
+}
+
+void GuiRoot::drawMenuBar() {
+    if(ImGui::BeginMainMenuBar()) {
+        
+        if(ImGui::BeginMenu("File")) {
+            if(ImGui::MenuItem("Open...", "Ctrl+O")) {
+                greenOrange.openProject("TODO");
+            }
+            if(ImGui::MenuItem("Save", "Ctrl+S")) {
+            }
+            if(ImGui::MenuItem("Close", "Ctrl+W")) {
+            }
+            ImGui::EndMenu();
+        }
+
+        if(greenOrange.hasCurrentProject() && ImGui::BeginMenu("Panels")) {
+            for(auto &panelPtr : panels) {
+                if(ImGui::MenuItem(panelPtr->getName(), 0, panelPtr->isOpen())) {
+                    panelPtr->flipOpen();
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+        
+        if(ImGui::BeginMenu("About")) {
+            ImGui::EndMenu();
+        }
+
+#ifndef GO_DIST
+        static bool showDemoWindow = false;
+        if(ImGui::BeginMenu("ImGui Demo")) {
+            showDemoWindow = !showDemoWindow;
+            ImGui::EndMenu();
+        }
+        if(showDemoWindow)
+            ImGui::ShowDemoWindow(&showDemoWindow);
+#endif
+        ImGui::EndMainMenuBar();
+    }
 }

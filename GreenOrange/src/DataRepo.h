@@ -1,6 +1,7 @@
 #pragma once
 
-//CSG types repository
+//Place to declare enum types that will need a string representation
+
 enum class CsgType {
     Union = 0,
     Intersection,
@@ -11,7 +12,6 @@ enum class CsgType {
 extern const char* CsgTypeStrings[];
 
 
-//Object types repository
 enum class ObjectType {
     Sphere,
     Box,
@@ -19,6 +19,19 @@ enum class ObjectType {
     Size
 };
 extern const char* ObjectTypeStrings[];
+
+
+enum class PanelType {
+    Project,
+    Scene,
+    Inspector,
+    Preview,
+    GeneratedGlsl,
+    Console,
+
+    Size
+};
+extern const char* PanelTypeStrings[];
 
 
 void initDataRepo();

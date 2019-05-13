@@ -1,12 +1,13 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include <GLFW/glfw3.h>
 
-#include "ScenePanel.h"
-#include "ProjectPanel.h"
-#include "InspectorPanel.h"
-#include "PreviewPanel.h"
-#include "../model/GreenOrange.h"
+#include "Panel.h"
+
+class GreenOrange;
 
 
 class GuiRoot
@@ -21,11 +22,9 @@ public:
 private:
     GreenOrange &greenOrange;
     GLFWwindow &glfwWindow;
-    
-    ProjectPanel projectPanel;
-    ScenePanel scenePanel;
-    PreviewPanel previewPanel;
-    InspectorPanel inspectorPanel;
+
+    std::vector<std::unique_ptr<Panel>> panels;
 
     void drawGui();
+    void drawMenuBar();
 };

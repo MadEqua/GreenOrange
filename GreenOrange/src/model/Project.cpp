@@ -1,5 +1,7 @@
 #include "Project.h"
 
+#include "../Assert.h"
+
 
 Project::Project(const char *path) :
     name(path), //TODO: get name from file

@@ -2,20 +2,26 @@
 
 #include <imgui.h>
 
+#include "../model/GreenOrange.h"
 #include "../model/Scene.h"
 #include "../model/Object.h"
 #include "../model/CsgOperator.h"
-#include "../model/DataRepo.h"
+#include "../DataRepo.h"
 #include "../Constants.h"
 #include "imgui/ImGuiUtils.h"
 
 
-void ScenePanel::drawGui(Scene &scene) const {
-    ImGui::Begin("Scene", 0, 0);
+bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
+    Scene &scene = greenOrange.getCurrentProject()->getSelectedScene();
+    bool open;
+    
+    ImGui::Begin("Scene", &open);
     {
         doOperatorNode(scene, scene.getRootCsgOperator());
     }
     ImGui::End();
+
+    return open;
 }
 
 void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {

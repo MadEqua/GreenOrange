@@ -15,8 +15,8 @@ class SceneEntity;
 class GlslGenerator
 {
 public:
-    GlslGenerator();
-    const std::string& generate(Project &project);
+    const std::string& generate(Project &project) const;
+    const std::string& getLastGenerated() const { return glslCode; }
 
 private:
     //Element on the code generation Stack. It will be either a SceneElement (CsgOperator or Object)
@@ -32,11 +32,13 @@ private:
         bool isGeneratedCode;
     };
 
-    std::string templateGlsl;
+    mutable std::string glslCode;
 
-    bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
+    void initGeneration() const;
 
-    std::string generateScene(Scene &scene);
-    std::string generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, uint32 startIdx, uint32 endIdx);
-    std::string generateOperand(const StackElement &stackElement);
+    static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
+
+    static std::string generateScene(Scene &scene);
+    static std::string generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, uint32 startIdx, uint32 endIdx);
+    static std::string generateOperand(const StackElement &stackElement);
 };

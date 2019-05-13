@@ -1,15 +1,18 @@
 #pragma once
 
+#include "Panel.h"
 #include "../Constants.h"
 
 class Project;
 
-class ProjectPanel
+class ProjectPanel : public Panel
 {
 public:
-    void drawGui(Project &project) const;
+    ProjectPanel() : Panel(PanelType::Project, true) {}
 
 private:
+    bool internalDrawGui(const GreenOrange &greenOrange) override;
+
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
     mutable char stringBuffer[STRING_BUFFER_MAX_SIZE] = "";
 };

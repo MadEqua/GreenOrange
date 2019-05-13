@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Panel.h"
 #include "../Constants.h"
 #include "../Types.h"
 
@@ -11,12 +12,14 @@ constexpr int DND_OBJECT = 0;
 constexpr int DND_CSG_OPERATOR = 1;
 
 
-class ScenePanel
+class ScenePanel : public Panel
 {
 public:
-    void drawGui(Scene &scene) const;
+    ScenePanel() : Panel(PanelType::Scene, true) {}
 
 private:
+    bool internalDrawGui(const GreenOrange &greenOrange) override;
+
     void doOperatorNode(Scene &scene, CsgOperator &op) const;
     void doObjectNode(Scene &scene, Object &obj) const;
 

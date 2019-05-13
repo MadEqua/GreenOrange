@@ -1,20 +1,22 @@
 #pragma once
 
+#include "Panel.h"
 #include <imgui.h>
 
 #include "../gl/PreviewRenderer.h"
 
 class Project;
+class GreenOrange;
 
 
-class PreviewPanel
+class PreviewPanel : public Panel
 {
 public:
     PreviewPanel();
 
-    void drawGui(Project &project);
-
 private:
+    bool internalDrawGui(const GreenOrange &greenOrange) override;
+    
     PreviewRenderer previewRenderer;
 
     ImVec2 previousSize;

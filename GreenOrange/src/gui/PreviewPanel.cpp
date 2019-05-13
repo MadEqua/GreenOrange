@@ -1,17 +1,18 @@
 #include "PreviewPanel.h"
 
-#include "../GlslGenerator.h"
-#include "../model/Project.h"
+#include "../model/GreenOrange.h"
 #include "../Constants.h"
 
 
 PreviewPanel::PreviewPanel() :
+    Panel(PanelType::Preview, true),
     previousSize(-1.0f, -1.0f) {
 }
 
-//TODO project should be const
-void PreviewPanel::drawGui(Project &project) {
-    ImGui::Begin("Preview");
+bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
+    bool open;
+
+    ImGui::Begin("Preview", &open);
     {
         //TODO for testing, delete
         static bool hasChanges = true;
@@ -44,8 +45,7 @@ void PreviewPanel::drawGui(Project &project) {
             }
 
             if(hasChanges) {
-                GlslGenerator generator;
-                previewRenderer.setFragmentShader(generator.generate(project).c_str());
+                previewRenderer.setFragmentShader(greenOrange.generateCurrentProjectGlsl().c_str());
                 previewRenderer.setDimensions(imageSize.x, imageSize.y);
                 hasChanges = false;
             }
@@ -56,4 +56,6 @@ void PreviewPanel::drawGui(Project &project) {
         }
     }
     ImGui::End();
+
+    return open;
 }

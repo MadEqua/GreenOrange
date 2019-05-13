@@ -1,10 +1,15 @@
 #pragma once
 
+#include "Panel.h"
+
 class SceneEntity;
 
-class InspectorPanel
+class InspectorPanel : public Panel
 {
 public:
-    void drawGui(SceneEntity *sceneEntity) const;
+    InspectorPanel() : Panel(PanelType::Inspector, true) {}
+
+private:
+    bool internalDrawGui(const GreenOrange &greenOrange) override;
 };
 

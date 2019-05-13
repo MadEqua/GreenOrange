@@ -3,7 +3,7 @@
 #include "SceneEntity.h"
 
 #include "../Types.h"
-#include "DataRepo.h"
+#include "../DataRepo.h"
 
 
 class Object : public SceneEntity
