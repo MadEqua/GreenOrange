@@ -7,7 +7,6 @@
 #include "InspectorPanel.h"
 #include "PreviewPanel.h"
 #include "../model/GreenOrange.h"
-#include "GuiSharedData.h"
 
 class GuiRoot
 {
@@ -26,8 +25,6 @@ private:
     ScenePanel scenePanel;
     InspectorPanel inspectorPanel;
     PreviewPanel previewPanel;
-
-    mutable GuiSharedData guiSharedData;
 
     void drawGui();
 };

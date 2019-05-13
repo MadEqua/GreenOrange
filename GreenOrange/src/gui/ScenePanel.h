@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Constants.h"
+#include "../Types.h"
 
 class Scene;
 class CsgOperator;

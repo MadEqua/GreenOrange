@@ -10,10 +10,11 @@ PreviewPanel::PreviewPanel() :
 }
 
 //TODO project should be const
-void PreviewPanel::drawGui(Project &project, bool &hasChanges) {
+void PreviewPanel::drawGui(Project &project) {
     ImGui::Begin("Preview");
     {
         //TODO for testing, delete
+        bool hasChanges = false;
         if(ImGui::Button("GENERATE CODE!!!1!!")) {
             hasChanges = true;
         }

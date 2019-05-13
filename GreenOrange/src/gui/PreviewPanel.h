@@ -12,7 +12,7 @@ class PreviewPanel
 public:
     PreviewPanel();
 
-    void drawGui(Project &project, bool &hasChanges);
+    void drawGui(Project &project);
 
 private:
     PreviewRenderer previewRenderer;

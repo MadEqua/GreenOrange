@@ -28,6 +28,10 @@ public:
 
     uint32 generateId() { return nextId++; }
 
+    void setSelectedEntityId(uint32 id) { selectedEntityId = id; }
+    uint32 getSelectedEntityId() const { return selectedEntityId; }
+    //SceneEntity& getSelectedEntity() const { return selectedEntity; } TODO
+
     //The visitFunction will receive the Node and its parent, in this order
     //If visitFunction returns true the traversal will stop
     void traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
@@ -40,6 +44,8 @@ private:
     CsgOperator unionOperator;
 
     uint32 nextId;
+
+    uint32 selectedEntityId;
 
     bool isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2);
 };

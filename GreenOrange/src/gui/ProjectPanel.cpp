@@ -5,7 +5,6 @@
 
 #include "../model/Project.h"
 #include "../model/Scene.h"
-#include "GuiSharedData.h"
 #include "imgui/ImGuiUtils.h"
 
 
@@ -20,14 +19,21 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
     return false;
 }
 
-void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) const {
+void ProjectPanel::drawGui(Project &project) const {
     ImGui::Begin("Project", 0, 0);
     {
         bool openCreatePopup = false;
         bool openRenamePopup = false;
         bool openDeletePopup = false;
 
+        int selectedSceneIdx = project.getSelectedSceneIdx();
         ImGui::ListBox("##sceneList", &selectedSceneIdx, sceneItemsGetter, &project, static_cast<int>(project.getSceneCount()));
+        project.setSelectedSceneIdx(selectedSceneIdx);
+
+        //This will be used to context menus on the selected scene, instead of the clicked scene...
+        //Need to figure out how to detect clicks on ListBoxes.
+        Scene &selectedScene = project.getSelectedScene();
+
         if(ImGui::BeginPopupContextItem("##sceneList")) {
             if(ImGui::Selectable("New Scene")) {
                 openCreatePopup = true;
@@ -46,7 +52,7 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) const {
             ImGui::OpenPopup("New Scene");
         }
         if(openRenamePopup) {
-            strcpy_s(inputBuffer, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
+            strcpy_s(inputBuffer, selectedScene.getName().c_str());
             ImGui::OpenPopup("Rename Scene");
         }
         if(openDeletePopup) {
@@ -58,13 +64,13 @@ void ProjectPanel::drawGui(Project &project, int &selectedSceneIdx) const {
         }
 
         const char *newNameString = "Enter a new name for %s.";
-        sprintf_s(stringBuffer, newNameString, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
+        sprintf_s(stringBuffer, newNameString, selectedScene.getName().c_str());
         if(ImGuiUtils::InputTextPopup("Rename Scene", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
             project.getSceneByIndex(selectedSceneIdx).setName(inputBuffer);
         }
 
         const char *deleteSceneString = "Delete the scene %s?\nThis operation cannot be undone!";
-        sprintf_s(stringBuffer, deleteSceneString, project.getSceneByIndex(selectedSceneIdx).getName().c_str());
+        sprintf_s(stringBuffer, deleteSceneString, selectedScene.getName().c_str());
         if(ImGuiUtils::YesNoPopup("Delete Scene", stringBuffer)) {
             project.deleteSceneByIndex(selectedSceneIdx);
         }

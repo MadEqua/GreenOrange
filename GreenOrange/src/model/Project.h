@@ -20,11 +20,17 @@ public:
     Scene& getSceneByIndex(uint32 idx);
     void deleteSceneByIndex(uint32 idx);
 
+    void setSelectedSceneIdx(uint32 idx) { selectedSceneIdx = idx; }
+    uint32 getSelectedSceneIdx() const { return selectedSceneIdx; }
+    Scene& getSelectedScene() { return getSceneByIndex(selectedSceneIdx); }
+
     const std::string& getName() const { return name; }
 
 private:
     std::string path;
     std::string name;
     std::vector<std::unique_ptr<Scene>> scenes;
+
+    uint32 selectedSceneIdx = 0;
 };
 

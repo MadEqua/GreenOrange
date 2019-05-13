@@ -7,8 +7,6 @@ Project::Project(const char *path) :
     addScene("Scene1");
     addScene("Scene2");
     addScene("Scene3");
-    addScene("Scene4");
-    addScene("Scene5");
 }
 
 void Project::addScene(const char *name) {

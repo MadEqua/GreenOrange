@@ -124,10 +124,10 @@ void GuiRoot::drawGui() {
                 }
             }
             else {
-                projectPanel.drawGui(*greenOrange.getCurrentProject(), guiSharedData.selectedSceneIdx);
-                scenePanel.drawGui(greenOrange.getCurrentProject()->getSceneByIndex(guiSharedData.selectedSceneIdx));
+                projectPanel.drawGui(*greenOrange.getCurrentProject());
+                scenePanel.drawGui(greenOrange.getCurrentProject()->getSelectedScene());
                 inspectorPanel.drawGui();
-                previewPanel.drawGui(*greenOrange.getCurrentProject(), guiSharedData.hasChanges);
+                previewPanel.drawGui(*greenOrange.getCurrentProject());
             }
         }
         ImGui::End();
