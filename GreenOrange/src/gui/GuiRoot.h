@@ -8,6 +8,7 @@
 #include "PreviewPanel.h"
 #include "../model/GreenOrange.h"
 
+
 class GuiRoot
 {
 public:
@@ -23,8 +24,8 @@ private:
     
     ProjectPanel projectPanel;
     ScenePanel scenePanel;
-    InspectorPanel inspectorPanel;
     PreviewPanel previewPanel;
+    InspectorPanel inspectorPanel;
 
     void drawGui();
 };

@@ -1,8 +1,10 @@
 #pragma once
 
+class SceneEntity;
+
 class InspectorPanel
 {
 public:
-    void drawGui() const;
+    void drawGui(SceneEntity *sceneEntity) const;
 };
 

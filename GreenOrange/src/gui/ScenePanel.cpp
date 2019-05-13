@@ -22,11 +22,11 @@ void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {
     uint32 id = op.getId();
     ImGui::PushID(id);
 
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
     if(op.isEmpty()) flags |= ImGuiTreeNodeFlags_Leaf;
-    if(op.getId() == scene.getSelectedEntityId()) flags |= ImGuiTreeNodeFlags_Selected;
+    if(scene.hasSelectedEntity() && op.getId() == scene.getSelectedEntity()->getId()) flags |= ImGuiTreeNodeFlags_Selected;
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, op.getName().c_str(), "");
-    if(ImGui::IsItemClicked()) scene.setSelectedEntityId(op.getId());
+    if(ImGui::IsItemClicked()) scene.setSelectedEntity(op);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         CsgOperator* ptr = &op;
@@ -68,9 +68,9 @@ void ScenePanel::doObjectNode(Scene &scene, Object &obj) const {
     ImGui::PushID(id);
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf;
-    if(obj.getId() == scene.getSelectedEntityId()) flags |= ImGuiTreeNodeFlags_Selected;
+    if(scene.hasSelectedEntity() && obj.getId() == scene.getSelectedEntity()->getId()) flags |= ImGuiTreeNodeFlags_Selected;
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
-    if(ImGui::IsItemClicked()) scene.setSelectedEntityId(obj.getId());
+    if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         Object* ptr = &obj;

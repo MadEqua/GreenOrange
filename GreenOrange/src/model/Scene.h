@@ -28,9 +28,10 @@ public:
 
     uint32 generateId() { return nextId++; }
 
-    void setSelectedEntityId(uint32 id) { selectedEntityId = id; }
-    uint32 getSelectedEntityId() const { return selectedEntityId; }
-    //SceneEntity& getSelectedEntity() const { return selectedEntity; } TODO
+    void setSelectedEntity(SceneEntity &ent) { selectedEntity = &ent; }
+    SceneEntity* getSelectedEntity() const { return selectedEntity; }
+    bool hasSelectedEntity() const { return selectedEntity != nullptr; }
+    void clearSelectedEntity() { selectedEntity = nullptr; }
 
     //The visitFunction will receive the Node and its parent, in this order
     //If visitFunction returns true the traversal will stop
@@ -45,7 +46,7 @@ private:
 
     uint32 nextId;
 
-    uint32 selectedEntityId;
+    SceneEntity* selectedEntity = nullptr;
 
     bool isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2);
 };

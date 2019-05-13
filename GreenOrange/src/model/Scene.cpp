@@ -24,8 +24,10 @@ void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &paren
 void Scene::deleteCsgOperator(CsgOperator &toDelete) {
     if(toDelete == unionOperator) return;
 
-    traverseTreeBfs(unionOperator, [&toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
+    traverseTreeBfs(unionOperator, [this, &toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == toDelete) {
+            if(hasSelectedEntity() && op.getId() == selectedEntity->getId())
+                clearSelectedEntity();
             parent->deleteChildOperator(dynamic_cast<CsgOperator&>(op));
             return true;
         }
@@ -51,8 +53,10 @@ void Scene::createObject(const char *name, ObjectType type, CsgOperator &parent)
 }
 
 void Scene::deleteObject(Object &toDelete) {
-    traverseTreeBfs(unionOperator, [&toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
+    traverseTreeBfs(unionOperator, [this, &toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == toDelete) {
+            if(hasSelectedEntity() && op.getId() == selectedEntity->getId())
+                clearSelectedEntity();
             parent->deleteChildObject(dynamic_cast<Object&>(op));
             return true;
         }

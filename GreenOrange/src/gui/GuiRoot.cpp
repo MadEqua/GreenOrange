@@ -126,8 +126,8 @@ void GuiRoot::drawGui() {
             else {
                 projectPanel.drawGui(*greenOrange.getCurrentProject());
                 scenePanel.drawGui(greenOrange.getCurrentProject()->getSelectedScene());
-                inspectorPanel.drawGui();
                 previewPanel.drawGui(*greenOrange.getCurrentProject());
+                inspectorPanel.drawGui(greenOrange.getCurrentProject()->getSelectedScene().getSelectedEntity());
             }
         }
         ImGui::End();

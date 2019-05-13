@@ -10,6 +10,7 @@ class Object;
 constexpr int DND_OBJECT = 0;
 constexpr int DND_CSG_OPERATOR = 1;
 
+
 class ScenePanel
 {
 public:
