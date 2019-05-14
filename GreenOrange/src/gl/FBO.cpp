@@ -16,12 +16,15 @@ FBO::~FBO() {
 }
 
 void FBO::bind() const {
+    glBindTexture(GL_TEXTURE_2D, 0); //Avoid rendering to a bound texture
     glBindFramebuffer(GL_FRAMEBUFFER, id);
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glViewport(0, 0, width, height);
 }
 
 void FBO::bindDefault() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDrawBuffer(GL_BACK);
 }
 
 void FBO::setDimensions(uint32 width, uint32 height) { 
