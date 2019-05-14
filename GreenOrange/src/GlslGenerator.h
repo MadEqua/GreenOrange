@@ -38,12 +38,12 @@ public:
 private:
     GlslGenerator() = default;
 
-    //Element on the code generation Stack. It will be either a SceneElement (CsgOperator or Object)
-    //or some already generated code pushed onto the stack to be composed with other operators/operations.
-    class StackElement {
+    //Element on the code generation RPN list. It will be either a SceneElement (CsgOperator or Object)
+    //or some already generated code to be composed with other operators/operations.
+    class RpnElement {
     public:
-        StackElement(SceneEntity &sceneElement);
-        StackElement(std::string &&generatedCode);
+        RpnElement(SceneEntity &sceneEntity);
+        RpnElement(std::string &&generatedCode);
 
         SceneEntity *sceneEntity;
         std::string generatedCode;
@@ -59,6 +59,6 @@ private:
 
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
     static std::string generateScene(Scene &scene);
-    static std::string generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, uint32 startIdx, uint32 endIdx);
-    static std::string generateOperand(const StackElement &stackElement);
+    static std::string generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
+    static std::string generateOperand(const RpnElement &stackElement);
 };

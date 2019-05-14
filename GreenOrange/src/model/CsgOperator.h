@@ -34,6 +34,8 @@ public:
     //Move CsgOperator into this one
     void moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &toMove);
 
+    size_t getTotalChildCount() const { return childOperators.size() + childObjects.size(); }
+
 protected:
     CsgType type;
 

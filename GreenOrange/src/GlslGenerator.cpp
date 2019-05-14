@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stack>
+#include <vector>
+#include <forward_list>
 #include <sstream>
 
 #include "model/SceneEntity.h"
@@ -12,12 +14,12 @@
 #include "glsl/generated/template.frag.h"
 
 
-GlslGenerator::StackElement::StackElement(SceneEntity &sceneEntity) :
+GlslGenerator::RpnElement::RpnElement(SceneEntity &sceneEntity) :
     sceneEntity(&sceneEntity),
     isGeneratedCode(false) {
 }
 
-GlslGenerator::StackElement::StackElement(std::string &&generatedCode) :
+GlslGenerator::RpnElement::RpnElement(std::string &&generatedCode) :
     generatedCode(std::move(generatedCode)),
     isGeneratedCode(true) {
 }
@@ -47,53 +49,54 @@ void GlslGenerator::generateIfNeeded(Project &project) {
 }
 
 std::string GlslGenerator::generateScene(Scene &scene) {
-    
-    //This stack will contain the Scene data in reverse polish notation.
-    std::stack<StackElement> stack;
 
-    //It's important that this traversal visits the Object nodes first and the CsgOperators second.
-    scene.traverseTreeDfs(scene.getRootCsgOperator(), [&stack](SceneEntity &ent, CsgOperator* parent) -> bool {
-        stack.emplace(ent);
+    //RPN list of operations and operators (ex: AB+CD-+)
+    std::forward_list<RpnElement> rpnList;
+
+    //The list is initialized by doing a DFS and reversing the visit order
+    scene.traverseTreeDfs(scene.getRootCsgOperator(), [&rpnList](SceneEntity &ent) -> bool {
+        rpnList.emplace_front(ent);
         return false;
     });
 
-    while(stack.size() > 1) {
-        
-        std::vector<StackElement> operands;
+    //Stack for the RPN algorithm
+    std::stack<RpnElement> rpnStack;
 
-        //Pop all the Objects and already generated code to the next batch of operands
-        while(true)  {
-            StackElement &stackElement = stack.top();
-            if(!stackElement.isGeneratedCode && !stackElement.sceneEntity->isObject())
-                break;
+    for(RpnElement &rpnElem : rpnList) {
 
-            operands.emplace_back(std::move(stackElement));
-            stack.pop();
+        //If operand push into stack
+        if(rpnElem.isGeneratedCode || rpnElem.sceneEntity->isObject()) {
+            rpnStack.push(std::move(rpnElem));
         }
-
-        //At this point we know that the next stackElement is a CsgOperator
-        if(!operands.empty()) {
-            std::string code = generateOperator(dynamic_cast<CsgOperator&>(*stack.top().sceneEntity), operands, 0, static_cast<uint32>(operands.size()));
-            stack.pop();
-
-            //The result of the operator will go back to the stack as generated code
-            stack.emplace(std::move(code));
-        }
+        //If operator pop related operands, generate code and push it into the stack as a new operand
         else {
-            printf("generateScene(). A CsgOperator does not have enough operands.\n");
+            CsgOperator &op = dynamic_cast<CsgOperator&>(*rpnElem.sceneEntity);
+            
+            //Find out how many operands the operator has
+            uint32 operandCount = static_cast<uint32>(op.getTotalChildCount());
+            
+            //Create a list of operands to send to the operator code generator
+            std::vector<RpnElement> operandList;
+            for(uint32 i = 0; i < operandCount; ++i) {
+                operandList.push_back(std::move(rpnStack.top()));
+                rpnStack.pop();
+            }
+
+            std::string code = generateOperator(op, operandList, 0, operandCount);
+            rpnStack.push(std::move(code));
         }
     }
 
-    //At the end we should have one only StackElement with the generated code
-    if(stack.size() == 1 && stack.top().isGeneratedCode)
-        return stack.top().generatedCode;
+    //At the end we should have one only RpnElement with the generated code
+    if(rpnStack.size() == 1 && rpnStack.top().isGeneratedCode)
+        return rpnStack.top().generatedCode;
     else {
         printf("generateScene(). Something went wrong, check the Scene tree.\n");
         return "";
     }
 }
 
-std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<StackElement> &operands, uint32 startIdx, uint32 endIdx) {
+std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
     std::stringstream sstream;
 
     int size = endIdx - startIdx;
@@ -121,13 +124,13 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
         break;
     case CsgType::Intersection:
         if(size == 1) {
-            sstream << generateOperand(operands[0]);
+            sstream << generateOperand(operands[startIdx]);
         }
         else if(size == 2) {
             sstream << "max(";
-            sstream << generateOperand(operands[0]);
+            sstream << generateOperand(operands[startIdx]);
             sstream << ", ";
-            sstream << generateOperand(operands[1]);
+            sstream << generateOperand(operands[startIdx + 1]);
             sstream << ")";
         }
         else if(size > 2) {
@@ -140,19 +143,19 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
         break;
     case CsgType::Subtraction:
         if(size == 1) {
-            sstream << generateOperand(operands[0]);
+            sstream << generateOperand(operands[startIdx]);
         }
         else if(size == 2) {
-            sstream << "max(-";
-            sstream << generateOperand(operands[0]);
-            sstream << ", ";
-            sstream << generateOperand(operands[1]);
+            sstream << "max(";
+            sstream << generateOperand(operands[startIdx]);
+            sstream << ", -";
+            sstream << generateOperand(operands[startIdx + 1]);
             sstream << ")";
         }
         else if(size > 2) {
-            sstream << "max(-";
+            sstream << "max(";
             sstream << generateOperator(csgOperator, operands, 0, 2);
-            sstream << ", ";
+            sstream << ", -";
             sstream << generateOperator(csgOperator, operands, 2, size);
             sstream << ")";
          }
@@ -165,7 +168,7 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
     return sstream.str();
 }
 
-std::string GlslGenerator::generateOperand(const StackElement &stackElement) {
+std::string GlslGenerator::generateOperand(const RpnElement &stackElement) {
     std::stringstream sstream;
 
     //This function relies on stackElements not being CsgOperators, only operands (Objects or generated code).

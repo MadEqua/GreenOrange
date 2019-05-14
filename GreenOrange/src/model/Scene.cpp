@@ -10,10 +10,6 @@ Scene::Scene(const char* name) :
     name(name),
     unionOperator(0, "Root Union", CsgType::Union),
     nextId(1) {
-
-    //TODO: remove
-    createCsgOperator("Union", CsgType::Union, unionOperator);
-    //createCsgOperator("Subtraction", CsgType::Subtraction, unionOperator);
 }
 
 void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &parent) {
@@ -117,28 +113,30 @@ void Scene::traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEnt
     }
 }
 
-void Scene::traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction) {
-    std::stack<CsgOperator*> stack;
+void Scene::traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&)> &visitFunction) {
+    std::stack<SceneEntity*> stack;
     stack.push(&root);
 
-    if(visitFunction(root, nullptr))
-        return;
-
     while(!stack.empty()) {
-        CsgOperator &current = *stack.top();
+        SceneEntity &current = *stack.top();
         stack.pop();
 
-        for(uint32 i = 0; i < current.getChildObjectCount(); ++i) {
-            auto &op = current.getChildObjectByIndex(i);
-            if(visitFunction(op, &current))
-                return;
-        }
+        if(visitFunction(current))
+            return;
 
-        for(uint32 i = 0; i < current.getChildOperatorCount(); ++i) {
-            auto &op = current.getChildOperatorByIndex(i);
-            if(visitFunction(op, &current))
-                return;
-            stack.push(&op);
+        if(current.isCsgOperator()) {
+            CsgOperator &currentOp = dynamic_cast<CsgOperator&>(current);
+
+            //Pushing backwards so that it visit child nodes from 0 to N ("left to right").
+            for(int i = currentOp.getChildObjectCount() - 1; i >= 0; --i) {
+                auto &obj = currentOp.getChildObjectByIndex(i);
+                stack.push(&obj);
+            }
+
+            for(int i = currentOp.getChildOperatorCount() - 1; i >= 0; --i) {
+                auto &op = currentOp.getChildOperatorByIndex(i);
+                stack.push(&op);
+            }
         }
     }
 }

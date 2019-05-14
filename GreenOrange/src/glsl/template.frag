@@ -5,7 +5,6 @@
 #define MAX_DIST 100.
 
 out vec4 fragColor;
-
 uniform vec2 dimensions;
 
 vec3 cam2world(vec3 v, vec3 pos, vec3 lookAt) {
@@ -38,19 +37,26 @@ float rm(int steps, vec3 ro, vec3 rd) {
         vec3 p = ro + rd * t;
         float d = scene(p);
         if(d < EPSILON)
-            return d;
+            return t;
         t += d;
     }
     return MAX_DIST;
 }
 
-vec3 normal(vec3 p, float d) {
+vec3 normal(vec3 p) {
     vec2 e = vec2(EPSILON, 0.);
-    //float d = scene(p);
+    float d = scene(p);
     float x = scene(p - e.xyy);
     float y = scene(p - e.yxy);
     float z = scene(p - e.yyx);
     return normalize(vec3(d) - vec3(x, y, z));
+}
+
+vec3 shade(vec3 p) {
+    vec3 L = normalize(vec3(0.5, -1.0, -0.5));
+    vec3 N = normal(p);
+    float diff = max(0.0, dot(-L, N));
+    return diff * vec3(.1, .9, .3);
 }
 
 void main() {
@@ -62,9 +68,9 @@ void main() {
     vec3 rd = cam2world(vec3(uv, 1.), cameraPos, lookAt); 
 
     vec3 col = vec3(.2);
-    float d = rm(PRIMARY_STEPS, cameraPos, rd);
-    if(d < MAX_DIST) {
-        col = vec3(.1, .9, .3);
+    float t = rm(PRIMARY_STEPS, cameraPos, rd);
+    if(t < MAX_DIST) {
+        col = shade(cameraPos + rd * t);
     }
 
     fragColor = vec4(col, 1.);

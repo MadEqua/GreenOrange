@@ -38,7 +38,7 @@ public:
     //The visitFunction will receive the Node and its parent, in this order
     //If visitFunction returns true the traversal will stop
     void traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
-    void traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
+    void traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&)> &visitFunction);
 
 private:
     std::string name;

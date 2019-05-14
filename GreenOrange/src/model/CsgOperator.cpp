@@ -9,7 +9,6 @@ CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
     type(type) {
 
     createChildObject(999 + id, "sphere", ObjectType::Sphere);
-    createChildObject(1000 + id, "box", ObjectType::Box);
 }
 
 Object& CsgOperator::getChildObjectByIndex(uint32 idx) {
