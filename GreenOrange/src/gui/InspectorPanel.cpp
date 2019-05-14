@@ -9,7 +9,7 @@
 
 
 bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
-    SceneEntity *sceneEntity = greenOrange.getCurrentProject()->getSelectedScene().getSelectedEntity();
+    SceneEntity *sceneEntity = greenOrange.getOpenProject()->getSelectedScene().getSelectedEntity();
     bool open;
     
     ImGui::Begin("Inspector", &open);
@@ -44,9 +44,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 case ObjectType::Box:
                 {
                     Box &box = dynamic_cast<Box&>(obj);
-                    float *dims = box.getDimensions();
-                    ImGui::DragFloat3("Size", dims, 0.01f, 0.0f, std::numeric_limits<float>::max());
-                    box.setDimensions(dims);
+                    ImGui::DragFloat3("Size", box.getDimensions(), 0.01f, 0.0f, std::numeric_limits<float>::max());
                     break;
                 }
 

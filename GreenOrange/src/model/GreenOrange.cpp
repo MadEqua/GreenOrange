@@ -5,15 +5,20 @@
 
 void GreenOrange::openProject(const char *path) {
     //TODO
-    currentProject = std::make_unique<Project>("Test project");
+    _openProject = std::make_unique<Project>("Test project");
+}
+
+void GreenOrange::closeProject() {
+    //TODO: check if we have unsaved changes
+    _openProject.release();
 }
 
 const std::string& GreenOrange::generateCurrentProjectGlsl() const {
-    GO_ASSERT(currentProject)
-    return glslGenerator.generate(*currentProject);
+    GO_ASSERT(_openProject)
+    return glslGenerator.generate(*_openProject);
 }
 
 const std::string& GreenOrange::getCurrentProjectGlsl() const {
-    GO_ASSERT(currentProject)
+    GO_ASSERT(_openProject)
     return glslGenerator.getLastGenerated();
 }

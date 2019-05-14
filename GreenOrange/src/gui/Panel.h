@@ -4,6 +4,7 @@
 
 class GreenOrange;
 
+
 class Panel {
 public:
     Panel(PanelType type, bool open) : 

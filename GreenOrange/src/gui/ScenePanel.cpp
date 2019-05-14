@@ -12,7 +12,7 @@
 
 
 bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
-    Scene &scene = greenOrange.getCurrentProject()->getSelectedScene();
+    Scene &scene = greenOrange.getOpenProject()->getSelectedScene();
     bool open;
     
     ImGui::Begin("Scene", &open);

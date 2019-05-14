@@ -21,7 +21,7 @@ static bool sceneItemsGetter(void* data, int i, const char** string) {
 }
 
 bool ProjectPanel::internalDrawGui(const GreenOrange &greenOrange) {
-    Project &project = *greenOrange.getCurrentProject();
+    Project &project = *greenOrange.getOpenProject();
     bool open;
 
     ImGui::Begin("Project", &open);

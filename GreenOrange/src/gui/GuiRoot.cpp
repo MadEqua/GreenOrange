@@ -99,10 +99,27 @@ void GuiRoot::drawGui() {
 
         drawMenuBar();
 
-        if(greenOrange.hasCurrentProject()) {
+        if(greenOrange.hasOpenProject()) {
             for(auto &panelPtr : panels) {
                 panelPtr->drawGui(greenOrange);
             }
+        }
+        else {
+            ImGui::SetNextWindowPosCenter(ImGuiCond_Always);
+            ImGui::Begin("GreenOrange", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking);
+            {
+                ImGui::Text("Welcome to GreenOrange <insert version>");
+                ImGui::Separator();
+                ImGui::NewLine();
+                if(ImGui::Button("Open Last Project")) {
+                    greenOrange.openProject("TODO");
+                }
+                ImGui::SameLine();
+                if(ImGui::Button("Open Project From File")) {
+                    greenOrange.openProject("TODO");
+                }
+            }
+            ImGui::End();
         }
     }
     ImGui::End();
@@ -110,7 +127,7 @@ void GuiRoot::drawGui() {
 
 void GuiRoot::drawMenuBar() {
     if(ImGui::BeginMainMenuBar()) {
-        
+
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("Open...", "Ctrl+O")) {
                 greenOrange.openProject("TODO");
@@ -118,22 +135,39 @@ void GuiRoot::drawMenuBar() {
             if(ImGui::MenuItem("Save", "Ctrl+S")) {
             }
             if(ImGui::MenuItem("Close", "Ctrl+W")) {
+                greenOrange.closeProject();
             }
             ImGui::EndMenu();
         }
 
-        if(greenOrange.hasCurrentProject() && ImGui::BeginMenu("Panels")) {
+        if(greenOrange.hasOpenProject() && ImGui::BeginMenu("Panels")) {
             for(auto &panelPtr : panels) {
                 if(ImGui::MenuItem(panelPtr->getName(), 0, panelPtr->isOpen())) {
                     panelPtr->flipOpen();
                 }
             }
-
             ImGui::EndMenu();
         }
-        
-        if(ImGui::BeginMenu("About")) {
+
+        bool openAbout = false;
+        if(ImGui::BeginMenu("Help")) {
+            if(ImGui::MenuItem("About")) {
+                openAbout = true;
+            }
             ImGui::EndMenu();
+        }
+
+        if(openAbout) 
+            ImGui::OpenPopup("About");
+
+        ImGui::SetNextWindowPosCenter(ImGuiCond_Always);
+        if(ImGui::BeginPopup("About")) {
+            ImGui::Text("GreenOrange <insert version>");
+            ImGui::Text("By Bruno Lourenço");
+            ImGui::Separator();
+            if(ImGui::Button("Awesome!", ImVec2(120, 0)))
+                ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
         }
 
 #ifndef GO_DIST
