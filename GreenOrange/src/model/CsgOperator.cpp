@@ -1,7 +1,7 @@
 #include "CsgOperator.h"
 
-#include <algorithm>
-#include "GreenOrange.h"
+#include "../Assert.h"
+#include "../GlslGenerator.h"
 
 
 CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
@@ -34,12 +34,15 @@ void CsgOperator::createChildObject(uint32 id, const char *name, ObjectType type
     default:
         break;
     }
+
+    GEN_SET_DIRTY()
 }
 
 void CsgOperator::deleteChildObject(Object &object) {
     auto it = findChildObject(object);
     if(it != childObjects.end()) {
         childObjects.erase(it);
+        GEN_SET_DIRTY()
     }
 }
 
@@ -48,11 +51,13 @@ void CsgOperator::moveChildObject(CsgOperator &parentToMoveFrom, Object&toMove) 
     if(toMoveIt != parentToMoveFrom.childObjects.end()) {
         std::move(toMoveIt, toMoveIt + 1, std::back_inserter(childObjects));
         parentToMoveFrom.childObjects.erase(toMoveIt);
+        GEN_SET_DIRTY()
     }
 }
 
 void CsgOperator::createChildOperator(uint32 id, const char *name, CsgType type) {
     childOperators.emplace_back(std::make_unique<CsgOperator>(id, name, type));
+    GEN_SET_DIRTY()
 }
 
 void CsgOperator::moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &toMove) {
@@ -60,6 +65,7 @@ void CsgOperator::moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &
     if(toMoveIt != parentToMoveFrom.childOperators.end()) {
         std::move(toMoveIt, toMoveIt + 1, std::back_inserter(childOperators));
         parentToMoveFrom.childOperators.erase(toMoveIt);
+        GEN_SET_DIRTY()
     }
 }
 
@@ -67,6 +73,7 @@ void CsgOperator::deleteChildOperator(CsgOperator &op) {
     auto it = findChildOperator(op);
     if(it != childOperators.end()) {
         childOperators.erase(it);
+        GEN_SET_DIRTY()
     }
 }
 

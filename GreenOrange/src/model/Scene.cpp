@@ -3,8 +3,7 @@
 #include <queue>
 #include <stack>
 
-#include "CsgOperator.h"
-#include "../DataRepo.h"
+#include "Object.h"
 
 
 Scene::Scene(const char* name) :
@@ -19,6 +18,7 @@ Scene::Scene(const char* name) :
 
 void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &parent) {
     parent.createChildOperator(generateId(), name, type);
+    GEN_SET_DIRTY()
 }
 
 void Scene::deleteCsgOperator(CsgOperator &toDelete) {
@@ -29,6 +29,7 @@ void Scene::deleteCsgOperator(CsgOperator &toDelete) {
             if(hasSelectedEntity() && op.getId() == selectedEntity->getId())
                 clearSelectedEntity();
             parent->deleteChildOperator(dynamic_cast<CsgOperator&>(op));
+            GEN_SET_DIRTY()
             return true;
         }
         return false;
@@ -42,6 +43,7 @@ void Scene::moveCsgOperator(CsgOperator &toMove, CsgOperator &destination) {
     traverseTreeBfs(unionOperator, [&toMove, &destination](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == toMove && *parent != destination) {
             destination.moveChildOperator(*parent, toMove);
+            GEN_SET_DIRTY()
             return true;
         }
         return false;
@@ -50,6 +52,7 @@ void Scene::moveCsgOperator(CsgOperator &toMove, CsgOperator &destination) {
 
 void Scene::createObject(const char *name, ObjectType type, CsgOperator &parent) {
     parent.createChildObject(generateId(), name, type);
+    GEN_SET_DIRTY()
 }
 
 void Scene::deleteObject(Object &toDelete) {
@@ -58,6 +61,7 @@ void Scene::deleteObject(Object &toDelete) {
             if(hasSelectedEntity() && op.getId() == selectedEntity->getId())
                 clearSelectedEntity();
             parent->deleteChildObject(dynamic_cast<Object&>(op));
+            GEN_SET_DIRTY()
             return true;
         }
         return false;
@@ -68,6 +72,7 @@ void Scene::moveObject(Object &opToMove, CsgOperator &destination) {
     traverseTreeBfs(unionOperator, [&opToMove, &destination](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == opToMove && *parent != destination) {
             destination.moveChildObject(*parent, opToMove);
+            GEN_SET_DIRTY()
             return true;
         }
         return false;

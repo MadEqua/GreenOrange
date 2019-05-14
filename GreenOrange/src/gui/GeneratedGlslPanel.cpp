@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include "../model/GreenOrange.h"
+#include "../GlslGenerator.h"
 
 
 bool GeneratedGlslPanel::internalDrawGui(const GreenOrange &greenOrange) {
@@ -9,7 +10,7 @@ bool GeneratedGlslPanel::internalDrawGui(const GreenOrange &greenOrange) {
 
     ImGui::Begin("Generated GLSL", &open);
     {
-        ImGui::TextWrapped(greenOrange.getCurrentProjectGlsl().c_str());
+        ImGui::TextWrapped(GlslGenerator::getInstance().getGlslCode().c_str());
     }
     ImGui::End();
 

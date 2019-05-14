@@ -2,6 +2,7 @@
 
 #include "../model/GreenOrange.h"
 #include "../Constants.h"
+#include "../GlslGenerator.h"
 
 
 PreviewPanel::PreviewPanel() :
@@ -14,12 +15,6 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
 
     ImGui::Begin("Preview", &open);
     {
-        //TODO for testing, delete
-        static bool hasChanges = true;
-        if(ImGui::Button("GENERATE CODE!!!1!!")) {
-            hasChanges = true;
-        }
-
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         if(size.x > 0.0f && size.y > 0.0f) {
@@ -44,10 +39,12 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 previewRenderer.setDimensions(imageSize.x, imageSize.y);
             }
 
-            if(hasChanges) {
-                previewRenderer.setFragmentShader(greenOrange.generateCurrentProjectGlsl().c_str());
+            //Only change shader if code has changed since last Panel update
+            uint64 currentCodeId = GlslGenerator::getInstance().getCurrentCodeId();
+            if(lastCodeId != currentCodeId) {
+                lastCodeId = currentCodeId;
+                previewRenderer.setFragmentShader(GlslGenerator::getInstance().getGlslCode().c_str());
                 previewRenderer.setDimensions(imageSize.x, imageSize.y);
-                hasChanges = false;
             }
 
             previewRenderer.render();

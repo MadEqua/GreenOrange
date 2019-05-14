@@ -4,6 +4,7 @@
 #include <imgui.h>
 
 #include "../gl/PreviewRenderer.h"
+#include "../Types.h"
 
 class Project;
 class GreenOrange;
@@ -23,5 +24,7 @@ private:
 
     ImVec2 imagePos;
     ImVec2 imageSize;
+
+    uint64 lastCodeId = -1;
 };
 

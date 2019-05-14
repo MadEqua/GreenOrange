@@ -8,6 +8,7 @@
 #include "../model/CsgOperator.h"
 #include "../DataRepo.h"
 #include "../Constants.h"
+#include "../Assert.h"
 #include "imgui/ImGuiUtils.h"
 
 

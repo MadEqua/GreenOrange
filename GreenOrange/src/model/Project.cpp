@@ -1,6 +1,7 @@
 #include "Project.h"
 
 #include "../Assert.h"
+#include "../GlslGenerator.h"
 
 
 Project::Project(const char *path) :
@@ -13,6 +14,7 @@ Project::Project(const char *path) :
 
 void Project::addScene(const char *name) {
     scenes.emplace_back(std::make_unique<Scene>(name));
+    GEN_SET_DIRTY()
 }
 
 Scene& Project::getSceneByIndex(uint32 idx) { 
@@ -23,4 +25,5 @@ Scene& Project::getSceneByIndex(uint32 idx) {
 void Project::deleteSceneByIndex(uint32 idx) { 
     GO_ASSERT(idx < scenes.size()); 
     scenes.erase(scenes.begin() + idx);
+    GEN_SET_DIRTY()
 }

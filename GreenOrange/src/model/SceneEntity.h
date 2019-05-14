@@ -3,12 +3,9 @@
 #include <string>
 
 #include "../Types.h"
+#include "../GlslGenerator.h"
+#include "../DataRepo.h"
 
-
-enum class SceneEntityType {
-    CsgOperator,
-    Object
-};
 
 class SceneEntity
 {
@@ -19,8 +16,9 @@ public:
     uint32 getId() const { return id; }
 
     const std::string& getName() const { return name; }
-    void setName(const char* newName) { name = newName; }
+    void setName(const char* newName) { name = newName; GEN_SET_DIRTY() }
 
+    SceneEntityType getType() const { return type; }
     bool isCsgOperator() const { return type == SceneEntityType::CsgOperator; }
     bool isObject() const { return type == SceneEntityType::Object; }
 

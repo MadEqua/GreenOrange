@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <functional>
 
-#include "Object.h"
+#include "../DataRepo.h"
 #include "CsgOperator.h"
+
+class Object;
+class SceneEntity;
 
 
 class Scene

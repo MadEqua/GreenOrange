@@ -2,6 +2,15 @@
 
 //Place to declare enum types that will need a string representation
 
+enum class SceneEntityType {
+    CsgOperator,
+    Object,
+
+    Size
+};
+extern const char* SceneEntityTypeStrings[];
+
+
 enum class CsgType {
     Union = 0,
     Intersection,

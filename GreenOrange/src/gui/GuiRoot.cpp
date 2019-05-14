@@ -13,6 +13,7 @@
 #include "InspectorPanel.h"
 #include "PreviewPanel.h"
 #include "GeneratedGlslPanel.h"
+#include "../GlslGenerator.h"
 
 
 GuiRoot::GuiRoot(GreenOrange &greenOrange, GLFWwindow &glfwWindow) :
@@ -100,6 +101,10 @@ void GuiRoot::drawGui() {
         drawMenuBar();
 
         if(greenOrange.hasOpenProject()) {
+
+            //Generate (if needed) new GLSL for the upcoming frame
+            GlslGenerator::getInstance().generateIfNeeded(*greenOrange.getOpenProject());
+
             for(auto &panelPtr : panels) {
                 panelPtr->drawGui(greenOrange);
             }

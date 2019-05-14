@@ -22,25 +22,28 @@ GlslGenerator::StackElement::StackElement(std::string &&generatedCode) :
     isGeneratedCode(true) {
 }
 
-void GlslGenerator::initGeneration() const {
+
+void GlslGenerator::initGeneration() {
     glslCode.clear();
     glslCode.append(GLSL_VERSION).append("\n").append(template_frag);
 }
 
+void GlslGenerator::generateIfNeeded(Project &project) {
+    if(needToGenerate) {
+        std::stringstream sstream;
+        initGeneration();
 
-const std::string& GlslGenerator::generate(Project &project) const {
-    std::stringstream sstream;
-    initGeneration();
+        for(uint32 i = 0; i < project.getSceneCount(); ++i) {
+            Scene &scene = project.getSceneByIndex(i);
+            sstream << "float " << scene.getName() << "(vec3 p) {" << std::endl;
+            sstream << "return " << generateScene(scene) << ";";
+            sstream << std::endl << "}" << std::endl;
+        }
 
-    for(uint32 i = 0; i < project.getSceneCount(); ++i) {
-        Scene &scene = project.getSceneByIndex(i);
-        sstream << "float " << scene.getName() << "(vec3 p) {" << std::endl;
-        sstream << "return " << generateScene(scene) << ";";
-        sstream << std::endl << "}" << std::endl;
+        replace(glslCode, REPLACE_SCENES, sstream.str());
+        needToGenerate = false;
+        currentCodeId++;
     }
-
-    replace(glslCode, REPLACE_SCENES, sstream.str());
-    return glslCode;
 }
 
 std::string GlslGenerator::generateScene(Scene &scene) {
