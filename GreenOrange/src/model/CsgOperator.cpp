@@ -11,6 +11,16 @@ CsgOperator::CsgOperator(uint32 id, const char *name, const CsgType type) :
     createChildObject(999 + id, "sphere", ObjectType::Sphere);
 }
 
+size_t CsgOperator::getNonEmptyChildOperatorCount() const {
+    size_t sum = 0;
+    for(const auto& childPtr : childOperators) {
+        if(childPtr->hasNonEmptyChildren()) {
+            sum++;
+        }
+    }
+    return sum;
+}
+
 Object& CsgOperator::getChildObjectByIndex(uint32 idx) {
     GO_ASSERT(idx < childObjects.size()); 
     return *childObjects[idx]; 

@@ -64,32 +64,28 @@ std::string GlslGenerator::generateScene(Scene &scene) {
 
     for(RpnElement &rpnElem : rpnList) {
 
-        //If operand push into stack
+        //If is operand push into stack
         if(rpnElem.isGeneratedCode || rpnElem.sceneEntity->isObject()) {
             rpnStack.push(std::move(rpnElem));
         }
-        //If operator pop related operands, generate code and push it into the stack as a new operand
+        //If is operator pop related operands, generate code and push it into the stack as a new operand
         else {
             CsgOperator &op = dynamic_cast<CsgOperator&>(*rpnElem.sceneEntity);
-            
-            //Find out how many operands the operator has
-            uint32 operandCount = static_cast<uint32>(op.getChildCount());
-            
-            //Create a list of operands to send to the operator code generator
-            std::vector<RpnElement> operandList;
-            for(uint32 i = 0; i < operandCount; ++i) {
-                operandList.push_back(std::move(rpnStack.top()));
-                rpnStack.pop();
-            }
 
-            //TODO: this should never happen if we cleanup the Scene of empty nodes
-            if(operandList.empty()) {
-                rpnStack.push(std::string("0.0"));
-                continue;
-            }
+            //Find out how many *non-empty* operands the operator has. Basically we ignore all empty  child CSG operators.
+            uint32 operandCount = static_cast<uint32>(op.getNonEmptyChildCount());
+            if(operandCount) {
 
-            std::string code = generateOperator(op, operandList, 0, operandCount);
-            rpnStack.push(std::move(code));
+                //Create a list of operands to send to the operator code generator
+                std::vector<RpnElement> operandList;
+                for(uint32 i = 0; i < operandCount; ++i) {
+                    operandList.push_back(std::move(rpnStack.top()));
+                    rpnStack.pop();
+                }
+
+                std::string code = generateOperator(op, operandList, 0, operandCount);
+                rpnStack.push(std::move(code));
+            }
         }
     }
 
@@ -98,7 +94,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
         return rpnStack.top().generatedCode;
     else {
         printf("generateScene(). Something went wrong, check the Scene tree.\n");
-        return "0.0"; //TODO: what to do in case of errors?
+        return "";
     }
 }
 
