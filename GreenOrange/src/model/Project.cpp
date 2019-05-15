@@ -8,8 +8,6 @@ Project::Project(const char *path) :
     name(path), //TODO: get name from file
     path(path) {
     addScene("Scene1");
-    addScene("Scene2");
-    addScene("Scene3");
 }
 
 void Project::addScene(const char *name) {
@@ -23,7 +21,11 @@ Scene& Project::getSceneByIndex(uint32 idx) {
 }
 
 void Project::deleteSceneByIndex(uint32 idx) { 
-    GO_ASSERT(idx < scenes.size()); 
-    scenes.erase(scenes.begin() + idx);
-    GEN_SET_DIRTY()
+    GO_ASSERT(idx < scenes.size());
+    if(scenes.size() > 1) {
+        scenes.erase(scenes.begin() + idx);
+        if(selectedSceneIdx == idx)
+            selectedSceneIdx = 0;
+        GEN_SET_DIRTY()
+    }
 }

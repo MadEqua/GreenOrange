@@ -73,7 +73,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
             CsgOperator &op = dynamic_cast<CsgOperator&>(*rpnElem.sceneEntity);
             
             //Find out how many operands the operator has
-            uint32 operandCount = static_cast<uint32>(op.getTotalChildCount());
+            uint32 operandCount = static_cast<uint32>(op.getChildCount());
             
             //Create a list of operands to send to the operator code generator
             std::vector<RpnElement> operandList;
@@ -82,17 +82,23 @@ std::string GlslGenerator::generateScene(Scene &scene) {
                 rpnStack.pop();
             }
 
+            //TODO: this should never happen if we cleanup the Scene of empty nodes
+            if(operandList.empty()) {
+                rpnStack.push(std::string("0.0"));
+                continue;
+            }
+
             std::string code = generateOperator(op, operandList, 0, operandCount);
             rpnStack.push(std::move(code));
         }
     }
 
     //At the end we should have one only RpnElement with the generated code
-    if(rpnStack.size() == 1 && rpnStack.top().isGeneratedCode)
+    if(rpnStack.size() == 1 && rpnStack.top().isGeneratedCode && !rpnStack.top().generatedCode.empty())
         return rpnStack.top().generatedCode;
     else {
         printf("generateScene(). Something went wrong, check the Scene tree.\n");
-        return "";
+        return "0.0"; //TODO: what to do in case of errors?
     }
 }
 

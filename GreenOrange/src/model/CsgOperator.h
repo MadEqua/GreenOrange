@@ -14,13 +14,12 @@ public:
 
     CsgType getType() const { return type; }
 
-    bool isEmpty() const { return childObjects.empty() && childOperators.empty(); }
-
     size_t getChildObjectCount() const { return childObjects.size(); }
     bool hasChildObjects() const { return !childObjects.empty(); }
     Object& getChildObjectByIndex(uint32 idx);
     void createChildObject(uint32 id, const char *name, ObjectType type);
     void deleteChildObject(Object &object);
+    void clearChildObjects();
 
     //Move Object into this one
     void moveChildObject(CsgOperator &parentToMoveFrom, Object &toMove);
@@ -30,11 +29,14 @@ public:
     CsgOperator& getChildOperatorByIndex(uint32 idx);
     void createChildOperator(uint32 id, const char *name, CsgType type);
     void deleteChildOperator(CsgOperator &op);
+    void clearChildOperators();
 
     //Move CsgOperator into this one
     void moveChildOperator(CsgOperator &parentToMoveFrom, CsgOperator &toMove);
 
-    size_t getTotalChildCount() const { return childOperators.size() + childObjects.size(); }
+    size_t getChildCount() const { return childOperators.size() + childObjects.size(); }
+    bool hasChildren() const { return !childOperators.empty() || !childObjects.empty(); }
+    void deleteChildren();
 
 protected:
     CsgType type;

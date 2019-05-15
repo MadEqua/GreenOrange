@@ -30,8 +30,9 @@ void ScenePanel::doOperatorNode(Scene &scene, CsgOperator &op) const {
     ImGui::PushID(id);
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
-    if(op.isEmpty()) flags |= ImGuiTreeNodeFlags_Leaf;
-    if(scene.hasSelectedEntity() && op.getId() == scene.getSelectedEntity()->getId()) flags |= ImGuiTreeNodeFlags_Selected;
+    if(!op.hasChildren()) flags |= ImGuiTreeNodeFlags_Leaf;
+    SceneEntity *selectedEntity = scene.getSelectedEntity();
+    if(selectedEntity && op.getId() == selectedEntity->getId()) flags |= ImGuiTreeNodeFlags_Selected;
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, op.getName().c_str(), "");
     if(ImGui::IsItemClicked()) scene.setSelectedEntity(op);
 
@@ -75,7 +76,8 @@ void ScenePanel::doObjectNode(Scene &scene, Object &obj) const {
     ImGui::PushID(id);
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf;
-    if(scene.hasSelectedEntity() && obj.getId() == scene.getSelectedEntity()->getId()) flags |= ImGuiTreeNodeFlags_Selected;
+    SceneEntity *selectedEntity = scene.getSelectedEntity();
+    if(selectedEntity && obj.getId() == selectedEntity->getId()) flags |= ImGuiTreeNodeFlags_Selected;
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
     if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
 
@@ -131,6 +133,7 @@ void ScenePanel::doObjectContextMenu(Scene &scene, Object &obj) const {
 void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {
     bool openRenamePopup = false;
     bool openDeletePopup = false;
+    bool openDeleteChildrenPopup = false;
 
     if(ImGui::BeginPopupContextItem()) {
         if(ImGui::BeginMenu("New CSG Operator")) {
@@ -152,8 +155,11 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {
         if(ImGui::Selectable("Rename")) {
             openRenamePopup = true;
         }
-        if(ImGui::Selectable("Delete")) {
+        if(scene.getRootCsgOperator().getId() != op.getId() && ImGui::Selectable("Delete")) {
             openDeletePopup = true;
+        }
+        if(op.hasChildren() && ImGui::Selectable("Delete Children")) {
+            openDeleteChildrenPopup = true;
         }
 
         ImGui::EndPopup();
@@ -172,6 +178,16 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, CsgOperator &op) const {
     if(openDeletePopup) {
         ImGui::OpenPopup("Delete Operator");
     }
+
+    if(openDeleteChildrenPopup) {
+        ImGui::OpenPopup("Delete Operator Children");
+    }
+    const char *clearString = "Delete the operator %s children?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, clearString, op.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Operator Children", stringBuffer)) {
+        scene.deleteCsgOperatorChildren(op);
+    }
+
     const char *deleteString = "Delete the operator %s?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, deleteString, op.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Operator", stringBuffer)) {

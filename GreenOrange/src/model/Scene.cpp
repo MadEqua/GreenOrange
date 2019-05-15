@@ -22,8 +22,6 @@ void Scene::deleteCsgOperator(CsgOperator &toDelete) {
 
     traverseTreeBfs(unionOperator, [this, &toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == toDelete) {
-            if(hasSelectedEntity() && op.getId() == selectedEntity->getId())
-                clearSelectedEntity();
             parent->deleteChildOperator(dynamic_cast<CsgOperator&>(op));
             GEN_SET_DIRTY()
             return true;
@@ -46,6 +44,21 @@ void Scene::moveCsgOperator(CsgOperator &toMove, CsgOperator &destination) {
     });
 }
 
+void Scene::clearCsgOperatorChildObjects(CsgOperator &toClear) {
+    toClear.clearChildObjects();
+    GEN_SET_DIRTY()
+}
+
+void Scene::clearCsgOperatorChildCsgOperators(CsgOperator &toClear) {
+    toClear.clearChildOperators();
+    GEN_SET_DIRTY()
+}
+
+void Scene::deleteCsgOperatorChildren(CsgOperator &toClear) {
+    toClear.deleteChildren();
+    GEN_SET_DIRTY()
+}
+
 void Scene::createObject(const char *name, ObjectType type, CsgOperator &parent) {
     parent.createChildObject(generateId(), name, type);
     GEN_SET_DIRTY()
@@ -54,8 +67,6 @@ void Scene::createObject(const char *name, ObjectType type, CsgOperator &parent)
 void Scene::deleteObject(Object &toDelete) {
     traverseTreeBfs(unionOperator, [this, &toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
         if(parent && op == toDelete) {
-            if(hasSelectedEntity() && op.getId() == selectedEntity->getId())
-                clearSelectedEntity();
             parent->deleteChildObject(dynamic_cast<Object&>(op));
             GEN_SET_DIRTY()
             return true;
@@ -73,6 +84,25 @@ void Scene::moveObject(Object &opToMove, CsgOperator &destination) {
         }
         return false;
     });
+}
+
+SceneEntity* Scene::getSelectedEntity() { 
+    SceneEntity *result = nullptr;
+
+    if(selectedEntityId != -1) {
+        traverseTreeBfs(unionOperator, [this, &result](SceneEntity &op, CsgOperator *parent) -> bool {
+            if(op.getId() == selectedEntityId) {
+                result = &op;
+                return true;
+            }
+            return false;
+        });
+
+        if(!result)
+            clearSelectedEntity();
+    }
+
+    return result;
 }
 
 bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {

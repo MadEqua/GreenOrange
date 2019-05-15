@@ -45,6 +45,12 @@ void CsgOperator::deleteChildObject(Object &object) {
     }
 }
 
+void CsgOperator::clearChildObjects() {
+    childObjects.clear();
+    GEN_SET_DIRTY()
+}
+
+
 void CsgOperator::moveChildObject(CsgOperator &parentToMoveFrom, Object&toMove) {
     auto toMoveIt = parentToMoveFrom.findChildObject(toMove);
     if(toMoveIt != parentToMoveFrom.childObjects.end()) {
@@ -74,6 +80,17 @@ void CsgOperator::deleteChildOperator(CsgOperator &op) {
         childOperators.erase(it);
         GEN_SET_DIRTY()
     }
+}
+
+void CsgOperator::clearChildOperators() {
+    childOperators.clear();
+    GEN_SET_DIRTY()
+}
+
+void CsgOperator::deleteChildren() {
+    childObjects.clear();
+    childOperators.clear();
+    GEN_SET_DIRTY()
 }
 
 std::vector<std::unique_ptr<Object>>::iterator CsgOperator::findChildObject(const Object &op) {

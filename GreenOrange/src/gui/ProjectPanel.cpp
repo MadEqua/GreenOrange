@@ -35,7 +35,7 @@ bool ProjectPanel::internalDrawGui(const GreenOrange &greenOrange) {
         project.setSelectedSceneIdx(selectedSceneIdx);
 
         //This will be used to context menus on the selected scene, instead of the clicked scene...
-        //Need to figure out how to detect clicks on ListBoxes.
+        //Need to figure out how to detect clicks on ListBox items.
         Scene &selectedScene = project.getSelectedScene();
 
         if(ImGui::BeginPopupContextItem("##sceneList")) {
@@ -45,7 +45,7 @@ bool ProjectPanel::internalDrawGui(const GreenOrange &greenOrange) {
             if(ImGui::Selectable("Rename")) {
                 openRenamePopup = true;
             }
-            if(ImGui::Selectable("Delete")) {
+            if(project.getSceneCount() > 1 && ImGui::Selectable("Delete")) {
                 openDeletePopup = true;
             }
             ImGui::EndPopup();
