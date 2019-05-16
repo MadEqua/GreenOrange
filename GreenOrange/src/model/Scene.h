@@ -1,13 +1,12 @@
 #pragma once
 
 #include <string>
-#include <functional>
 
-#include "../DataRepo.h"
 #include "CsgOperator.h"
+#include "../Tree.h"
+#include "../DataRepo.h"
 #include "../GlslGenerator.h"
 
-class Object;
 class SceneEntity;
 
 
@@ -19,18 +18,15 @@ public:
     const std::string& getName() const { return name; }
     void setName(const char* newName) { name = newName; GEN_SET_DIRTY() }
 
-    CsgOperator& getRootCsgOperator() { return unionOperator; }
+    TreeNode<SceneEntity>& getRootTreeNode() { return treeRoot; }
+    CsgOperator& getRootCsgOperator() { return static_cast<CsgOperator&>(treeRoot.getPayload()); }
 
-    void createCsgOperator(const char *name, CsgType type, CsgOperator &parent);
-    void deleteCsgOperator(CsgOperator &toDelete);
-    void moveCsgOperator(CsgOperator &toMove, CsgOperator &destination);
-    void clearCsgOperatorChildObjects(CsgOperator &toClear);
-    void clearCsgOperatorChildCsgOperators(CsgOperator &toClear);
-    void deleteCsgOperatorChildren(CsgOperator &toClear);
+    void createCsgOperator(const char *name, CsgType type, TreeNode<SceneEntity> &parent);
+    void createObject(const char *name, ObjectType type, TreeNode<SceneEntity> &parent);
 
-    void createObject(const char *name, ObjectType type, CsgOperator &parent);
-    void deleteObject(Object &toDelete);
-    void moveObject(Object &toMove, CsgOperator &destination);
+    void deleteNode(TreeNode<SceneEntity> &toDelete);
+    void moveNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination);
+    void deleteNodeChildren(TreeNode<SceneEntity> &toDelete);
 
     uint32 generateId() { return nextId++; }
 
@@ -38,21 +34,12 @@ public:
     SceneEntity* getSelectedEntity();
     void clearSelectedEntity() { selectedEntityId = -1; }
 
-    //The visitFunction will receive the Node and its parent, in this order
-    //If visitFunction returns true the traversal will stop
-    static void traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction);
-    static void traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&)> &visitFunction);
-
 private:
     std::string name;
 
-    //A Scene has a Union CsgOperator by default
-    CsgOperator unionOperator;
+    TreeNode<SceneEntity> treeRoot;
 
     uint32 nextId;
-
     uint32 selectedEntityId = -1;
-
-    bool isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2);
 };
 

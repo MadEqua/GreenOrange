@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Types.h"
+#include "Tree.h"
 
 class Project;
 class CsgOperator;
@@ -42,10 +43,10 @@ private:
     //or some already generated code to be composed with other operators/operations.
     class RpnElement {
     public:
-        RpnElement(SceneEntity &sceneEntity);
+        RpnElement(TreeNode<SceneEntity> &sceneEntityNode);
         RpnElement(std::string &&generatedCode);
 
-        SceneEntity *sceneEntity;
+        TreeNode<SceneEntity> *sceneEntityNode;
         std::string generatedCode;
 
         bool isGeneratedCode;
@@ -60,5 +61,5 @@ private:
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
     static std::string generateScene(Scene &scene);
     static std::string generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
-    static std::string generateOperand(const RpnElement &stackElement);
+    static std::string generateOperand(const RpnElement &rpnElement);
 };

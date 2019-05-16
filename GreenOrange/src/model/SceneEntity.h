@@ -10,7 +10,6 @@
 class SceneEntity
 {
 public:
-    SceneEntity(SceneEntityType type, uint32 id, const char *name);
     virtual ~SceneEntity() = default;
 
     uint32 getId() const { return id; }
@@ -26,6 +25,8 @@ public:
     bool operator!=(const SceneEntity& other) { return id != other.id; }
 
 protected:
+    SceneEntity(SceneEntityType type, uint32 id, const char *name);
+
     uint32 id;
     std::string name;
     SceneEntityType type;

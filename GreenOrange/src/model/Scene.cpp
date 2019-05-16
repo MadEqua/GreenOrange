@@ -1,98 +1,56 @@
 #include "Scene.h"
 
-#include <queue>
-#include <stack>
-
+#include "SceneEntity.h"
 #include "Object.h"
 
 
 Scene::Scene(const char* name) :
     name(name),
-    unionOperator(0, "Root Union", CsgType::Union),
+    treeRoot(CsgOperator(0, "Root Union", CsgType::Union)),
     nextId(1) {
 }
 
-void Scene::createCsgOperator(const char *name, CsgType type, CsgOperator &parent) {
-    parent.createChildOperator(generateId(), name, type);
+void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<SceneEntity> &parent) {
+    parent.createChild(CsgOperator(generateId(), name, type));
     GEN_SET_DIRTY()
 }
 
-void Scene::deleteCsgOperator(CsgOperator &toDelete) {
-    if(toDelete == unionOperator) return;
-
-    traverseTreeBfs(unionOperator, [this, &toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
-        if(parent && op == toDelete) {
-            parent->deleteChildOperator(dynamic_cast<CsgOperator&>(op));
-            GEN_SET_DIRTY()
-            return true;
-        }
-        return false;
-    });
-}
-
-void Scene::moveCsgOperator(CsgOperator &toMove, CsgOperator &destination) {
-    if(isCsgOperatorDescendentOf(destination, toMove))
-        return;
-
-    traverseTreeBfs(unionOperator, [&toMove, &destination](SceneEntity &op, CsgOperator *parent) -> bool {
-        if(parent && op == toMove && *parent != destination) {
-            destination.moveChildOperator(*parent, toMove);
-            GEN_SET_DIRTY()
-            return true;
-        }
-        return false;
-    });
-}
-
-void Scene::clearCsgOperatorChildObjects(CsgOperator &toClear) {
-    toClear.clearChildObjects();
+void Scene::createObject(const char *name, ObjectType type, TreeNode<SceneEntity> &parent) {
+    switch(type) {
+    case ObjectType::Sphere:
+        parent.createChild(Sphere(generateId(), name));
+        break;
+    case ObjectType::Box:
+        parent.createChild(Box(generateId(), name));
+        break;
+    default:
+        break;
+    }
     GEN_SET_DIRTY()
 }
 
-void Scene::clearCsgOperatorChildCsgOperators(CsgOperator &toClear) {
-    toClear.clearChildOperators();
-    GEN_SET_DIRTY()
+void Scene::deleteNode(TreeNode<SceneEntity> &toDelete) {
+    if(treeRoot.deleteNode(toDelete))
+        GEN_SET_DIRTY()
 }
 
-void Scene::deleteCsgOperatorChildren(CsgOperator &toClear) {
-    toClear.deleteChildren();
-    GEN_SET_DIRTY()
+void Scene::moveNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination) {
+    if(treeRoot.moveNode(toMove, destination))
+        GEN_SET_DIRTY()
 }
 
-void Scene::createObject(const char *name, ObjectType type, CsgOperator &parent) {
-    parent.createChildObject(generateId(), name, type);
-    GEN_SET_DIRTY()
-}
-
-void Scene::deleteObject(Object &toDelete) {
-    traverseTreeBfs(unionOperator, [this, &toDelete](SceneEntity &op, CsgOperator *parent) -> bool {
-        if(parent && op == toDelete) {
-            parent->deleteChildObject(dynamic_cast<Object&>(op));
-            GEN_SET_DIRTY()
-            return true;
-        }
-        return false;
-    });
-}
-
-void Scene::moveObject(Object &opToMove, CsgOperator &destination) {
-    traverseTreeBfs(unionOperator, [&opToMove, &destination](SceneEntity &op, CsgOperator *parent) -> bool {
-        if(parent && op == opToMove && *parent != destination) {
-            destination.moveChildObject(*parent, opToMove);
-            GEN_SET_DIRTY()
-            return true;
-        }
-        return false;
-    });
+void Scene::deleteNodeChildren(TreeNode<SceneEntity> &toDelete) {
+    if(toDelete.deleteChildren())
+        GEN_SET_DIRTY()
 }
 
 SceneEntity* Scene::getSelectedEntity() { 
     SceneEntity *result = nullptr;
 
     if(selectedEntityId != -1) {
-        traverseTreeBfs(unionOperator, [this, &result](SceneEntity &op, CsgOperator *parent) -> bool {
-            if(op.getId() == selectedEntityId) {
-                result = &op;
+        treeRoot.traverseBfs([this, &result](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
+            if(op->getId() == selectedEntityId) {
+                result = &op.getPayload();
                 return true;
             }
             return false;
@@ -103,70 +61,4 @@ SceneEntity* Scene::getSelectedEntity() {
     }
 
     return result;
-}
-
-bool Scene::isCsgOperatorDescendentOf(CsgOperator &op1, CsgOperator &op2) {
-    bool result = false;
-    traverseTreeBfs(op2, [&op1, &result](SceneEntity &op, CsgOperator *parent) -> bool {
-        if(op == op1) {
-            result = true;
-            return true;
-        }
-        return false;
-    });
-    return result;
-}
-
-void Scene::traverseTreeBfs(CsgOperator &root, const std::function<bool(SceneEntity&, CsgOperator*)> &visitFunction) {
-    std::queue<CsgOperator*> queue;
-    queue.push(&root);
-
-    if(visitFunction(root, nullptr))
-        return;
-
-    while(!queue.empty()) {
-        CsgOperator &current = *queue.front();
-        queue.pop();
-
-        for(uint32 i = 0; i < current.getChildObjectCount(); ++i) {
-            auto &op = current.getChildObjectByIndex(i);
-            if(visitFunction(op, &current))
-                return;
-        }
-
-        for(uint32 i = 0; i < current.getChildOperatorCount(); ++i) {
-            auto &op = current.getChildOperatorByIndex(i);
-            if(visitFunction(op, &current))
-                return;
-            queue.push(&op);
-        }
-    }
-}
-
-void Scene::traverseTreeDfs(CsgOperator &root, const std::function<bool(SceneEntity&)> &visitFunction) {
-    std::stack<SceneEntity*> stack;
-    stack.push(&root);
-
-    while(!stack.empty()) {
-        SceneEntity &current = *stack.top();
-        stack.pop();
-
-        if(visitFunction(current))
-            return;
-
-        if(current.isCsgOperator()) {
-            CsgOperator &currentOp = dynamic_cast<CsgOperator&>(current);
-
-            //Pushing backwards so that it visit child nodes from 0 to N ("left to right").
-            for(int i = currentOp.getChildObjectCount() - 1; i >= 0; --i) {
-                auto &obj = currentOp.getChildObjectByIndex(i);
-                stack.push(&obj);
-            }
-
-            for(int i = currentOp.getChildOperatorCount() - 1; i >= 0; --i) {
-                auto &op = currentOp.getChildOperatorByIndex(i);
-                stack.push(&op);
-            }
-        }
-    }
 }

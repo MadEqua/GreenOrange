@@ -43,4 +43,13 @@ enum class PanelType {
 extern const char* PanelTypeStrings[];
 
 
+enum class TransformType {
+    Translation,
+    Rotation,
+    Custom,
+
+    Size
+};
+
+
 void initDataRepo();

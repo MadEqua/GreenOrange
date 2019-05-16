@@ -3,14 +3,10 @@
 #include "Panel.h"
 #include "../Constants.h"
 #include "../Types.h"
+#include "../model/Scene.h"
 
-class Scene;
 class CsgOperator;
 class Object;
-
-constexpr int DND_OBJECT = 0;
-constexpr int DND_CSG_OPERATOR = 1;
-
 
 class ScenePanel : public Panel
 {
@@ -20,17 +16,16 @@ public:
 private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;
 
-    void doOperatorNode(Scene &scene, CsgOperator &op) const;
-    void doObjectNode(Scene &scene, Object &obj) const;
+    void doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const;
+    void doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const;
 
-    void doOperatorContextMenu(Scene &scene, CsgOperator &op) const;
-    void doObjectContextMenu(Scene &scene, Object &obj) const;
+    void doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
+    void doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
     mutable char stringBuffer[STRING_BUFFER_MAX_SIZE] = "";
 
     struct DndPayload {
-        int type;
         void *dataPtr;
     };
 };

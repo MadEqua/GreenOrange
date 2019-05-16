@@ -7,6 +7,8 @@
 #include <sstream>
 
 #include "model/SceneEntity.h"
+#include "model/Object.h"
+#include "model/CsgOperator.h"
 #include "model/Project.h"
 #include "model/Scene.h"
 #include "Constants.h"
@@ -14,8 +16,8 @@
 #include "glsl/generated/template.frag.h"
 
 
-GlslGenerator::RpnElement::RpnElement(SceneEntity &sceneEntity) :
-    sceneEntity(&sceneEntity),
+GlslGenerator::RpnElement::RpnElement(TreeNode<SceneEntity> &sceneEntityNode) :
+    sceneEntityNode(&sceneEntityNode),
     isGeneratedCode(false) {
 }
 
@@ -54,7 +56,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     std::forward_list<RpnElement> rpnList;
 
     //The list is initialized by doing a DFS and reversing the visit order
-    scene.traverseTreeDfs(scene.getRootCsgOperator(), [&rpnList](SceneEntity &ent) -> bool {
+    scene.getRootTreeNode().traverseDfs([&rpnList](TreeNode<SceneEntity> &ent) -> bool {
         rpnList.emplace_front(ent);
         return false;
     });
@@ -65,15 +67,16 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     for(RpnElement &rpnElem : rpnList) {
 
         //If is operand push into stack
-        if(rpnElem.isGeneratedCode || rpnElem.sceneEntity->isObject()) {
+        if(rpnElem.isGeneratedCode || rpnElem.sceneEntityNode->getPayload().isObject()) {
             rpnStack.push(std::move(rpnElem));
         }
         //If is operator pop related operands, generate code and push it into the stack as a new operand
         else {
-            CsgOperator &op = dynamic_cast<CsgOperator&>(*rpnElem.sceneEntity);
+            TreeNode<SceneEntity> &node = *rpnElem.sceneEntityNode;
+            CsgOperator &op = static_cast<CsgOperator&>(*node);
 
-            //Find out how many *non-empty* operands the operator has. Basically we ignore all empty  child CSG operators.
-            uint32 operandCount = static_cast<uint32>(op.getNonEmptyChildCount());
+            //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators.
+            uint32 operandCount = static_cast<uint32>(node.getNonEmptyChildCount());
             if(operandCount) {
 
                 //Create a list of operands to send to the operator code generator
@@ -170,20 +173,19 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
     return sstream.str();
 }
 
-std::string GlslGenerator::generateOperand(const RpnElement &stackElement) {
+std::string GlslGenerator::generateOperand(const RpnElement &rpnElement) {
     std::stringstream sstream;
 
-    //This function relies on stackElements not being CsgOperators, only operands (Objects or generated code).
-    if(stackElement.isGeneratedCode)
-        sstream << stackElement.generatedCode;
+    if(rpnElement.isGeneratedCode)
+        sstream << rpnElement.generatedCode;
     else {
-        Object &obj = dynamic_cast<Object&>(*stackElement.sceneEntity);
+        Object &obj = static_cast<Object&>(rpnElement.sceneEntityNode->getPayload());
         
         switch(obj.getType()) {
         case ObjectType::Box:
         {
             sstream << "box(p, vec3(";
-            Box &box = dynamic_cast<Box&>(obj);
+            Box &box = static_cast<Box&>(obj);
             float *dims = box.getDimensions();
             sstream << dims[0] << ", " << dims[1] << ", " << dims[2] << "))";
             break;
@@ -192,7 +194,7 @@ std::string GlslGenerator::generateOperand(const RpnElement &stackElement) {
         case ObjectType::Sphere:
         {
             sstream << "sphere(p, ";
-            Sphere &sphere = dynamic_cast<Sphere&>(obj);
+            Sphere &sphere = static_cast<Sphere&>(obj);
             float r = sphere.getRadius();
             sstream << r << ")";
             break;
