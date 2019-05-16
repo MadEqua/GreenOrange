@@ -58,6 +58,7 @@ private:
 
     void initGeneration();
 
+    static uint32 countNonEmptyOperands(TreeNode<SceneEntity> &node);
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
     static std::string generateScene(Scene &scene);
     static std::string generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);

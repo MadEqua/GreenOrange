@@ -75,8 +75,9 @@ std::string GlslGenerator::generateScene(Scene &scene) {
             TreeNode<SceneEntity> &node = *rpnElem.sceneEntityNode;
             CsgOperator &op = static_cast<CsgOperator&>(*node);
 
-            //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators.
-            uint32 operandCount = static_cast<uint32>(node.getNonEmptyChildCount());
+            //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators
+            //uint32 operandCount = static_cast<uint32>(root.getNonEmptyChildCount());
+            uint32 operandCount = countNonEmptyOperands(node);
             if(operandCount) {
 
                 //Create a list of operands to send to the operator code generator
@@ -99,6 +100,23 @@ std::string GlslGenerator::generateScene(Scene &scene) {
         printf("generateScene(). Something went wrong, check the Scene tree.\n");
         return "";
     }
+}
+
+uint32 GlslGenerator::countNonEmptyOperands(TreeNode<SceneEntity> &root) {
+    uint32 count = 0;
+
+    for(uint32 i = 0; i < root.getChildCount(); ++i) {
+        TreeNode<SceneEntity> &child = root.getChildByIndex(i);
+        
+        if(child->isCsgOperator()) {
+            if(countNonEmptyOperands(child))
+                count++;
+        }
+        else if(child->isObject()) {
+            count++;
+        }
+    }
+    return count;
 }
 
 std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
