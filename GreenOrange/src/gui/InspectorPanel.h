@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Panel.h"
+#include "../Constants.h"
 
 class SceneEntity;
 
@@ -11,5 +12,7 @@ public:
 
 private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;
+
+    mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
 };
 

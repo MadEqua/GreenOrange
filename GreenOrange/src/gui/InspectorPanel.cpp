@@ -1,10 +1,13 @@
 #include "InspectorPanel.h"
 
 #include <limits>
+
 #include <imgui.h>
+
 #include "../model/GreenOrange.h"
 #include "../model/CsgOperator.h"
 #include "../model/Object.h"
+#include "../model/Transform.h"
 #include "../DataRepo.h"
 
 
@@ -51,6 +54,41 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                     break;
                 }
 
+                default:
+                    break;
+                }
+            }
+            else if(selectedEntity->isTransform()) {
+                Transform &tr = static_cast<Transform&>(*selectedEntity);
+                ImGui::Text(TransformTypeStrings[static_cast<int>(tr.getType())]);
+                ImGui::NewLine();
+
+                switch(tr.getType()) {
+                case TransformType::Translation:
+                {
+                    Translation &trans = static_cast<Translation&>(tr);
+                    float *ammount = trans.getAmmount();
+                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, 0.0f, std::numeric_limits<float>::max()))
+                        trans.setAmmount(ammount);
+                    break;
+                }
+                case TransformType::Rotation:
+                {
+                    Rotation &rot = static_cast<Rotation&>(tr);
+                    float *ammount = rot.getAmmount();
+                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, 0.0f, std::numeric_limits<float>::max()))
+                        rot.setAmmount(ammount);
+                    break;
+                }
+                case TransformType::Custom:
+                {
+                    CustomTransform &custom = static_cast<CustomTransform&>(tr);
+                    strcpy_s(inputBuffer, custom.getCode().c_str());
+                    if(ImGui::InputText("Code", inputBuffer, INPUT_STRING_MAX_SIZE)) {
+                        custom.setCode(inputBuffer);
+                    }
+                    break;
+                }
                 default:
                     break;
                 }

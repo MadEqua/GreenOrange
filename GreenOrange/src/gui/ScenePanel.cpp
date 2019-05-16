@@ -18,7 +18,9 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
     
     ImGui::Begin("Scene", &open);
     {
-        doOperatorNode(scene, scene.getRootTreeNode());
+        doOperatorNode(scene, scene.getCsgTreeRootNode());
+        ImGui::NewLine();
+        doTransformNode(scene, scene.getTransformTreeRootNode());
     }
     ImGui::End();
 
@@ -51,7 +53,7 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
         if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
-            scene.moveNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+            scene.moveCsgTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }
@@ -131,7 +133,7 @@ void ScenePanel::doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) 
     const char *deleteString = "Delete the object %s?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, deleteString, obj.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Object", stringBuffer)) {
-        scene.deleteNode(node);
+        scene.deleteCsgTreeNode(node);
     }
 }
 
@@ -162,7 +164,7 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node
         if(ImGui::Selectable("Rename")) {
             openRenamePopup = true;
         }
-        if(scene.getRootCsgOperator() != csgOp && ImGui::Selectable("Delete")) {
+        if(scene.getCsgRootOperator() != csgOp && ImGui::Selectable("Delete")) {
             openDeletePopup = true;
         }
         if(node.hasChildren() && ImGui::Selectable("Delete Children")) {
@@ -192,12 +194,114 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node
     const char *clearString = "Delete the operator %s children?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, clearString, csgOp.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Operator Children", stringBuffer)) {
-        scene.deleteNodeChildren(node);
+        scene.deleteCsgTreeNodeChildren(node);
     }
 
     const char *deleteString = "Delete the operator %s?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, deleteString, csgOp.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Operator", stringBuffer)) {
-        scene.deleteNode(node);
+        scene.deleteCsgTreeNode(node);
+    }
+}
+
+void ScenePanel::doTransformNode(Scene &scene, TreeNode<Transform> &node) const {
+    Transform &transform = static_cast<Transform&>(*node);
+
+    uint32 id = transform.getId();
+    ImGui::PushID(id);
+
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
+    if(!node.hasChildren()) flags |= ImGuiTreeNodeFlags_Leaf;
+
+    SceneEntity *selectedEntity = scene.getSelectedEntity();
+    if(selectedEntity && transform == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
+
+    bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, transform.getName().c_str(), "");
+    if(ImGui::IsItemClicked())
+        scene.setSelectedEntity(transform);
+
+    if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+        DndPayload payload = {&node};
+        ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
+        ImGui::Text(transform.getName().c_str());
+        ImGui::EndDragDropSource();
+    }
+    if(ImGui::BeginDragDropTarget()) {
+        if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
+            GO_ASSERT(payload->DataSize == sizeof(DndPayload));
+            DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
+            scene.moveTransformTreeNode(*static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), node);
+        }
+        ImGui::EndDragDropTarget();
+    }
+
+    doTransformContextMenu(scene, node);
+
+    if(treeNodeOpen) {
+        for(uint32 i = 0; i < node.getChildCount(); ++i) {
+            TreeNode<Transform> &childNode = node.getChildByIndex(i);
+            doTransformNode(scene, childNode);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
+void ScenePanel::doTransformContextMenu(Scene &scene, TreeNode<Transform> &node) const {
+    Transform &transform = static_cast<Transform&>(*node);
+
+    bool openRenamePopup = false;
+    bool openDeletePopup = false;
+    bool openDeleteChildrenPopup = false;
+
+    if(ImGui::BeginPopupContextItem()) {
+        if(ImGui::BeginMenu("New Transform")) {
+            for(uint32 i = 0; i < static_cast<int>(TransformType::Size); ++i) {
+                if(ImGui::MenuItem(TransformTypeStrings[i])) {
+                    scene.createTransform(TransformTypeStrings[i], static_cast<TransformType>(i), node);
+                }
+            }
+            ImGui::EndMenu();
+        }
+        if(ImGui::Selectable("Rename")) {
+            openRenamePopup = true;
+        }
+        if(scene.getTransformRootOperator() != transform && ImGui::Selectable("Delete")) {
+            openDeletePopup = true;
+        }
+        if(node.hasChildren() && ImGui::Selectable("Delete Children")) {
+            openDeleteChildrenPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if(openRenamePopup) {
+        strcpy_s(inputBuffer, transform.getName().c_str());
+        ImGui::OpenPopup("Rename Transform");
+    }
+    const char *newNameString = "Enter a new name for the transform %s.";
+    sprintf_s(stringBuffer, newNameString, transform.getName().c_str());
+    if(ImGuiUtils::InputTextPopup("Rename Transform", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
+        transform.setName(inputBuffer);
+    }
+
+    if(openDeletePopup) {
+        ImGui::OpenPopup("Delete Transform");
+    }
+
+    if(openDeleteChildrenPopup) {
+        ImGui::OpenPopup("Delete Transform Children");
+    }
+    const char *clearString = "Delete the transform %s children?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, clearString, transform.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Transform Children", stringBuffer)) {
+        scene.deleteTransformTreeNodeChildren(node);
+    }
+
+    const char *deleteString = "Delete the transform %s?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, deleteString, transform.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Transform", stringBuffer)) {
+        scene.deleteTransformTreeNode(node);
     }
 }

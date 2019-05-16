@@ -56,7 +56,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     std::forward_list<RpnElement> rpnList;
 
     //The list is initialized by doing a DFS and reversing the visit order
-    scene.getRootTreeNode().traverseDfs([&rpnList](TreeNode<SceneEntity> &ent) -> bool {
+    scene.getCsgTreeRootNode().traverseDfs([&rpnList](TreeNode<SceneEntity> &ent) -> bool {
         rpnList.emplace_front(ent);
         return false;
     });
@@ -76,7 +76,6 @@ std::string GlslGenerator::generateScene(Scene &scene) {
             CsgOperator &op = static_cast<CsgOperator&>(*node);
 
             //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators
-            //uint32 operandCount = static_cast<uint32>(root.getNonEmptyChildCount());
             uint32 operandCount = countNonEmptyOperands(node);
             if(operandCount) {
 

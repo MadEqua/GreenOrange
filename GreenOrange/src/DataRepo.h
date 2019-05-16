@@ -5,6 +5,7 @@
 enum class SceneEntityType {
     CsgOperator,
     Object,
+    Transform,
 
     Size
 };
@@ -50,6 +51,7 @@ enum class TransformType {
 
     Size
 };
+extern const char* TransformTypeStrings[];
 
 
 void initDataRepo();

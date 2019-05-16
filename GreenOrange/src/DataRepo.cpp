@@ -9,6 +9,7 @@ const char* TransformTypeStrings[static_cast<int>(TransformType::Size)];
 void initDataRepo() {
     SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Object)] = "Object";
     SceneEntityTypeStrings[static_cast<int>(SceneEntityType::CsgOperator)] = "CSG Operator";
+    SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Transform)] = "Transform";
 
     CsgTypeStrings[static_cast<int>(CsgType::Union)] = "Union";
     CsgTypeStrings[static_cast<int>(CsgType::Intersection)] = "Intersection";

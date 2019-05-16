@@ -20,6 +20,7 @@ public:
     SceneEntityType getType() const { return type; }
     bool isCsgOperator() const { return type == SceneEntityType::CsgOperator; }
     bool isObject() const { return type == SceneEntityType::Object; }
+    bool isTransform() const { return type == SceneEntityType::Transform; }
 
     bool operator==(const SceneEntity& other) { return id == other.id; }
     bool operator!=(const SceneEntity& other) { return id != other.id; }

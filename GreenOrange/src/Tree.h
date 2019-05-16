@@ -51,8 +51,8 @@ public:
 
     //-----------------------------------------
     //Operations on the tree where this node is the root
-    bool deleteNode(TreeNode<PayloadT> &toDelete);
-    bool moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination);
+    bool deleteTreeNode(TreeNode<PayloadT> &toDelete);
+    bool moveTreeNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination);
     bool findNode(TreeNode<PayloadT> &node);
     bool isNodeDescendentOf(TreeNode<PayloadT> &op1, TreeNode<PayloadT> &op2);
 
@@ -137,7 +137,7 @@ typename std::vector<std::unique_ptr<TreeNode<PayloadT>>>::iterator TreeNode<Pay
 }
 
 template<typename PayloadT>
-bool TreeNode<PayloadT>::deleteNode(TreeNode<PayloadT> &toDelete) {
+bool TreeNode<PayloadT>::deleteTreeNode(TreeNode<PayloadT> &toDelete) {
     if(*toDelete == *payload) 
         return false;
 
@@ -154,12 +154,12 @@ bool TreeNode<PayloadT>::deleteNode(TreeNode<PayloadT> &toDelete) {
 }
 
 template<typename PayloadT>
-bool TreeNode<PayloadT>::moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination) {
+bool TreeNode<PayloadT>::moveTreeNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination) {
     if(isNodeDescendentOf(destination, toMove))
         return false;
 
     bool result = false;
-    traverseBfs([&result, &toMove, &destination](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
+    traverseBfs([&result, &toMove, &destination](TreeNode<PayloadT> &op, TreeNode<PayloadT> *parent) -> bool {
         if(parent && *op == *toMove && **parent != *destination) {
             destination.moveChild(*parent, toMove);
             result = true;
@@ -173,7 +173,7 @@ bool TreeNode<PayloadT>::moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT>
 template<typename PayloadT>
 bool TreeNode<PayloadT>::findNode(TreeNode<PayloadT> &node) {
     bool result = false;
-    traverseBfs([&result, &node](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
+    traverseBfs([&result, &node](TreeNode<PayloadT> &op, TreeNode<PayloadT> *parent) -> bool {
         if(*op == *node) {
             result = true;
             return true;
@@ -187,7 +187,7 @@ bool TreeNode<PayloadT>::findNode(TreeNode<PayloadT> &node) {
 template<typename PayloadT>
 bool TreeNode<PayloadT>::isNodeDescendentOf(TreeNode<PayloadT> &op1, TreeNode<PayloadT> &op2) {
     bool result = false;
-    op2.traverseBfs([&op1, &result](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
+    op2.traverseBfs([&op1, &result](TreeNode<PayloadT> &op, TreeNode<PayloadT> *parent) -> bool {
         if(*op == *op1) {
             result = true;
             return true;
