@@ -20,7 +20,13 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
     {
         doOperatorNode(scene, scene.getCsgTreeRootNode());
         ImGui::NewLine();
-        doTransformNode(scene, scene.getTransformTreeRootNode());
+
+        for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
+            doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
+
+        if(ImGui::Button("Create Transform Tree")) {
+            scene.createRootTransform("test", TransformType::Rotation);
+        }
     }
     ImGui::End();
 
@@ -204,7 +210,7 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node
     }
 }
 
-void ScenePanel::doTransformNode(Scene &scene, TreeNode<Transform> &node) const {
+void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const {
     Transform &transform = static_cast<Transform&>(*node);
 
     uint32 id = transform.getId();
@@ -230,24 +236,24 @@ void ScenePanel::doTransformNode(Scene &scene, TreeNode<Transform> &node) const 
         if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
-            scene.moveTransformTreeNode(*static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), node);
+            scene.moveTransformTreeNode(treeIndex, *static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }
 
-    doTransformContextMenu(scene, node);
+    doTransformContextMenu(scene, treeIndex, node);
 
     if(treeNodeOpen) {
         for(uint32 i = 0; i < node.getChildCount(); ++i) {
-            TreeNode<Transform> &childNode = node.getChildByIndex(i);
-            doTransformNode(scene, childNode);
+            TreeNode<SceneEntity> &childNode = node.getChildByIndex(i);
+            doTransformNode(scene, treeIndex, childNode);
         }
         ImGui::TreePop();
     }
     ImGui::PopID();
 }
 
-void ScenePanel::doTransformContextMenu(Scene &scene, TreeNode<Transform> &node) const {
+void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const {
     Transform &transform = static_cast<Transform&>(*node);
 
     bool openRenamePopup = false;
@@ -266,7 +272,7 @@ void ScenePanel::doTransformContextMenu(Scene &scene, TreeNode<Transform> &node)
         if(ImGui::Selectable("Rename")) {
             openRenamePopup = true;
         }
-        if(scene.getTransformRootOperator() != transform && ImGui::Selectable("Delete")) {
+        if(ImGui::Selectable("Delete")) {
             openDeletePopup = true;
         }
         if(node.hasChildren() && ImGui::Selectable("Delete Children")) {
@@ -302,6 +308,11 @@ void ScenePanel::doTransformContextMenu(Scene &scene, TreeNode<Transform> &node)
     const char *deleteString = "Delete the transform %s?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, deleteString, transform.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Transform", stringBuffer)) {
-        scene.deleteTransformTreeNode(node);
+        if(*scene.getTransformTreeRootNodeByIndex(treeIndex) == transform) {
+            scene.deleteRootTransform(treeIndex);
+        }
+        else {
+            scene.deleteTransformTreeNode(treeIndex, node);
+        }
     }
 }

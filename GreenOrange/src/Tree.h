@@ -17,18 +17,15 @@ class TreeNode
 {
 public:
 
-    //TODO: try to perfect forward arguments for T constructor
-    //T should be of type PayloadT
-    template<typename T>
-    TreeNode(T&& payload);
+    TreeNode(PayloadT &payload);
 
-    PayloadT& getPayload() { return *payload; }
-    const PayloadT& getPayload() const { return *payload; }
+    PayloadT& getPayload() { return payload; }
+    const PayloadT& getPayload() const { return payload; }
 
-    PayloadT& operator*() { return *payload; }
-    const PayloadT& operator*() const { return *payload; }
-    PayloadT* operator->() { return payload.get(); }
-    const PayloadT* operator->() const { return payload.get(); }
+    PayloadT& operator*() { return payload; }
+    const PayloadT& operator*() const { return payload; }
+    PayloadT* operator->() { return &payload; }
+    const PayloadT* operator->() const { return &payload; }
 
     //-----------------------------------------
     //Operations on the node itself
@@ -38,9 +35,7 @@ public:
     bool hasNonEmptyChildren() const { return getNonEmptyChildCount() > 0; }
     TreeNode<PayloadT>& getChildByIndex(uint32 idx);
 
-    //T should be of type PayloadT
-    template<typename T>
-    void createChild(T&& payload);
+    void createChild(PayloadT &payload);
     bool deleteChild(TreeNode<PayloadT> &node);
     bool deleteChildren();
 
@@ -63,14 +58,13 @@ public:
 
 private:
     std::vector<std::unique_ptr<TreeNode<PayloadT>>> childNodes;
-    std::unique_ptr<PayloadT> payload;
+    PayloadT &payload;
 };
 
 
 template<typename PayloadT>
-template<typename T>
-TreeNode<PayloadT>::TreeNode(T&& payload) :
-    payload(std::make_unique<T>(std::forward<T>(payload))) {
+TreeNode<PayloadT>::TreeNode(PayloadT &payload) :
+    payload(payload) {
 }
 
 template<typename PayloadT>
@@ -91,10 +85,8 @@ TreeNode<PayloadT>& TreeNode<PayloadT>::getChildByIndex(uint32 idx) {
 }
 
 template<typename PayloadT>
-template<typename T>
-void TreeNode<PayloadT>::createChild(T&& payload) {
-    static_assert(std::is_base_of<PayloadT, T>::value, "T must derive from PayloadT");
-    childNodes.emplace_back(std::make_unique<TreeNode>(std::forward<T>(payload)));
+void TreeNode<PayloadT>::createChild(PayloadT& payload) {
+    childNodes.emplace_back(std::make_unique<TreeNode>(payload));
 }
 
 template<typename PayloadT>
@@ -138,7 +130,7 @@ typename std::vector<std::unique_ptr<TreeNode<PayloadT>>>::iterator TreeNode<Pay
 
 template<typename PayloadT>
 bool TreeNode<PayloadT>::deleteTreeNode(TreeNode<PayloadT> &toDelete) {
-    if(*toDelete == *payload) 
+    if(*toDelete == payload) 
         return false;
 
     bool result = false;
