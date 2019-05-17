@@ -18,14 +18,31 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
     
     ImGui::Begin("Scene", &open);
     {
-        doOperatorNode(scene, scene.getCsgTreeRootNode());
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+        if(ImGui::CollapsingHeader("CSG Tree", flags)) {
+            doOperatorNode(scene, scene.getCsgTreeRootNode());
+        }
+
+        ImGui::NewLine();
         ImGui::NewLine();
 
-        for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
-            doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
+        if(ImGui::CollapsingHeader("Transform Trees", flags)) {
+            if(ImGui::Button("New Tree")) {
+                ImGui::OpenPopup("newTreePopup");
+            }
+            ImGui::NewLine();
 
-        if(ImGui::Button("Create Transform Tree")) {
-            scene.createRootTransform("test", TransformType::Rotation);
+            for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
+                doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
+            
+            if(ImGui::BeginPopupContextItem("newTreePopup")) {
+                for(uint32 i = 0; i < static_cast<int>(TransformType::Size); ++i) {
+                    if(ImGui::MenuItem(TransformTypeStrings[i])) {
+                        scene.createRootTransform(TransformTypeStrings[i], static_cast<TransformType>(i));
+                    }
+                }
+                ImGui::EndPopup();
+            }
         }
     }
     ImGui::End();
@@ -50,7 +67,7 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
         scene.setSelectedEntity(csgOp);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-        DndPayload payload = {&node};
+        DndPayload payload = {DndPayload::DndType::Csg, 0, &node};
         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
         ImGui::Text(csgOp.getName().c_str());
         ImGui::EndDragDropSource();
@@ -59,7 +76,8 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
         if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
-            scene.moveCsgTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+            if(dndPayload->type == DndPayload::DndType::Csg || dndPayload->type == DndPayload::DndType::Object)
+                scene.moveCsgTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }
@@ -94,7 +112,7 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
     if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-        DndPayload payload = {&node};
+        DndPayload payload = {DndPayload::DndType::Object, 0, &node};
         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
         ImGui::Text(obj.getName().c_str());
         ImGui::EndDragDropSource();
@@ -227,7 +245,7 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneE
         scene.setSelectedEntity(transform);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-        DndPayload payload = {&node};
+        DndPayload payload = {DndPayload::DndType::Transform, treeIndex, &node};
         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
         ImGui::Text(transform.getName().c_str());
         ImGui::EndDragDropSource();
@@ -236,7 +254,10 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneE
         if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
-            scene.moveTransformTreeNode(treeIndex, *static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+            if(dndPayload->type == DndPayload::DndType::Transform)
+                scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), treeIndex, node);
+            else if(dndPayload->type == DndPayload::DndType::Object)
+                scene.attachObjectToTransformTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }

@@ -22,7 +22,6 @@ private:
     void doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
     void doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
 
-
     void doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
     void doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
 
@@ -31,6 +30,13 @@ private:
     mutable char stringBuffer[STRING_BUFFER_MAX_SIZE] = "";
 
     struct DndPayload {
+        enum class DndType {
+            Csg,
+            Object,
+            Transform
+        };
+        DndType type;
+        int intData;
         void *dataPtr;
     };
 };

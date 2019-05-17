@@ -24,7 +24,7 @@ public:
         Object(id, name, ObjectType::Sphere),
         radius(1.0f) {}
 
-    void setRadius(float r) { radius = r; GEN_SET_DIRTY() }
+    void setRadius(float r) { radius = r; GEN_SET_DIRTY(); }
     float getRadius() const { return radius; }
 
 private:
@@ -37,8 +37,8 @@ public:
         Object(id, name, ObjectType::Box),
         dimensions {1.0f, 1.0f, 1.0f} {}
 
-    void setDimensions(float x, float y, float z) { dimensions[0] = x; dimensions[1] = y; dimensions[2] = z; GEN_SET_DIRTY() }
-    void setDimensions(float *dims) { memcpy(dimensions, dims, 3 * sizeof(float)); GEN_SET_DIRTY() }
+    void setDimensions(float x, float y, float z) { dimensions[0] = x; dimensions[1] = y; dimensions[2] = z; GEN_SET_DIRTY(); }
+    void setDimensions(float *dims) { memcpy(dimensions, dims, 3 * sizeof(float)); GEN_SET_DIRTY(); }
     float* getDimensions() { return dimensions; }
 
 private:

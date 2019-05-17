@@ -5,7 +5,7 @@
 void GreenOrange::openProject(const char *path) {
     //TODO
     _openProject = std::make_unique<Project>("Test project");
-    GEN_SET_DIRTY();
+    GEN_SET_DIRTY();;
 }
 
 void GreenOrange::closeProject() {

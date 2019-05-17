@@ -46,8 +46,8 @@ public:
 
     //-----------------------------------------
     //Operations on the tree where this node is the root
-    bool deleteTreeNode(TreeNode<PayloadT> &toDelete);
-    bool moveTreeNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination);
+    bool deleteNode(TreeNode<PayloadT> &toDelete);
+    bool moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination);
     bool findNode(TreeNode<PayloadT> &node);
     bool isNodeDescendentOf(TreeNode<PayloadT> &op1, TreeNode<PayloadT> &op2);
 
@@ -129,7 +129,7 @@ typename std::vector<std::unique_ptr<TreeNode<PayloadT>>>::iterator TreeNode<Pay
 }
 
 template<typename PayloadT>
-bool TreeNode<PayloadT>::deleteTreeNode(TreeNode<PayloadT> &toDelete) {
+bool TreeNode<PayloadT>::deleteNode(TreeNode<PayloadT> &toDelete) {
     if(*toDelete == payload) 
         return false;
 
@@ -146,7 +146,7 @@ bool TreeNode<PayloadT>::deleteTreeNode(TreeNode<PayloadT> &toDelete) {
 }
 
 template<typename PayloadT>
-bool TreeNode<PayloadT>::moveTreeNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination) {
+bool TreeNode<PayloadT>::moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination) {
     if(isNodeDescendentOf(destination, toMove))
         return false;
 

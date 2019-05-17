@@ -25,8 +25,8 @@ public:
         Transform(id, name, TransformType::Translation),
         ammount{0.0f} {}
 
-    void setAmmount(float x, float y, float z) { ammount[0] = x; ammount[1] = y; ammount[2] = z; GEN_SET_DIRTY() }
-    void setAmmount(float *dims) { memcpy(ammount, dims, 3 * sizeof(float)); GEN_SET_DIRTY() }
+    void setAmmount(float x, float y, float z) { ammount[0] = x; ammount[1] = y; ammount[2] = z; GEN_SET_DIRTY(); }
+    void setAmmount(float *dims) { memcpy(ammount, dims, 3 * sizeof(float)); GEN_SET_DIRTY(); }
     float* getAmmount() { return ammount; }
 
 private:
@@ -39,8 +39,8 @@ public:
         Transform(id, name, TransformType::Rotation),
         ammount {0.0f} {}
 
-    void setAmmount(float x, float y, float z) { ammount[0] = x; ammount[1] = y; ammount[2] = z; GEN_SET_DIRTY() }
-    void setAmmount(float *dims) { memcpy(ammount, dims, 3 * sizeof(float)); GEN_SET_DIRTY() }
+    void setAmmount(float x, float y, float z) { ammount[0] = x; ammount[1] = y; ammount[2] = z; GEN_SET_DIRTY(); }
+    void setAmmount(float *dims) { memcpy(ammount, dims, 3 * sizeof(float)); GEN_SET_DIRTY(); }
     float* getAmmount() { return ammount; }
 
 private:

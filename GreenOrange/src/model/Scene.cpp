@@ -9,8 +9,6 @@ Scene::Scene(const char* name) :
     name(name) {
 
     sceneEntities.emplace_back(std::make_unique<CsgOperator>(generateId(), "Root Union", CsgType::Union));
-    sceneEntities.emplace_back(std::make_unique<Translation>(generateId(), "Test Transform"));
-
     csgTreeRoot = std::make_unique<TreeNode<SceneEntity>>(*sceneEntities[0]);
 }
 
@@ -18,7 +16,7 @@ void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<SceneEnti
     std::unique_ptr<CsgOperator> ptr = std::make_unique<CsgOperator>(generateId(), name, type);
     parent.createChild(*ptr);
     sceneEntities.emplace_back(std::move(ptr));
-    GEN_SET_DIRTY()
+    GEN_SET_DIRTY();
 }
 
 void Scene::createObject(const char *name, ObjectType type, TreeNode<SceneEntity> &parent) {
@@ -43,7 +41,7 @@ void Scene::createObject(const char *name, ObjectType type, TreeNode<SceneEntity
         break;
     }
     
-    GEN_SET_DIRTY()
+    GEN_SET_DIRTY();
 }
 
 void Scene::deleteCsgTreeNode(TreeNode<SceneEntity> &toDelete) {
@@ -52,14 +50,14 @@ void Scene::deleteCsgTreeNode(TreeNode<SceneEntity> &toDelete) {
         return false;
     });
 
-    if(csgTreeRoot->deleteTreeNode(toDelete)) {
-        GEN_SET_DIRTY()
+    if(csgTreeRoot->deleteNode(toDelete)) {
+        GEN_SET_DIRTY();
     }
 }
 
 void Scene::moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination) {
-    if(csgTreeRoot->moveTreeNode(toMove, destination))
-        GEN_SET_DIRTY()
+    if(csgTreeRoot->moveNode(toMove, destination))
+        GEN_SET_DIRTY();
 }
 
 void Scene::deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
@@ -72,11 +70,11 @@ void Scene::createRootTransform(const char *name, TransformType type) {
     auto transformPtr = internalCreateTransform(name, type);
     transformTreeRoots.emplace_back(std::make_unique<TreeNode<SceneEntity>>(*transformPtr));
     sceneEntities.emplace_back(std::move(transformPtr));
-    GEN_SET_DIRTY()
+    GEN_SET_DIRTY();
 }
 
 void Scene::deleteRootTransform(uint32 treeIndex) {
-    GO_ASSERT(treeIndex < transformTreeRoots.size())
+    GO_ASSERT(treeIndex < transformTreeRoots.size());
     
     (*transformTreeRoots[treeIndex]).traverseBfs([this](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
         deleteSceneEntity(*op);
@@ -84,33 +82,41 @@ void Scene::deleteRootTransform(uint32 treeIndex) {
     });
 
     transformTreeRoots.erase(transformTreeRoots.begin() + treeIndex);
-    GEN_SET_DIRTY()
+    GEN_SET_DIRTY();
 }
 
 void Scene::createTransform(const char *name, TransformType type, TreeNode<SceneEntity> &parent) {
     auto transformPtr = internalCreateTransform(name, type);
     parent.createChild(*transformPtr);
     sceneEntities.emplace_back(std::move(transformPtr));
-    GEN_SET_DIRTY()
+    GEN_SET_DIRTY();
 }
 
 void Scene::deleteTransformTreeNode(uint32 treeIndex, TreeNode<SceneEntity> &toDelete) {
-    GO_ASSERT(treeIndex < transformTreeRoots.size())
+    GO_ASSERT(treeIndex < transformTreeRoots.size());
 
     toDelete.traverseBfs([this](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
         deleteSceneEntity(*op);
         return false;
     });
 
-    if(transformTreeRoots[treeIndex]->deleteTreeNode(toDelete)) {
-        GEN_SET_DIRTY()
+    if(transformTreeRoots[treeIndex]->deleteNode(toDelete)) {
+        GEN_SET_DIRTY();
     }
 }
 
-void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination) {
-    GO_ASSERT(toMoveTreeIndex < transformTreeRoots.size())
-    if(transformTreeRoots[toMoveTreeIndex]->moveTreeNode(toMove, destination))
-        GEN_SET_DIRTY()
+void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<SceneEntity> &toMove, uint32 destinationTreeIndex, TreeNode<SceneEntity> &destination) {
+    GO_ASSERT(toMoveTreeIndex < transformTreeRoots.size());
+
+    if(transformTreeRoots[toMoveTreeIndex]->moveNode(toMove, destination))
+        GEN_SET_DIRTY();
+}
+
+void Scene::attachObjectToTransformTreeNode(TreeNode<SceneEntity> &object, TreeNode<SceneEntity> &transform) {
+    if(!transform.findNode(object)) {
+        transform.createChild(*object);
+        GEN_SET_DIRTY();
+    }
 }
 
 void Scene::deleteTransformTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
@@ -143,7 +149,7 @@ void Scene::deleteTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
     });
 
     if(toDeleteChildren.deleteChildren()) {
-        GEN_SET_DIRTY()
+        GEN_SET_DIRTY();
     }
 }
 

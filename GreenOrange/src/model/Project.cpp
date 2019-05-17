@@ -12,7 +12,7 @@ Project::Project(const char *path) :
 
 void Project::addScene(const char *name) {
     scenes.emplace_back(std::make_unique<Scene>(name));
-    GEN_SET_DIRTY()
+    GEN_SET_DIRTY();
 }
 
 Scene& Project::getSceneByIndex(uint32 idx) { 
@@ -26,6 +26,6 @@ void Project::deleteSceneByIndex(uint32 idx) {
         scenes.erase(scenes.begin() + idx);
         if(selectedSceneIdx == idx)
             selectedSceneIdx = 0;
-        GEN_SET_DIRTY()
+        GEN_SET_DIRTY();
     }
 }
