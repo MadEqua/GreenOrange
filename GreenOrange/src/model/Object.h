@@ -5,6 +5,7 @@
 #include "../Types.h"
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
+#include "Transform.h"
 
 
 class Object : public SceneEntity
@@ -13,8 +14,14 @@ public:
     Object(uint32 id, const char *name, ObjectType type);
     ObjectType getType() const { return type; }
 
+    void attachToTransform(Transform &t) { parentTransformId = t.getId(); }
+    uint32 getTransformId() { return parentTransformId; }
+    void detachFromTransform() { parentTransformId = -1; }
+    bool isAttachedToTransform() const { return parentTransformId != -1; }
+
 private:
     ObjectType type;
+    uint32 parentTransformId = -1;
 };
 
 

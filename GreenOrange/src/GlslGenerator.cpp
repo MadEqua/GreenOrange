@@ -57,7 +57,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     //Transformed Ps
     //TODO: only put transforms that are actually in use
     for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i) {
-        scene.getTransformTreeRootNodeByIndex(i).traverseBfs([&sstream](TreeNode<SceneEntity> &node, TreeNode<SceneEntity> *parent) -> bool {
+        scene.getTransformTreeRootNodeByIndex(i).traverseBfs([&sstream](TreeNode<Transform> &node, TreeNode<Transform> *parent) -> bool {
             if(node->isTransform())
                 sstream << "    " << generateTransform(node, parent) << ";" << std::endl;
             return false;
@@ -215,16 +215,13 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         sstream << rpnElement.generatedCode;
     else {
         std::string p = "p";
-        //Find the transform in which the Object is under
-        for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i) {
-            auto parent = scene.getTransformTreeRootNodeByIndex(i).findNodeParent(*rpnElement.sceneEntityNode);
-            if(parent) {
-                p = parent->getPayload().getName();
-                break;
-            }
+        Object &obj = static_cast<Object&>(rpnElement.sceneEntityNode->getPayload());
+        if(obj.isAttachedToTransform()) {
+            SceneEntity *transform = scene.findSceneEntity(obj.getTransformId());
+            if(transform)
+                p = transform->getName();
         }
 
-        Object &obj = static_cast<Object&>(rpnElement.sceneEntityNode->getPayload());
         switch(obj.getType()) {
         case ObjectType::Box:
         {
@@ -252,7 +249,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
     return sstream.str();
 }
 
-std::string GlslGenerator::generateTransform(TreeNode<SceneEntity> &transformNode, TreeNode<SceneEntity> *parentTransformNode) {
+std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode) {
     std::stringstream sstream;
 
     Transform &transform = static_cast<Transform&>(*transformNode);

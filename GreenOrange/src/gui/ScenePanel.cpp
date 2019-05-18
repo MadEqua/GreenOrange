@@ -112,7 +112,7 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
     if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-        DndPayload payload = {DndPayload::DndType::Object, 0, &node};
+        DndPayload payload = {DndPayload::DndType::Object, 0, &obj};
         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
         ImGui::Text(obj.getName().c_str());
         ImGui::EndDragDropSource();
@@ -228,7 +228,7 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node
     }
 }
 
-void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const {
+void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
     Transform &transform = static_cast<Transform&>(*node);
 
     uint32 id = transform.getId();
@@ -255,9 +255,9 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneE
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
             if(dndPayload->type == DndPayload::DndType::Transform)
-                scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), treeIndex, node);
+                scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), treeIndex, node);
             else if(dndPayload->type == DndPayload::DndType::Object)
-                scene.attachObjectToTransformTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+                scene.attachObjectToTransformTreeNode(*static_cast<Object*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }
@@ -266,52 +266,56 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneE
 
     if(treeNodeOpen) {
         for(uint32 i = 0; i < node.getChildCount(); ++i) {
-            TreeNode<SceneEntity> &childNode = node.getChildByIndex(i);
-            if(childNode->isTransform())
-                doTransformNode(scene, treeIndex, childNode);
-            else if(childNode->isObject()) {
-                doTransformAttachmentNode(scene, treeIndex, childNode);
+            TreeNode<Transform> &childNode = node.getChildByIndex(i);
+            doTransformNode(scene, treeIndex, childNode);
+        }
+        doTransformAttachments(scene, treeIndex, node);
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
+void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
+    scene.getCsgTreeRootNode().traverseBfs([&scene, treeIndex, &node, this](TreeNode<SceneEntity> &entityNode, TreeNode<SceneEntity> *parent) -> bool {
+        if(entityNode->isObject()) {
+            Object &obj = static_cast<Object&>(*entityNode);
+            if(obj.isAttachedToTransform() && obj.getTransformId() == node->getId()) {
+                uint32 id = obj.getId();
+
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;
+
+                SceneEntity *selectedEntity = scene.getSelectedEntity();
+                if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
+
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+                if(ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "")) {
+                    if(ImGui::IsItemClicked())
+                        scene.setSelectedEntity(obj);
+
+                    if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+                        DndPayload payload = {DndPayload::DndType::Object, treeIndex, &obj};
+                        ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
+                        ImGui::Text(obj.getName().c_str());
+                        ImGui::EndDragDropSource();
+                    }
+
+                    ImGui::PopStyleColor();
+                    if(ImGui::BeginPopupContextItem()) {
+                        if(ImGui::Selectable("Detach")) {
+                            scene.detachObjectToTransformTreeNode(obj);
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::TreePop();
+                }
             }
         }
-        ImGui::TreePop();
-    }
-    ImGui::PopID();
-}
-
-void ScenePanel::doTransformAttachmentNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const {
-    Object &obj = static_cast<Object&>(*node);
-
-    uint32 id = obj.getId();
-    ImGui::PushID(id);
-
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;
-
-    SceneEntity *selectedEntity = scene.getSelectedEntity();
-    if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
-
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-    if(ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "")) {
-        if(ImGui::IsItemClicked())
-            scene.setSelectedEntity(obj);
-
-        if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-            DndPayload payload = {DndPayload::DndType::Object, treeIndex, &node};
-            ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
-            ImGui::Text(obj.getName().c_str());
-            ImGui::EndDragDropSource();
-        }
-
-        doTransformAttachmentContextMenu(scene, treeIndex, node);
-
-        ImGui::TreePop();
-    }
-    ImGui::PopStyleColor();
-
-    ImGui::PopID();
+        return false;
+    });
 }
 
 
-void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const {
+void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
     Transform &transform = static_cast<Transform&>(*node);
 
     bool openRenamePopup = false;
@@ -372,18 +376,5 @@ void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode
         else {
             scene.deleteTransformTreeNode(treeIndex, node);
         }
-    }
-}
-
-void ScenePanel::doTransformAttachmentContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const {
-    Object &obj = static_cast<Object&>(*node);
-    
-    if(ImGui::BeginPopupContextItem()) {
-        if(ImGui::Selectable("Detach")) {
-            //TODO
-            //scene.detachObjectFromTransformTreeNode();
-        }
-
-        ImGui::EndPopup();
     }
 }

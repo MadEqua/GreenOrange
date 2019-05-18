@@ -22,11 +22,9 @@ private:
     void doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
     void doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
 
-    void doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
-    void doTransformAttachmentNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
-    void doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
-    void doTransformAttachmentContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
-
+    void doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const;
+    void doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const;
+    void doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const;
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
     mutable char stringBuffer[STRING_BUFFER_MAX_SIZE] = "";
