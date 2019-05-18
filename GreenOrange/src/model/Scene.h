@@ -45,6 +45,7 @@ public:
     void deleteTransformTreeNode(uint32 treeIndex, TreeNode<SceneEntity> &toDelete);
     void moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<SceneEntity> &toMove, uint32 destinationTreeIndex, TreeNode<SceneEntity> &destination);
     void attachObjectToTransformTreeNode(TreeNode<SceneEntity> &object, TreeNode<SceneEntity> &transform);
+    //void detachObjectToTransformTreeNode(TreeNode<SceneEntity> &object, TreeNode<SceneEntity> &transform);
     void deleteTransformTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren);
 
     //-----------------------------------------

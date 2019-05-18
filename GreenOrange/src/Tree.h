@@ -40,7 +40,7 @@ public:
     bool deleteChildren();
 
     //Move Node into this one
-    bool moveChild(TreeNode<PayloadT> &parentToMoveFrom, TreeNode<PayloadT> &toMove);
+    bool moveInto(TreeNode<PayloadT> &parentToMoveFrom, TreeNode<PayloadT> &toMove);
 
     typename std::vector<std::unique_ptr<TreeNode<PayloadT>>>::iterator findChild(const TreeNode<PayloadT> &node);
 
@@ -108,7 +108,7 @@ bool TreeNode<PayloadT>::deleteChildren() {
 }
 
 template<typename PayloadT>
-bool TreeNode<PayloadT>::moveChild(TreeNode<PayloadT> &parentToMoveFrom, TreeNode<PayloadT> &toMove) {
+bool TreeNode<PayloadT>::moveInto(TreeNode<PayloadT> &parentToMoveFrom, TreeNode<PayloadT> &toMove) {
     auto toMoveIt = parentToMoveFrom.findChild(toMove);
     if(toMoveIt != parentToMoveFrom.childNodes.end()) {
         std::move(toMoveIt, toMoveIt + 1, std::back_inserter(childNodes));
@@ -149,7 +149,7 @@ bool TreeNode<PayloadT>::moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT>
 
     TreeNode<PayloadT> *parent = findNodeParent(toMove);
     if(parent && **parent != *destination) {
-        destination.moveChild(*parent, toMove);
+        destination.moveInto(*parent, toMove);
         return true;
     }
     return false;

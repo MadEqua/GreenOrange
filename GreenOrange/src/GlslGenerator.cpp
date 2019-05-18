@@ -57,7 +57,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     //Transformed Ps
     //TODO: only put transforms that are actually in use
     for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i) {
-        scene.getTransformTreeRootNodeByIndex(i).traverseBfs([&sstream, &scene](TreeNode<SceneEntity> &node, TreeNode<SceneEntity> *parent) -> bool {
+        scene.getTransformTreeRootNodeByIndex(i).traverseBfs([&sstream](TreeNode<SceneEntity> &node, TreeNode<SceneEntity> *parent) -> bool {
             if(node->isTransform())
                 sstream << "    " << generateTransform(node, parent) << ";" << std::endl;
             return false;

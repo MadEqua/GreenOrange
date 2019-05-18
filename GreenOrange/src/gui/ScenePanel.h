@@ -23,7 +23,9 @@ private:
     void doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
 
     void doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
+    void doTransformAttachmentNode(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
     void doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
+    void doTransformAttachmentContextMenu(Scene &scene, uint32 treeIndex, TreeNode<SceneEntity> &node) const;
 
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
