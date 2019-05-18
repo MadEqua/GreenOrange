@@ -1,7 +1,5 @@
 #include "InspectorPanel.h"
 
-#include <limits>
-
 #include <imgui.h>
 
 #include "../model/GreenOrange.h"
@@ -9,6 +7,7 @@
 #include "../model/Object.h"
 #include "../model/Transform.h"
 #include "../DataRepo.h"
+#include "../Constants.h"
 
 
 bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
@@ -40,7 +39,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 {
                     Sphere &sphere = static_cast<Sphere&>(obj);
                     float radius = sphere.getRadius();
-                    if(ImGui::DragFloat("Radius", &radius, 0.01f, 0.0f, std::numeric_limits<float>::max()))
+                    if(ImGui::DragFloat("Radius", &radius, 0.01f, 0.0f, DRAG_MAX))
                         sphere.setRadius(radius);
                     break;
                 }
@@ -49,7 +48,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 {
                     Box &box = static_cast<Box&>(obj);
                     float *dims = box.getDimensions();
-                    if(ImGui::DragFloat3("Size", dims, 0.01f, 0.0f, std::numeric_limits<float>::max()))
+                    if(ImGui::DragFloat3("Size", dims, 0.01f, 0.0f, DRAG_MAX))
                         box.setDimensions(dims);
                     break;
                 }
@@ -68,7 +67,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 {
                     Translation &trans = static_cast<Translation&>(tr);
                     float *ammount = trans.getAmmount();
-                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, 0.0f, std::numeric_limits<float>::max()))
+                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, DRAG_MIN, DRAG_MAX))
                         trans.setAmmount(ammount);
                     break;
                 }
@@ -76,15 +75,17 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 {
                     Rotation &rot = static_cast<Rotation&>(tr);
                     float *ammount = rot.getAmmount();
-                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, 0.0f, std::numeric_limits<float>::max()))
+                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, DRAG_MIN, DRAG_MAX))
                         rot.setAmmount(ammount);
                     break;
                 }
                 case TransformType::Custom:
                 {
+                    //TODO: make this better
                     CustomTransform &custom = static_cast<CustomTransform&>(tr);
-                    strcpy_s(inputBuffer, custom.getCode().c_str());
-                    if(ImGui::InputText("Code", inputBuffer, INPUT_STRING_MAX_SIZE)) {
+                    //strcpy_s(inputBuffer, custom.getCode().c_str());
+                    ImGui::InputText("Code", inputBuffer, INPUT_STRING_MAX_SIZE);
+                    if(ImGui::Button("Save")) {
                         custom.setCode(inputBuffer);
                     }
                     break;

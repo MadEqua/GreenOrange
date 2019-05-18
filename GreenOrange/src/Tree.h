@@ -49,6 +49,7 @@ public:
     bool deleteNode(TreeNode<PayloadT> &toDelete);
     bool moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination);
     bool findNode(TreeNode<PayloadT> &node);
+    TreeNode<PayloadT>* findNodeParent(TreeNode<PayloadT> &node);
     bool isNodeDescendentOf(TreeNode<PayloadT> &op1, TreeNode<PayloadT> &op2);
 
     //The visitFunction will receive the Node and its parent, in this order
@@ -133,16 +134,12 @@ bool TreeNode<PayloadT>::deleteNode(TreeNode<PayloadT> &toDelete) {
     if(*toDelete == payload) 
         return false;
 
-    bool result = false;
-    traverseBfs([&result, &toDelete](TreeNode<PayloadT> &op, TreeNode<PayloadT> *parent) -> bool {
-        if(parent && *op == *toDelete) {
-            parent->deleteChild(op);
-            result = true;
-            return true;
-        }
-        return false;
-    });
-    return result;
+    TreeNode<PayloadT> *parent = findNodeParent(toDelete);
+    if(parent) {
+        parent->deleteChild(toDelete);
+        return true;
+    }
+    return false;
 }
 
 template<typename PayloadT>
@@ -150,16 +147,12 @@ bool TreeNode<PayloadT>::moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT>
     if(isNodeDescendentOf(destination, toMove))
         return false;
 
-    bool result = false;
-    traverseBfs([&result, &toMove, &destination](TreeNode<PayloadT> &op, TreeNode<PayloadT> *parent) -> bool {
-        if(parent && *op == *toMove && **parent != *destination) {
-            destination.moveChild(*parent, toMove);
-            result = true;
-            return true;
-        }
-        return false;
-    });
-    return result;
+    TreeNode<PayloadT> *parent = findNodeParent(toMove);
+    if(parent && **parent != *destination) {
+        destination.moveChild(*parent, toMove);
+        return true;
+    }
+    return false;
 }
 
 template<typename PayloadT>
@@ -175,6 +168,18 @@ bool TreeNode<PayloadT>::findNode(TreeNode<PayloadT> &node) {
     return result;
 }
 
+template<typename PayloadT>
+TreeNode<PayloadT>* TreeNode<PayloadT>::findNodeParent(TreeNode<PayloadT> &node) {
+    TreeNode<PayloadT>* result = nullptr;
+    traverseBfs([&result, &node](TreeNode<PayloadT> &op, TreeNode<PayloadT> *parent) -> bool {
+        if(*op == *node) {
+            result = parent;
+            return true;
+        }
+        return false;
+    });
+    return result;
+}
 
 template<typename PayloadT>
 bool TreeNode<PayloadT>::isNodeDescendentOf(TreeNode<PayloadT> &op1, TreeNode<PayloadT> &op2) {

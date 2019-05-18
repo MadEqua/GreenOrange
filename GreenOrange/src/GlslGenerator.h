@@ -11,6 +11,7 @@ class CsgOperator;
 class Object;
 class Scene;
 class SceneEntity;
+class Transform;
 
 
 #define GEN_SET_DIRTY() GlslGenerator::getInstance().setNeedToGenerate();
@@ -60,9 +61,10 @@ private:
 
     static uint32 countNonEmptyOperands(TreeNode<SceneEntity> &node);
     static std::string generateScene(Scene &scene);
-    static std::string generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
-    static std::string generateOperand(const RpnElement &rpnElement);
-    //static std::string generateTransform(const Transform &transform);
+    static std::string generateSceneTree(Scene &scene);
+    static std::string generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
+    static std::string generateOperand(Scene &scene, const RpnElement &rpnElement);
+    static std::string generateTransform(TreeNode<SceneEntity> &transformNode, TreeNode<SceneEntity> *parentTransformNode);
     
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };

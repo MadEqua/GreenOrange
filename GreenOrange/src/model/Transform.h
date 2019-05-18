@@ -50,9 +50,10 @@ private:
 class CustomTransform : public Transform {
 public:
     CustomTransform(uint32 id, const char *name) :
-        Transform(id, name, TransformType::Custom) {}
+        Transform(id, name, TransformType::Custom),
+        code("p") {}
 
-    void setCode(const char *code) { this->code = code; }
+    void setCode(const char *code) { this->code = code; GEN_SET_DIRTY(); }
     const std::string& getCode() { return code; }
 
 private:

@@ -9,6 +9,7 @@
 #include "model/SceneEntity.h"
 #include "model/Object.h"
 #include "model/CsgOperator.h"
+#include "model/Transform.h"
 #include "model/Project.h"
 #include "model/Scene.h"
 #include "Constants.h"
@@ -39,9 +40,7 @@ void GlslGenerator::generateIfNeeded(Project &project) {
 
         for(uint32 i = 0; i < project.getSceneCount(); ++i) {
             Scene &scene = project.getSceneByIndex(i);
-            sstream << "float " << scene.getName() << "(vec3 p) {" << std::endl;
-            sstream << "return " << generateScene(scene) << ";";
-            sstream << std::endl << "}" << std::endl;
+            sstream << generateScene(scene) << std::endl;
         }
 
         replace(glslCode, REPLACE_SCENES, sstream.str());
@@ -50,8 +49,28 @@ void GlslGenerator::generateIfNeeded(Project &project) {
     }
 }
 
-std::string GlslGenerator::generateScene(Scene &scene) {
 
+std::string GlslGenerator::generateScene(Scene &scene) {
+    std::stringstream sstream;
+    sstream << "float " << scene.getName() << "(vec3 p) {" << std::endl;
+
+    //Transformed Ps
+    //TODO: only put transforms that are actually in use
+    for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i) {
+        scene.getTransformTreeRootNodeByIndex(i).traverseBfs([&sstream, &scene](TreeNode<SceneEntity> &node, TreeNode<SceneEntity> *parent) -> bool {
+            if(node->isTransform())
+                sstream << "    " << generateTransform(node, parent) << ";" << std::endl;
+            return false;
+        });
+    }
+
+    sstream << "    return " << generateSceneTree(scene) << ";" << std::endl;
+    sstream << "}" << std::endl;
+    return sstream.str();
+}
+
+
+std::string GlslGenerator::generateSceneTree(Scene &scene) {
     //RPN list of operations and operators (ex: AB+CD-+)
     std::forward_list<RpnElement> rpnList;
 
@@ -86,7 +105,7 @@ std::string GlslGenerator::generateScene(Scene &scene) {
                     rpnStack.pop();
                 }
 
-                std::string code = generateOperator(op, operandList, 0, operandCount);
+                std::string code = generateOperator(scene, op, operandList, 0, operandCount);
                 rpnStack.push(std::move(code));
             }
         }
@@ -95,10 +114,9 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     //At the end we should have one only RpnElement with the generated code
     if(rpnStack.size() == 1 && rpnStack.top().isGeneratedCode && !rpnStack.top().generatedCode.empty())
         return rpnStack.top().generatedCode;
-    else {
+    else
         printf("generateScene(). Something went wrong, check the Scene tree.\n");
-        return "";
-    }
+    return "";
 }
 
 uint32 GlslGenerator::countNonEmptyOperands(TreeNode<SceneEntity> &root) {
@@ -118,7 +136,7 @@ uint32 GlslGenerator::countNonEmptyOperands(TreeNode<SceneEntity> &root) {
     return count;
 }
 
-std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
+std::string GlslGenerator::generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
     std::stringstream sstream;
 
     int size = endIdx - startIdx;
@@ -127,81 +145,90 @@ std::string GlslGenerator::generateOperator(const CsgOperator &csgOperator, cons
     switch(csgOperator.getType()) {
     case CsgType::Union:
         if(size == 1) {
-            sstream << generateOperand(operands[startIdx]);
+            sstream << generateOperand(scene, operands[startIdx]);
         }
         else if(size == 2) {
             sstream << "min(";
-            sstream << generateOperand(operands[startIdx]);
+            sstream << generateOperand(scene, operands[startIdx]);
             sstream << ", ";
-            sstream << generateOperand(operands[startIdx + 1]);
+            sstream << generateOperand(scene, operands[startIdx + 1]);
             sstream << ")";
         }
         else if(size > 2) {
             sstream << "min(";
-            sstream << generateOperator(csgOperator, operands, 0, 2);
+            sstream << generateOperator(scene, csgOperator, operands, 0, 2);
             sstream << ", ";
-            sstream << generateOperator(csgOperator, operands, 2, size);
+            sstream << generateOperator(scene, csgOperator, operands, 2, size);
             sstream << ")";
         }
         break;
     case CsgType::Intersection:
         if(size == 1) {
-            sstream << generateOperand(operands[startIdx]);
+            sstream << generateOperand(scene, operands[startIdx]);
         }
         else if(size == 2) {
             sstream << "max(";
-            sstream << generateOperand(operands[startIdx]);
+            sstream << generateOperand(scene, operands[startIdx]);
             sstream << ", ";
-            sstream << generateOperand(operands[startIdx + 1]);
+            sstream << generateOperand(scene, operands[startIdx + 1]);
             sstream << ")";
         }
         else if(size > 2) {
             sstream << "max(";
-            sstream << generateOperator(csgOperator, operands, 0, 2);
+            sstream << generateOperator(scene, csgOperator, operands, 0, 2);
             sstream << ", ";
-            sstream << generateOperator(csgOperator, operands, 2, size);
+            sstream << generateOperator(scene, csgOperator, operands, 2, size);
             sstream << ")";
         }
         break;
     case CsgType::Subtraction:
         if(size == 1) {
-            sstream << generateOperand(operands[startIdx]);
+            sstream << generateOperand(scene, operands[startIdx]);
         }
         else if(size == 2) {
             sstream << "max(";
-            sstream << generateOperand(operands[startIdx]);
+            sstream << generateOperand(scene, operands[startIdx]);
             sstream << ", -";
-            sstream << generateOperand(operands[startIdx + 1]);
+            sstream << generateOperand(scene, operands[startIdx + 1]);
             sstream << ")";
         }
         else if(size > 2) {
             sstream << "max(";
-            sstream << generateOperator(csgOperator, operands, 0, 2);
+            sstream << generateOperator(scene, csgOperator, operands, 0, 2);
             sstream << ", -";
-            sstream << generateOperator(csgOperator, operands, 2, size);
+            sstream << generateOperator(scene, csgOperator, operands, 2, size);
             sstream << ")";
          }
         break;
     default:
-        printf("generateOperator() trying replacement generate code for an unknown type.\n");
+        GO_ASSERT_ALWAYS();
         break;
     }
 
     return sstream.str();
 }
 
-std::string GlslGenerator::generateOperand(const RpnElement &rpnElement) {
+std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnElement) {
     std::stringstream sstream;
 
     if(rpnElement.isGeneratedCode)
         sstream << rpnElement.generatedCode;
     else {
+        std::string p = "p";
+        //Find the transform in which the Object is under
+        for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i) {
+            auto parent = scene.getTransformTreeRootNodeByIndex(i).findNodeParent(*rpnElement.sceneEntityNode);
+            if(parent) {
+                p = parent->getPayload().getName();
+                break;
+            }
+        }
+
         Object &obj = static_cast<Object&>(rpnElement.sceneEntityNode->getPayload());
-        
         switch(obj.getType()) {
         case ObjectType::Box:
         {
-            sstream << "box(p, vec3(";
+            sstream << "box(" << p << ", vec3(";
             Box &box = static_cast<Box&>(obj);
             float *dims = box.getDimensions();
             sstream << dims[0] << ", " << dims[1] << ", " << dims[2] << "))";
@@ -210,16 +237,49 @@ std::string GlslGenerator::generateOperand(const RpnElement &rpnElement) {
 
         case ObjectType::Sphere:
         {
-            sstream << "sphere(p, ";
+            sstream << "sphere(" << p << ", ";
             Sphere &sphere = static_cast<Sphere&>(obj);
             float r = sphere.getRadius();
             sstream << r << ")";
             break;
         }
         default:
-            printf("generateOperand() trying replacement generate code for an unknown type.\n");
+            GO_ASSERT_ALWAYS();
             break;
         }
+    }
+
+    return sstream.str();
+}
+
+std::string GlslGenerator::generateTransform(TreeNode<SceneEntity> &transformNode, TreeNode<SceneEntity> *parentTransformNode) {
+    std::stringstream sstream;
+
+    Transform &transform = static_cast<Transform&>(*transformNode);
+    std::string parentP = parentTransformNode ? parentTransformNode->getPayload().getName() : "p";
+    
+    sstream << "vec3 " << transform.getName() << " = ";
+    switch(transform.getType()) {
+    case TransformType::Translation:
+    {
+        Translation &translation = static_cast<Translation&>(transform);
+        sstream << parentP << " - vec3(" << translation.getAmmount()[0] << "," << translation.getAmmount()[1] << "," << translation.getAmmount()[2] << ")";
+        break;
+    }
+    case TransformType::Rotation:
+    {
+        //TODO
+        break;
+    }
+    case TransformType::Custom:
+    {
+        CustomTransform &custom = static_cast<CustomTransform&>(transform);
+        sstream << custom.getCode();
+        break;
+    }
+    default:
+        GO_ASSERT_ALWAYS();
+        break;
     }
 
     return sstream.str();
