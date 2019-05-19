@@ -219,7 +219,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         if(obj.isAttachedToTransform()) {
             SceneEntity *transform = scene.findSceneEntity(obj.getTransformId());
             if(transform)
-                p = transform->getName() + "_" + std::to_string(transform->getId());
+                p = generateTransformName(static_cast<Transform&>(*transform));
         }
 
         switch(obj.getType()) {
@@ -253,9 +253,9 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
     std::stringstream sstream;
 
     Transform &transform = static_cast<Transform&>(*transformNode);
-    std::string parentP = parentTransformNode ? parentTransformNode->getPayload().getName() : "p";
+    std::string parentP = parentTransformNode ? generateTransformName(parentTransformNode->getPayload()) : "p";
     
-    sstream << "vec3 " << transform.getName() << "_" << transform.getId() << " = ";
+    sstream << "vec3 " << generateTransformName(transform) << " = ";
     switch(transform.getType()) {
     case TransformType::Translation:
     {
@@ -281,6 +281,11 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
 
     return sstream.str();
 }
+
+std::string GlslGenerator::generateTransformName(const Transform &transform) {
+    return transform.getName() + "_" + std::to_string(transform.getId());
+}
+
 
 bool GlslGenerator::replace(std::string& str, const std::string& toReplace, const std::string& replacement) {
     size_t start_pos = str.find(toReplace);

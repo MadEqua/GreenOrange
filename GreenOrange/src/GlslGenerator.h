@@ -65,6 +65,8 @@ private:
     static std::string generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
     static std::string generateOperand(Scene &scene, const RpnElement &rpnElement);
     static std::string generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode);
+
+    static std::string generateTransformName(const Transform &transform);
     
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };
