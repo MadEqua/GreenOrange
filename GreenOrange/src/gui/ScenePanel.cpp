@@ -255,9 +255,11 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transf
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
             if(dndPayload->type == DndPayload::DndType::Transform)
-                scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), treeIndex, node);
+                scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), node);
             else if(dndPayload->type == DndPayload::DndType::Object)
                 scene.attachObjectToTransformTreeNode(static_cast<Object&>(static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr)->getPayload()), node);
+            else if(dndPayload->type == DndPayload::DndType::TransformAtttachment)
+                scene.attachObjectToTransformTreeNode(*static_cast<Object*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }
@@ -294,7 +296,7 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
                         scene.setSelectedEntity(obj);
 
                     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-                        DndPayload payload = {DndPayload::DndType::Object, treeIndex, &obj};
+                        DndPayload payload = {DndPayload::DndType::TransformAtttachment, treeIndex, &obj};
                         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
                         ImGui::Text(obj.getName().c_str());
                         ImGui::EndDragDropSource();
@@ -372,11 +374,14 @@ void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode
     const char *deleteString = "Delete the transform %s?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, deleteString, transform.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Transform", stringBuffer)) {
-        if(*scene.getTransformTreeRootNodeByIndex(treeIndex) == transform) {
+        /*if(*scene.getTransformTreeRootNodeByIndex(treeIndex) == transform) {
             scene.deleteRootTransform(treeIndex);
         }
         else {
             scene.deleteTransformTreeNode(treeIndex, node);
-        }
+        }*/
+
+        scene.deleteTransformTreeNode(treeIndex, node);
+
     }
 }

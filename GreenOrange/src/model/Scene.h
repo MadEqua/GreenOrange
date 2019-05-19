@@ -36,15 +36,14 @@ public:
 
     //-----------------------------------------
     //Transform trees
-    size_t getTransformTreeCount() const { return transformTreeRoots.size(); }
-    TreeNode<Transform>& getTransformTreeRootNodeByIndex(uint32 i) { GO_ASSERT(i < transformTreeRoots.size()); return *transformTreeRoots[i]; }
+    size_t getTransformTreeCount() const { return transformTreeDummyRoot->getChildCount(); }
+    TreeNode<Transform>& getTransformTreeRootNodeByIndex(uint32 i) { GO_ASSERT(i < transformTreeDummyRoot->getChildCount()); return transformTreeDummyRoot->getChildByIndex(i); }
 
     void createRootTransform(const char *name, TransformType type);
-    void deleteRootTransform(uint32 treeIndex);
     void createTransform(const char *name, TransformType type, TreeNode<Transform> &parent);
 
     void deleteTransformTreeNode(uint32 treeIndex, TreeNode<Transform> &toDelete);
-    void moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, uint32 destinationTreeIndex, TreeNode<Transform> &destination);
+    void moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, TreeNode<Transform> &destination);
     void attachObjectToTransformTreeNode(Object &object, TreeNode<Transform> &transform);
     void detachObjectToTransformTreeNode(Object &object);
     void deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform> &toDeleteChildren);
@@ -70,7 +69,9 @@ private:
     std::vector<std::unique_ptr<SceneEntity>> sceneEntities;
 
     std::unique_ptr<TreeNode<SceneEntity>> csgTreeRoot;
-    std::vector<std::unique_ptr<TreeNode<Transform>>> transformTreeRoots;
+
+    //Every transform tree will be a direct child of this one, allowing for easy moving between any nodes. This root will hidden on the UI.
+    std::unique_ptr<TreeNode<Transform>> transformTreeDummyRoot;
 
     uint32 nextId = 0;
     uint32 selectedEntityId = -1;
@@ -78,6 +79,7 @@ private:
     //-----------------------------------------
     //Aux functions
     uint32 generateId() { return nextId++; }
+    std::unique_ptr<Object> internalCreateObject(const char *name, ObjectType type);
     std::unique_ptr<Transform> internalCreateTransform(const char *name, TransformType type);
 
     //-----------------------------------------

@@ -33,7 +33,8 @@ private:
         enum class DndType {
             Csg,
             Object,
-            Transform
+            Transform,
+            TransformAtttachment
         };
         DndType type;
         int intData;

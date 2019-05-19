@@ -10,6 +10,9 @@ Scene::Scene(const char* name) :
 
     sceneEntities.emplace_back(std::make_unique<CsgOperator>(generateId(), "Root Union", CsgType::Union));
     csgTreeRoot = std::make_unique<TreeNode<SceneEntity>>(*sceneEntities[0]);
+
+    sceneEntities.emplace_back(internalCreateTransform("Root Transform", TransformType::Translation));
+    transformTreeDummyRoot = std::make_unique<TreeNode<Transform>>(static_cast<Transform&>(*sceneEntities[1]));
 }
 
 void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<SceneEntity> &parent) {
@@ -20,27 +23,9 @@ void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<SceneEnti
 }
 
 void Scene::createObject(const char *name, ObjectType type, TreeNode<SceneEntity> &parent) {
-
-    switch(type) {
-    case ObjectType::Sphere:
-    {
-        std::unique_ptr<Sphere> ptr = std::make_unique<Sphere>(generateId(), name);
-        parent.createChild(*ptr);
-        sceneEntities.emplace_back(std::move(ptr));
-        break;
-    }
-    case ObjectType::Box:
-    {
-        std::unique_ptr<Box> ptr = std::make_unique<Box>(generateId(), name);
-        parent.createChild(*ptr);
-        sceneEntities.emplace_back(std::move(ptr));
-        break;
-    }
-    default:
-        GO_ASSERT_ALWAYS()
-        break;
-    }
-    
+    auto objectPtr = internalCreateObject(name, type);
+    parent.createChild(*objectPtr);
+    sceneEntities.emplace_back(std::move(objectPtr));
     GEN_SET_DIRTY();
 }
 
@@ -62,15 +47,7 @@ void Scene::deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
 
 
 void Scene::createRootTransform(const char *name, TransformType type) {
-    auto transformPtr = internalCreateTransform(name, type);
-    transformTreeRoots.emplace_back(std::make_unique<TreeNode<Transform>>(*transformPtr));
-    sceneEntities.emplace_back(std::move(transformPtr));
-    GEN_SET_DIRTY();
-}
-
-void Scene::deleteRootTransform(uint32 treeIndex) {
-    GO_ASSERT(treeIndex < transformTreeRoots.size());
-    pendingDeleteTransformTreeNode.emplace_back(treeIndex, nullptr);
+    createTransform(name, type, *transformTreeDummyRoot);
 }
 
 void Scene::createTransform(const char *name, TransformType type, TreeNode<Transform> &parent) {
@@ -81,14 +58,14 @@ void Scene::createTransform(const char *name, TransformType type, TreeNode<Trans
 }
 
 void Scene::deleteTransformTreeNode(uint32 treeIndex, TreeNode<Transform> &toDelete) {
-    GO_ASSERT(treeIndex < transformTreeRoots.size());
+    GO_ASSERT(treeIndex < transformTreeDummyRoot->getChildCount());
     pendingDeleteTransformTreeNode.emplace_back(treeIndex, &toDelete);
 }
 
-void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, uint32 destinationTreeIndex, TreeNode<Transform> &destination) {
-    GO_ASSERT(toMoveTreeIndex < transformTreeRoots.size());
+void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, TreeNode<Transform> &destination) {
+    GO_ASSERT(toMoveTreeIndex < transformTreeDummyRoot->getChildCount());
 
-    if(transformTreeRoots[toMoveTreeIndex]->moveNode(toMove, destination))
+    if(transformTreeDummyRoot->moveNode(toMove, destination))
         GEN_SET_DIRTY();
 }
 
@@ -109,6 +86,18 @@ void Scene::deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform
     }
 }
 
+std::unique_ptr<Object> Scene::internalCreateObject(const char *name, ObjectType type) {
+    switch(type) {
+    case ObjectType::Sphere:
+        return std::make_unique<Sphere>(generateId(), name);
+    case ObjectType::Box:
+        return std::make_unique<Box>(generateId(), name);
+    default:
+        GO_ASSERT_ALWAYS()
+        return std::unique_ptr<Object>();
+    }
+}
+
 std::unique_ptr<Transform> Scene::internalCreateTransform(const char *name, TransformType type) {
     switch(type) {
     case TransformType::Translation:
@@ -120,12 +109,11 @@ std::unique_ptr<Transform> Scene::internalCreateTransform(const char *name, Tran
     default:
         GO_ASSERT_ALWAYS()
         return std::unique_ptr<Transform>();
-        break;
     }
 }
 
 
-SceneEntity* Scene::getSelectedEntity() { 
+SceneEntity* Scene::getSelectedEntity() {
     SceneEntity *result = nullptr;
 
     if(selectedEntityId != -1) {
@@ -169,30 +157,30 @@ void Scene::doPendingOperations() {
     bool deleted = !pendingDeleteCsgTreeNode.empty() || !pendingDeleteTransformTreeNode.empty();
 
     for(auto toDeleteNodePtr : pendingDeleteCsgTreeNode) {
-        toDeleteNodePtr->traverseBfs([this, &toDeleteNodePtr](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {           
+        auto parentOfToDeleteNode = csgTreeRoot->findNodeParent(*toDeleteNodePtr);
+
+        toDeleteNodePtr->traverseBfs([this, &toDeleteNodePtr](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
             //Delete all children SceneEntities on the tree which toDeleteNode is the toDeleteNode
             deleteSceneEntity(*op);
             return false;
         });
 
-        auto parentOfToDeleteNode = csgTreeRoot->findNodeParent(*toDeleteNodePtr);
         if(parentOfToDeleteNode)
             parentOfToDeleteNode->deleteChild(*toDeleteNodePtr);
     }
 
     for(auto &pair : pendingDeleteTransformTreeNode) {
-        TreeNode<Transform> &toDeleteNode = pair.second ? (*pair.second) : *transformTreeRoots[pair.first];
+        auto &toDeleteNode = *pair.second;
+
+        auto parentOfToDeleteNode = transformTreeDummyRoot->findNodeParent(toDeleteNode);
 
         toDeleteNode.traverseBfs([this, &pair](TreeNode<Transform> &trans, TreeNode<Transform> *parent) -> bool {
             deleteSceneEntity(*trans);
             return false;
         });
 
-        auto parentOfToDeleteNode = transformTreeRoots[pair.first]->findNodeParent(toDeleteNode);
         if(parentOfToDeleteNode)
             parentOfToDeleteNode->deleteChild(*pair.second);
-        else
-            transformTreeRoots.erase(transformTreeRoots.begin() + pair.first);
     }
 
     pendingDeleteCsgTreeNode.clear();

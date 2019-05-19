@@ -219,7 +219,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         if(obj.isAttachedToTransform()) {
             SceneEntity *transform = scene.findSceneEntity(obj.getTransformId());
             if(transform)
-                p = transform->getName();
+                p = transform->getName() + "_" + std::to_string(transform->getId());
         }
 
         switch(obj.getType()) {
@@ -255,7 +255,7 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
     Transform &transform = static_cast<Transform&>(*transformNode);
     std::string parentP = parentTransformNode ? parentTransformNode->getPayload().getName() : "p";
     
-    sstream << "vec3 " << transform.getName() << " = ";
+    sstream << "vec3 " << transform.getName() << "_" << transform.getId() << " = ";
     switch(transform.getType()) {
     case TransformType::Translation:
     {
