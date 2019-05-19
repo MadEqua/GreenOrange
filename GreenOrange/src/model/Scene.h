@@ -32,6 +32,7 @@ public:
 
     void deleteCsgTreeNode(TreeNode<SceneEntity> &toDelete);
     void moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination);
+    void swapCsgTreeSiblingNodes(TreeNode<SceneEntity> &node1, TreeNode<SceneEntity> &node2);
     void deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren);
 
     //-----------------------------------------

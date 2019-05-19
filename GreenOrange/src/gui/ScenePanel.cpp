@@ -1,6 +1,6 @@
 #include "ScenePanel.h"
 
-#include <imgui.h>
+#include "GLFW/glfw3.h"
 
 #include "../model/GreenOrange.h"
 #include "../model/Scene.h"
@@ -23,6 +23,8 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
             doOperatorNode(scene, scene.getCsgTreeRootNode());
         }
 
+        ImGui::NewLine();
+        ImGui::NewLine();
         ImGui::NewLine();
         ImGui::NewLine();
 
@@ -62,7 +64,9 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
     SceneEntity *selectedEntity = scene.getSelectedEntity();
     if(selectedEntity && csgOp == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
+    ImGui::PushStyleColor(ImGuiCol_Text, COLOR_BLUE);
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, csgOp.getName().c_str(), "");
+    ImGui::PopStyleColor();
     if(ImGui::IsItemClicked()) 
         scene.setSelectedEntity(csgOp);
 
@@ -76,8 +80,12 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
         if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
-            if(dndPayload->type == DndPayload::DndType::Csg || dndPayload->type == DndPayload::DndType::Object)
-                scene.moveCsgTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+            if(dndPayload->type == DndPayload::DndType::Csg || dndPayload->type == DndPayload::DndType::Object) {
+                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL))
+                    scene.moveCsgTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+                else
+                    scene.swapCsgTreeSiblingNodes(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+            }
         }
         ImGui::EndDragDropTarget();
     }
@@ -108,7 +116,9 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
     SceneEntity *selectedEntity = scene.getSelectedEntity();
     if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
+    ImGui::PushStyleColor(ImGuiCol_Text, COLOR_GRAY);
     ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
+    ImGui::PopStyleColor();
     if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
@@ -116,6 +126,15 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
         ImGui::Text(obj.getName().c_str());
         ImGui::EndDragDropSource();
+    }
+    if(ImGui::BeginDragDropTarget()) {
+        if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DND_PAYLOAD)) {
+            GO_ASSERT(payload->DataSize == sizeof(DndPayload));
+            DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
+            if(dndPayload->type == DndPayload::DndType::Csg || dndPayload->type == DndPayload::DndType::Object)
+                scene.swapCsgTreeSiblingNodes(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+        }
+        ImGui::EndDragDropTarget();
     }
 
     doObjectContextMenu(scene, node);
@@ -240,7 +259,9 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transf
     SceneEntity *selectedEntity = scene.getSelectedEntity();
     if(selectedEntity && transform == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
+    ImGui::PushStyleColor(ImGuiCol_Text, COLOR_BLUE);
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, transform.getName().c_str(), "");
+    ImGui::PopStyleColor();
     if(ImGui::IsItemClicked())
         scene.setSelectedEntity(transform);
 
@@ -290,8 +311,11 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
                 if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
                 ImGui::PushID(obj.getId());
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-                if(ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "")) {
+                ImGui::PushStyleColor(ImGuiCol_Text, COLOR_GRAY);
+                bool isNodeOpen = ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
+                ImGui::PopStyleColor();
+
+                if(isNodeOpen) {
                     if(ImGui::IsItemClicked())
                         scene.setSelectedEntity(obj);
 
@@ -302,7 +326,6 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
                         ImGui::EndDragDropSource();
                     }
 
-                    ImGui::PopStyleColor();
                     if(ImGui::BeginPopupContextItem()) {
                         if(ImGui::Selectable("Detach")) {
                             scene.detachObjectToTransformTreeNode(obj);
@@ -317,7 +340,6 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
         return false;
     });
 }
-
 
 void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
     Transform &transform = static_cast<Transform&>(*node);

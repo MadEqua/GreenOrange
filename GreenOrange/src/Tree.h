@@ -41,6 +41,7 @@ public:
 
     //Move Node into this one
     bool moveInto(TreeNode<PayloadT> &parentToMoveFrom, TreeNode<PayloadT> &toMove);
+    bool swapChildren(TreeNode<PayloadT> &child1, TreeNode<PayloadT> &child2);
 
     typename std::vector<std::unique_ptr<TreeNode<PayloadT>>>::iterator findChild(const TreeNode<PayloadT> &node);
 
@@ -48,6 +49,7 @@ public:
     //Operations on the tree where this node is the root
     bool deleteNode(TreeNode<PayloadT> &toDelete);
     bool moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT> &destination);
+    bool swapSiblingNodes(TreeNode<PayloadT> &node1, TreeNode<PayloadT> &node2);
     bool findNode(TreeNode<PayloadT> &node);
     TreeNode<PayloadT>* findNodeParent(TreeNode<PayloadT> &node);
     bool isNodeDescendentOf(TreeNode<PayloadT> &op1, TreeNode<PayloadT> &op2);
@@ -118,6 +120,17 @@ bool TreeNode<PayloadT>::moveInto(TreeNode<PayloadT> &parentToMoveFrom, TreeNode
     return false;
 }
 
+template<typename PayloadT>
+bool TreeNode<PayloadT>::swapChildren(TreeNode<PayloadT> &child1, TreeNode<PayloadT> &child2) {
+    auto it1 = findChild(child1);
+    auto it2 = findChild(child2);
+    if(it1 != childNodes.end() && it2 != childNodes.end()) {
+        it1->swap(*it2);
+        return true;
+    }
+    return false;
+}
+
 //Forcing PayloadT to have operator==() defined
 template<typename PayloadT>
 typename std::vector<std::unique_ptr<TreeNode<PayloadT>>>::iterator TreeNode<PayloadT>::findChild(const TreeNode<PayloadT> &node) {
@@ -151,6 +164,16 @@ bool TreeNode<PayloadT>::moveNode(TreeNode<PayloadT> &toMove, TreeNode<PayloadT>
     if(parent && **parent != *destination) {
         destination.moveInto(*parent, toMove);
         return true;
+    }
+    return false;
+}
+
+template<typename PayloadT>
+bool TreeNode<PayloadT>::swapSiblingNodes(TreeNode<PayloadT> &node1, TreeNode<PayloadT> &node2) {
+    auto node1Parent = findNodeParent(node1);
+    auto node2Parent = findNodeParent(node2);
+    if(node1Parent && node2Parent && **node1Parent == **node2Parent) {
+        return node1Parent->swapChildren(node1, node2);
     }
     return false;
 }

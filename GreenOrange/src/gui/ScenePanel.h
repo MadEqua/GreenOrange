@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui.h>
+
 #include "Panel.h"
 #include "../Constants.h"
 #include "../Types.h"
@@ -28,6 +30,9 @@ private:
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
     mutable char stringBuffer[STRING_BUFFER_MAX_SIZE] = "";
+
+    const ImVec4 COLOR_BLUE {0.6f, 0.6f, 0.95f, 1.0f};
+    const ImVec4 COLOR_GRAY {0.7f, 0.7f, 0.7f, 1.0f};
 
     struct DndPayload {
         enum class DndType {

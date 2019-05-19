@@ -38,6 +38,11 @@ void Scene::moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity>
         GEN_SET_DIRTY();
 }
 
+void Scene::swapCsgTreeSiblingNodes(TreeNode<SceneEntity> &node1, TreeNode<SceneEntity> &node2) {
+    if(csgTreeRoot->swapSiblingNodes(node1, node2))
+        GEN_SET_DIRTY();
+}
+
 void Scene::deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
     for(uint32 i = 0; i < toDeleteChildren.getChildCount(); ++i) {
         pendingDeleteCsgTreeNode.emplace_back(&toDeleteChildren.getChildByIndex(i));
