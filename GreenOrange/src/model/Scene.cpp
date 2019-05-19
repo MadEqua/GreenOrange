@@ -45,14 +45,7 @@ void Scene::createObject(const char *name, ObjectType type, TreeNode<SceneEntity
 }
 
 void Scene::deleteCsgTreeNode(TreeNode<SceneEntity> &toDelete) {
-    toDelete.traverseBfs([this](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
-        deleteSceneEntity(*op);
-        return false;
-    });
-
-    if(csgTreeRoot->deleteNode(toDelete)) {
-        GEN_SET_DIRTY();
-    }
+    pendingDeleteCsgTreeNode.emplace_back(&toDelete);
 }
 
 void Scene::moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination) {
@@ -61,15 +54,8 @@ void Scene::moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity>
 }
 
 void Scene::deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
-    toDeleteChildren.traverseBfs([this, &toDeleteChildren](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
-        if(*op != *toDeleteChildren) {
-            deleteSceneEntity(*op);
-        }
-        return false;
-    });
-
-    if(toDeleteChildren.deleteChildren()) {
-        GEN_SET_DIRTY();
+    for(uint32 i = 0; i < toDeleteChildren.getChildCount(); ++i) {
+        pendingDeleteCsgTreeNode.emplace_back(&toDeleteChildren.getChildByIndex(i));
     }
 }
 
@@ -84,14 +70,7 @@ void Scene::createRootTransform(const char *name, TransformType type) {
 
 void Scene::deleteRootTransform(uint32 treeIndex) {
     GO_ASSERT(treeIndex < transformTreeRoots.size());
-    
-    (*transformTreeRoots[treeIndex]).traverseBfs([this](TreeNode<Transform> &op, TreeNode<Transform> *parent) -> bool {
-        deleteSceneEntity(*op);
-        return false;
-    });
-
-    transformTreeRoots.erase(transformTreeRoots.begin() + treeIndex);
-    GEN_SET_DIRTY();
+    pendingDeleteTransformTreeNode.emplace_back(treeIndex, nullptr);
 }
 
 void Scene::createTransform(const char *name, TransformType type, TreeNode<Transform> &parent) {
@@ -103,15 +82,7 @@ void Scene::createTransform(const char *name, TransformType type, TreeNode<Trans
 
 void Scene::deleteTransformTreeNode(uint32 treeIndex, TreeNode<Transform> &toDelete) {
     GO_ASSERT(treeIndex < transformTreeRoots.size());
-
-    toDelete.traverseBfs([this](TreeNode<Transform> &op, TreeNode<Transform> *parent) -> bool {
-        deleteSceneEntity(*op);
-        return false;
-    });
-
-    if(transformTreeRoots[treeIndex]->deleteNode(toDelete)) {
-        GEN_SET_DIRTY();
-    }
+    pendingDeleteTransformTreeNode.emplace_back(treeIndex, &toDelete);
 }
 
 void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, uint32 destinationTreeIndex, TreeNode<Transform> &destination) {
@@ -132,16 +103,9 @@ void Scene::detachObjectToTransformTreeNode(Object &object) {
 }
 
 
-void Scene::deleteTransformTreeNodeChildren(TreeNode<Transform> &toDeleteChildren) {
-    toDeleteChildren.traverseBfs([this, &toDeleteChildren](TreeNode<Transform> &op, TreeNode<Transform> *parent) -> bool {
-        if(*op != *toDeleteChildren) {
-            deleteSceneEntity(*op);
-        }
-        return false;
-    });
-
-    if(toDeleteChildren.deleteChildren()) {
-        GEN_SET_DIRTY();
+void Scene::deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform> &toDeleteChildren) {
+    for(uint32 i = 0; i < toDeleteChildren.getChildCount(); ++i) {
+        pendingDeleteTransformTreeNode.emplace_back(treeIndex, &toDeleteChildren.getChildByIndex(i));
     }
 }
 
@@ -199,4 +163,41 @@ bool Scene::deleteSceneEntity(SceneEntity &toDelete) {
         return true;
     }
     return false;
+}
+
+void Scene::doPendingOperations() {
+    bool deleted = !pendingDeleteCsgTreeNode.empty() || !pendingDeleteTransformTreeNode.empty();
+
+    for(auto toDeleteNodePtr : pendingDeleteCsgTreeNode) {
+        toDeleteNodePtr->traverseBfs([this, &toDeleteNodePtr](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {           
+            //Delete all children SceneEntities on the tree which toDeleteNode is the toDeleteNode
+            deleteSceneEntity(*op);
+            return false;
+        });
+
+        auto parentOfToDeleteNode = csgTreeRoot->findNodeParent(*toDeleteNodePtr);
+        if(parentOfToDeleteNode)
+            parentOfToDeleteNode->deleteChild(*toDeleteNodePtr);
+    }
+
+    for(auto &pair : pendingDeleteTransformTreeNode) {
+        TreeNode<Transform> &toDeleteNode = pair.second ? (*pair.second) : *transformTreeRoots[pair.first];
+
+        toDeleteNode.traverseBfs([this, &pair](TreeNode<Transform> &trans, TreeNode<Transform> *parent) -> bool {
+            deleteSceneEntity(*trans);
+            return false;
+        });
+
+        auto parentOfToDeleteNode = transformTreeRoots[pair.first]->findNodeParent(toDeleteNode);
+        if(parentOfToDeleteNode)
+            parentOfToDeleteNode->deleteChild(*pair.second);
+        else
+            transformTreeRoots.erase(transformTreeRoots.begin() + pair.first);
+    }
+
+    pendingDeleteCsgTreeNode.clear();
+    pendingDeleteTransformTreeNode.clear();
+
+    if(deleted)
+        GEN_SET_DIRTY();
 }

@@ -102,6 +102,9 @@ void GuiRoot::drawGui() {
 
         if(greenOrange.hasOpenProject()) {
 
+            //Pending operations are mostly delete objects marked to delete on last frame
+            greenOrange.getOpenProject()->doPendingOperations();
+
             //Generate (if needed) new GLSL for the upcoming frame
             GlslGenerator::getInstance().generateIfNeeded(*greenOrange.getOpenProject());
 

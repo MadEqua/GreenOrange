@@ -364,7 +364,7 @@ void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode
     const char *clearString = "Delete the transform %s children?\nThis operation cannot be undone!";
     sprintf_s(stringBuffer, clearString, transform.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Transform Children", stringBuffer)) {
-        scene.deleteTransformTreeNodeChildren(node);
+        scene.deleteTransformTreeNodeChildren(treeIndex, node);
     }
 
     const char *deleteString = "Delete the transform %s?\nThis operation cannot be undone!";

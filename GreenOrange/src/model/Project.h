@@ -25,6 +25,8 @@ public:
     uint32 getSelectedSceneIdx() const { return selectedSceneIdx; }
     Scene& getSelectedScene() { return getSceneByIndex(selectedSceneIdx); }
 
+    void doPendingOperations();
+
 private:
     std::string path;
     std::string name;

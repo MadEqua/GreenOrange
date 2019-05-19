@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
 
 #include "CsgOperator.h"
 #include "Transform.h"
@@ -46,7 +47,7 @@ public:
     void moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, uint32 destinationTreeIndex, TreeNode<Transform> &destination);
     void attachObjectToTransformTreeNode(Object &object, TreeNode<Transform> &transform);
     void detachObjectToTransformTreeNode(Object &object);
-    void deleteTransformTreeNodeChildren(TreeNode<Transform> &toDeleteChildren);
+    void deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform> &toDeleteChildren);
 
     //-----------------------------------------
     //Current selection
@@ -57,6 +58,10 @@ public:
     //-----------------------------------------
     //SceneEntity
     SceneEntity* findSceneEntity(uint32 id);
+
+    //-----------------------------------------
+    //Deletion postponing
+    void doPendingOperations();
 
 private:
     std::string name;
@@ -70,15 +75,19 @@ private:
     uint32 nextId = 0;
     uint32 selectedEntityId = -1;
 
-    uint32 generateId() { return nextId++; }
-
     //-----------------------------------------
     //Aux functions
+    uint32 generateId() { return nextId++; }
     std::unique_ptr<Transform> internalCreateTransform(const char *name, TransformType type);
 
     //-----------------------------------------
     //Internal SceneEntity management
     typename std::vector<std::unique_ptr<SceneEntity>>::iterator getIteratorToSceneEntityId(uint32 id);
     bool deleteSceneEntity(SceneEntity &toDelete);
+
+    //-----------------------------------------
+    //Deletion postponing
+    std::vector<TreeNode<SceneEntity>*> pendingDeleteCsgTreeNode;
+    std::vector<std::pair<uint32, TreeNode<Transform>*>> pendingDeleteTransformTreeNode;
 };
 

@@ -29,3 +29,9 @@ void Project::deleteSceneByIndex(uint32 idx) {
         GEN_SET_DIRTY();
     }
 }
+
+void Project::doPendingOperations() {
+    for(auto &scenePtr : scenes) {
+        scenePtr->doPendingOperations();
+    }
+}
