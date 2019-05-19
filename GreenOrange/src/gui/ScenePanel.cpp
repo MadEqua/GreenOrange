@@ -27,14 +27,14 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
         ImGui::NewLine();
 
         if(ImGui::CollapsingHeader("Transform Trees", flags)) {
+            for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
+                doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
+
+            ImGui::NewLine();
             if(ImGui::Button("New Tree")) {
                 ImGui::OpenPopup("newTreePopup");
             }
-            ImGui::NewLine();
 
-            for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
-                doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
-            
             if(ImGui::BeginPopupContextItem("newTreePopup")) {
                 for(uint32 i = 0; i < static_cast<int>(TransformType::Size); ++i) {
                     if(ImGui::MenuItem(TransformTypeStrings[i])) {
@@ -112,7 +112,7 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
     if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-        DndPayload payload = {DndPayload::DndType::Object, 0, &obj};
+        DndPayload payload = {DndPayload::DndType::Object, 0, &node};
         ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
         ImGui::Text(obj.getName().c_str());
         ImGui::EndDragDropSource();
@@ -257,7 +257,7 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transf
             if(dndPayload->type == DndPayload::DndType::Transform)
                 scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), treeIndex, node);
             else if(dndPayload->type == DndPayload::DndType::Object)
-                scene.attachObjectToTransformTreeNode(*static_cast<Object*>(dndPayload->dataPtr), node);
+                scene.attachObjectToTransformTreeNode(static_cast<Object&>(static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr)->getPayload()), node);
         }
         ImGui::EndDragDropTarget();
     }
@@ -287,6 +287,7 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
                 SceneEntity *selectedEntity = scene.getSelectedEntity();
                 if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
+                ImGui::PushID(obj.getId());
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
                 if(ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "")) {
                     if(ImGui::IsItemClicked())
@@ -308,6 +309,7 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
                     }
                     ImGui::TreePop();
                 }
+                ImGui::PopID();
             }
         }
         return false;
