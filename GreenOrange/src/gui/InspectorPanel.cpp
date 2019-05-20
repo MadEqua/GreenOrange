@@ -67,7 +67,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 {
                     Translation &trans = static_cast<Translation&>(tr);
                     float *ammount = trans.getAmmount();
-                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, DRAG_MIN, DRAG_MAX))
+                    if(ImGui::DragFloat3("Ammount", ammount, 0.05f, DRAG_MIN, DRAG_MAX))
                         trans.setAmmount(ammount);
                     break;
                 }
@@ -75,7 +75,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 {
                     Rotation &rot = static_cast<Rotation&>(tr);
                     float *ammount = rot.getAmmount();
-                    if(ImGui::DragFloat3("Ammount", ammount, 0.01f, DRAG_MIN, DRAG_MAX))
+                    if(ImGui::DragFloat3("Ammount", ammount, 1.0f, -180.0f, 180.0f))
                         rot.setAmmount(ammount);
                     break;
                 }

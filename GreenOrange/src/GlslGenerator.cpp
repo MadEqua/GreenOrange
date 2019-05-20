@@ -265,7 +265,8 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
     }
     case TransformType::Rotation:
     {
-        //TODO
+        Rotation &rotation = static_cast<Rotation&>(transform);
+        sstream << "rotateEuler(" << rotation.getAmmount()[0] << "," << rotation.getAmmount()[1] << "," << rotation.getAmmount()[2] << ") * " << parentP;
         break;
     }
     case TransformType::Custom:
