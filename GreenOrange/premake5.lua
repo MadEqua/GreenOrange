@@ -13,6 +13,9 @@ project "GreenOrange"
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/template.frag" }
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/fullScreen.vert" }
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/fallback.frag" }
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/objects.frag" }
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/transforms.frag" }
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/raymarcher.frag" }
 
     -- Include directories relative to root folder
     includeDir = {}

@@ -38,7 +38,7 @@ public:
     const std::string& getGlslCode() const { return glslCode; }
 
 private:
-    GlslGenerator() = default;
+    GlslGenerator();
 
     //Element on the code generation RPN list. It will be either a SceneElement (CsgOperator or Object)
     //or some already generated code to be composed with other operators/operations.
@@ -58,6 +58,8 @@ private:
     std::string glslCode;
 
     void initGeneration();
+
+    void replaceMainParts();
 
     static uint32 countNonEmptyOperands(TreeNode<SceneEntity> &node);
     static std::string generateScene(Scene &scene);

@@ -13,6 +13,9 @@ constexpr const char *UNIFORM_DIMENSIONS = "dimensions";
 constexpr const char *UNIFORM_TIME = "time";
 
 constexpr const char *REPLACE_SCENES = "#GO_REPLACE_SCENES";
+constexpr const char *REPLACE_TRANSFORMS = "#GO_REPLACE_TRANSFORMS";
+constexpr const char *REPLACE_OBJECTS = "#GO_REPLACE_OBJECTS";
+constexpr const char *REPLACE_RAYMARCHER = "#GO_REPLACE_RAYMARCHER";
 
 constexpr const float DRAG_MAX = 9999.0f;
 constexpr const float DRAG_MIN = -DRAG_MAX;

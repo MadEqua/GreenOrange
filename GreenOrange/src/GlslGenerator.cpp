@@ -15,6 +15,9 @@
 #include "Constants.h"
 
 #include "glsl/generated/template.frag.h"
+#include "glsl/generated/objects.frag.h"
+#include "glsl/generated/transforms.frag.h"
+#include "glsl/generated/raymarcher.frag.h"
 
 
 GlslGenerator::RpnElement::RpnElement(TreeNode<SceneEntity> &sceneEntityNode) :
@@ -28,6 +31,10 @@ GlslGenerator::RpnElement::RpnElement(std::string &&generatedCode) :
 }
 
 
+GlslGenerator::GlslGenerator() {
+    glslCode.reserve(1024 * 8);
+}
+
 void GlslGenerator::initGeneration() {
     glslCode.clear();
     glslCode.append(GLSL_VERSION).append("\n").append(template_frag);
@@ -35,20 +42,28 @@ void GlslGenerator::initGeneration() {
 
 void GlslGenerator::generateIfNeeded(Project &project) {
     if(needToGenerate) {
-        std::stringstream sstream;
         initGeneration();
 
+        replaceMainParts();
+
+        std::stringstream scenesStream;
         for(uint32 i = 0; i < project.getSceneCount(); ++i) {
             Scene &scene = project.getSceneByIndex(i);
-            sstream << generateScene(scene) << std::endl;
+            scenesStream << generateScene(scene) << std::endl;
         }
 
-        replace(glslCode, REPLACE_SCENES, sstream.str());
+        replace(glslCode, REPLACE_SCENES, scenesStream.str());
         needToGenerate = false;
         currentCodeId++;
     }
 }
 
+void GlslGenerator::replaceMainParts() {
+    //TODO: only add actually needed parts
+    replace(glslCode, REPLACE_OBJECTS, objects_frag);
+    replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
+    replace(glslCode, REPLACE_RAYMARCHER, raymarcher_frag);
+}
 
 std::string GlslGenerator::generateScene(Scene &scene) {
     std::stringstream sstream;
@@ -137,75 +152,37 @@ uint32 GlslGenerator::countNonEmptyOperands(TreeNode<SceneEntity> &root) {
 }
 
 std::string GlslGenerator::generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
-    std::stringstream sstream;
+    std::string templateString;
+    templateString.reserve(512);
 
-    int size = endIdx - startIdx;
-
-    //TODO: make pretty
     switch(csgOperator.getType()) {
     case CsgType::Union:
-        if(size == 1) {
-            sstream << generateOperand(scene, operands[startIdx]);
-        }
-        else if(size == 2) {
-            sstream << "min(";
-            sstream << generateOperand(scene, operands[startIdx]);
-            sstream << ", ";
-            sstream << generateOperand(scene, operands[startIdx + 1]);
-            sstream << ")";
-        }
-        else if(size > 2) {
-            sstream << "min(";
-            sstream << generateOperator(scene, csgOperator, operands, 0, 2);
-            sstream << ", ";
-            sstream << generateOperator(scene, csgOperator, operands, 2, size);
-            sstream << ")";
-        }
+        templateString = "min(#OP1,#OP2)";
         break;
     case CsgType::Intersection:
-        if(size == 1) {
-            sstream << generateOperand(scene, operands[startIdx]);
-        }
-        else if(size == 2) {
-            sstream << "max(";
-            sstream << generateOperand(scene, operands[startIdx]);
-            sstream << ", ";
-            sstream << generateOperand(scene, operands[startIdx + 1]);
-            sstream << ")";
-        }
-        else if(size > 2) {
-            sstream << "max(";
-            sstream << generateOperator(scene, csgOperator, operands, 0, 2);
-            sstream << ", ";
-            sstream << generateOperator(scene, csgOperator, operands, 2, size);
-            sstream << ")";
-        }
+        templateString = "max(#OP1,#OP2)";
         break;
     case CsgType::Subtraction:
-        if(size == 1) {
-            sstream << generateOperand(scene, operands[startIdx]);
-        }
-        else if(size == 2) {
-            sstream << "max(";
-            sstream << generateOperand(scene, operands[startIdx]);
-            sstream << ", -";
-            sstream << generateOperand(scene, operands[startIdx + 1]);
-            sstream << ")";
-        }
-        else if(size > 2) {
-            sstream << "max(";
-            sstream << generateOperator(scene, csgOperator, operands, 0, 2);
-            sstream << ", -";
-            sstream << generateOperator(scene, csgOperator, operands, 2, size);
-            sstream << ")";
-         }
+        templateString = "max(#OP1,-#OP2)";
         break;
     default:
         GO_ASSERT_ALWAYS();
-        break;
     }
 
-    return sstream.str();
+    int size = endIdx - startIdx;
+    if(size == 1) {
+        return generateOperand(scene, operands[startIdx]);
+    }
+    else if(size == 2) {
+        replace(templateString, "#OP1", generateOperand(scene, operands[startIdx]));
+        replace(templateString, "#OP2", generateOperand(scene, operands[startIdx + 1]));
+    }
+    else {
+        replace(templateString, "#OP1", generateOperator(scene, csgOperator, operands, 0, 2));
+        replace(templateString, "#OP2", generateOperator(scene, csgOperator, operands, 2, size));
+    }
+
+    return templateString;
 }
 
 std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnElement) {
@@ -242,7 +219,6 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         }
         default:
             GO_ASSERT_ALWAYS();
-            break;
         }
     }
 
@@ -277,7 +253,6 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
     }
     default:
         GO_ASSERT_ALWAYS();
-        break;
     }
 
     return sstream.str();
@@ -286,7 +261,6 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
 std::string GlslGenerator::generateTransformName(const Transform &transform) {
     return transform.getName() + "_" + std::to_string(transform.getId());
 }
-
 
 bool GlslGenerator::replace(std::string& str, const std::string& toReplace, const std::string& replacement) {
     size_t start_pos = str.find(toReplace);
