@@ -1,6 +1,11 @@
 out vec4 fragColor;
 uniform vec2 dimensions;
 
+#define DIR_LIGHT_MAX 4
+uint dirLightCount = 1;
+vec3 dirLightPositions[DIR_LIGHT_MAX];
+uint dirLightColors[DIR_LIGHT_MAX];
+
 #GO_REPLACE_TRANSFORMS
 
 #GO_REPLACE_OBJECTS
@@ -22,7 +27,14 @@ vec3 cam2world(vec3 v, vec3 pos, vec3 lookAt) {
     return normalize(mat3(x, y, z) * v);
 }
 
+void initConstants() {
+    dirLightPositions[0] = normalize(vec3(0.5, -1.0, -0.5));
+    dirLightColors[0] = packUnorm4x8(vec4(.1, .9, .3, 1.));
+}
+
 void main() {
+    initConstants();
+
     vec2 uv = (gl_FragCoord.xy - .5 * dimensions.xy) / dimensions.y;
 
     vec3 cameraPos = vec3(0., 0., 5.);

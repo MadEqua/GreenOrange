@@ -27,8 +27,12 @@ vec3 normal(vec3 p) {
 }
 
 vec3 shade(vec3 p) {
-    vec3 L = normalize(vec3(0.5, -1.0, -0.5));
-    vec3 N = normal(p);
-    float diff = max(0.0, dot(-L, N));
-    return diff * vec3(.1, .9, .3);
+    vec3 sum = vec3(0.0);
+    for(int i = 0; i < dirLightCount; ++i) {
+        vec3 L = dirLightPositions[i];
+        vec3 N = normal(p);
+        float diff = max(0.0, dot(-L, N));
+        sum += diff * unpackUnorm4x8(dirLightColors[i]).xyz;
+    }
+    return sum;
 }
