@@ -3,7 +3,10 @@
 #include "Panel.h"
 #include "../Constants.h"
 
-class SceneEntity;
+class CsgOperator;
+class Object;
+class Transform;
+class Light;
 
 class InspectorPanel : public Panel
 {
@@ -12,6 +15,11 @@ public:
 
 private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;
+
+    void doCsgOperator(CsgOperator &csgOperator);
+    void doObject(Object &object);
+    void doTransform(Transform &transform);
+    void doLight(Light &light);
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
 };

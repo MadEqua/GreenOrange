@@ -7,6 +7,7 @@
 
 #include "CsgOperator.h"
 #include "Transform.h"
+#include "Light.h"
 #include "../Tree.h"
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
@@ -50,6 +51,13 @@ public:
     void deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform> &toDeleteChildren);
 
     //-----------------------------------------
+    //Lights
+    void createLight(const char *name, LightType type);
+    void deleteLight(Light &light);
+    size_t getLightCount() const { return lights.size(); }
+    Light& getLightByIndex(uint32 i) { GO_ASSERT(i < lights.size()); return *lights[i]; }
+
+    //-----------------------------------------
     //Current selection
     void setSelectedEntity(SceneEntity &ent) { selectedEntityId = ent.getId(); }
     SceneEntity* getSelectedEntity();
@@ -66,13 +74,15 @@ public:
 private:
     std::string name;
 
-    //All SceneEntities are owned here. The trees only have references.
+    //All SceneEntities are owned here. The trees and other lists only have references.
     std::vector<std::unique_ptr<SceneEntity>> sceneEntities;
 
     std::unique_ptr<TreeNode<SceneEntity>> csgTreeRoot;
 
-    //Every transform tree will be a direct child of this one, allowing for easy moving between any nodes. This root will hidden on the UI.
+    //Every transform tree will be a direct child of this one, allowing for easy moving between any nodes. This root will be hidden on the UI.
     std::unique_ptr<TreeNode<Transform>> transformTreeDummyRoot;
+
+    std::vector<Light*> lights;
 
     uint32 nextId = 0;
     uint32 selectedEntityId = -1;
@@ -82,6 +92,7 @@ private:
     uint32 generateId() { return nextId++; }
     std::unique_ptr<Object> internalCreateObject(const char *name, ObjectType type);
     std::unique_ptr<Transform> internalCreateTransform(const char *name, TransformType type);
+    std::unique_ptr<Light> internalCreateLight(const char *name, LightType type);
 
     //-----------------------------------------
     //Internal SceneEntity management
@@ -90,7 +101,7 @@ private:
 
     //-----------------------------------------
     //Deletion postponing
-    std::vector<TreeNode<SceneEntity>*> pendingDeleteCsgTreeNode;
-    std::vector<std::pair<uint32, TreeNode<Transform>*>> pendingDeleteTransformTreeNode;
+    std::vector<TreeNode<SceneEntity>*> pendingDeleteCsgTreeNodes;
+    std::vector<std::pair<uint32, TreeNode<Transform>*>> pendingDeleteTransformTreeNodes;
+    std::vector<Light*> pendingDeleteLights;
 };
-

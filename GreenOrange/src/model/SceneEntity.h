@@ -21,6 +21,7 @@ public:
     bool isCsgOperator() const { return type == SceneEntityType::CsgOperator; }
     bool isObject() const { return type == SceneEntityType::Object; }
     bool isTransform() const { return type == SceneEntityType::Transform; }
+    bool isLight() const { return type == SceneEntityType::Light; }
 
     bool operator==(const SceneEntity& other) { return id == other.id; }
     bool operator!=(const SceneEntity& other) { return id != other.id; }

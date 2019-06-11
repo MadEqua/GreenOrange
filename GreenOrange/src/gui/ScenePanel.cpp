@@ -18,8 +18,8 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
     
     ImGui::Begin("Scene", &open);
     {
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-        if(ImGui::CollapsingHeader("CSG Tree", flags)) {
+        ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
+        if(ImGui::CollapsingHeader("CSG Tree", treeNodeFlags)) {
             doOperatorNode(scene, scene.getCsgTreeRootNode());
         }
 
@@ -28,7 +28,7 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
         ImGui::NewLine();
         ImGui::NewLine();
 
-        if(ImGui::CollapsingHeader("Transform Trees", flags)) {
+        if(ImGui::CollapsingHeader("Transform Trees", treeNodeFlags)) {
             for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
                 doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
 
@@ -41,6 +41,35 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
                 for(uint32 i = 0; i < static_cast<int>(TransformType::Size); ++i) {
                     if(ImGui::MenuItem(TransformTypeStrings[i])) {
                         scene.createRootTransform(TransformTypeStrings[i], static_cast<TransformType>(i));
+                    }
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        ImGui::NewLine();
+        ImGui::NewLine();
+        ImGui::NewLine();
+        ImGui::NewLine();
+
+        if(ImGui::CollapsingHeader("Lights", treeNodeFlags)) {
+            for(uint32 i = 0; i < scene.getLightCount(); ++i) {
+                auto &light = scene.getLightByIndex(i);
+                if(ImGui::Selectable(light.getName().c_str())) {
+                    scene.setSelectedEntity(light);
+                }
+                doLightContextMenu(scene, light);
+            }
+
+            ImGui::NewLine();
+            if(ImGui::Button("New Light")) {
+                ImGui::OpenPopup("newLightPopup");
+            }
+
+            if(ImGui::BeginPopupContextItem("newLightPopup")) {
+                for(uint32 i = 0; i < static_cast<int>(LightType::Size); ++i) {
+                    if(ImGui::MenuItem(LightTypeStrings[i])) {
+                        scene.createLight(LightTypeStrings[i], static_cast<LightType>(i));
                     }
                 }
                 ImGui::EndPopup();
@@ -103,6 +132,73 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
         ImGui::TreePop();
     }
     ImGui::PopID();
+}
+
+void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const {
+    CsgOperator &csgOp = static_cast<CsgOperator&>(*node);
+
+    bool openRenamePopup = false;
+    bool openDeletePopup = false;
+    bool openDeleteChildrenPopup = false;
+
+    if(ImGui::BeginPopupContextItem()) {
+        if(ImGui::BeginMenu("New CSG Operator")) {
+            for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
+                if(ImGui::MenuItem(CsgTypeStrings[i])) {
+                    scene.createCsgOperator(CsgTypeStrings[i], static_cast<CsgType>(i), node);
+                }
+            }
+            ImGui::EndMenu();
+        }
+        if(ImGui::BeginMenu("New Object")) {
+            for(uint32 i = 0; i < static_cast<int>(ObjectType::Size); ++i) {
+                if(ImGui::MenuItem(ObjectTypeStrings[i])) {
+                    scene.createObject(ObjectTypeStrings[i], static_cast<ObjectType>(i), node);
+                }
+            }
+            ImGui::EndMenu();
+        }
+        if(ImGui::Selectable("Rename")) {
+            openRenamePopup = true;
+        }
+        if(scene.getCsgRootOperator() != csgOp && ImGui::Selectable("Delete")) {
+            openDeletePopup = true;
+        }
+        if(node.hasChildren() && ImGui::Selectable("Delete Children")) {
+            openDeleteChildrenPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if(openRenamePopup) {
+        strcpy_s(inputBuffer, csgOp.getName().c_str());
+        ImGui::OpenPopup("Rename Operator");
+    }
+    const char *newNameString = "Enter a new name for the operator %s.";
+    sprintf_s(stringBuffer, newNameString, csgOp.getName().c_str());
+    if(ImGuiUtils::InputTextPopup("Rename Operator", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
+        csgOp.setName(inputBuffer);
+    }
+
+    if(openDeletePopup) {
+        ImGui::OpenPopup("Delete Operator");
+    }
+
+    if(openDeleteChildrenPopup) {
+        ImGui::OpenPopup("Delete Operator Children");
+    }
+    const char *clearString = "Delete the operator %s children?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, clearString, csgOp.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Operator Children", stringBuffer)) {
+        scene.deleteCsgTreeNodeChildren(node);
+    }
+
+    const char *deleteString = "Delete the operator %s?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, deleteString, csgOp.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Operator", stringBuffer)) {
+        scene.deleteCsgTreeNode(node);
+    }
 }
 
 void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
@@ -180,70 +276,38 @@ void ScenePanel::doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) 
     }
 }
 
-void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const {
-    CsgOperator &csgOp = static_cast<CsgOperator&>(*node);
-
+void ScenePanel::doLightContextMenu(Scene &scene, Light &light) const {
     bool openRenamePopup = false;
     bool openDeletePopup = false;
-    bool openDeleteChildrenPopup = false;
 
     if(ImGui::BeginPopupContextItem()) {
-        if(ImGui::BeginMenu("New CSG Operator")) {
-            for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
-                if(ImGui::MenuItem(CsgTypeStrings[i])) {
-                    scene.createCsgOperator(CsgTypeStrings[i], static_cast<CsgType>(i), node);
-                }
-            }
-            ImGui::EndMenu();
-        }
-        if(ImGui::BeginMenu("New Object")) {
-            for(uint32 i = 0; i < static_cast<int>(ObjectType::Size); ++i) {
-                if(ImGui::MenuItem(ObjectTypeStrings[i])) {
-                    scene.createObject(ObjectTypeStrings[i], static_cast<ObjectType>(i), node);
-                }
-            }
-            ImGui::EndMenu();
-        }
         if(ImGui::Selectable("Rename")) {
             openRenamePopup = true;
         }
-        if(scene.getCsgRootOperator() != csgOp && ImGui::Selectable("Delete")) {
+        if(ImGui::Selectable("Delete")) {
             openDeletePopup = true;
-        }
-        if(node.hasChildren() && ImGui::Selectable("Delete Children")) {
-            openDeleteChildrenPopup = true;
         }
 
         ImGui::EndPopup();
     }
-    
+
     if(openRenamePopup) {
-        strcpy_s(inputBuffer, csgOp.getName().c_str());
-        ImGui::OpenPopup("Rename Operator");
+        strcpy_s(inputBuffer, light.getName().c_str());
+        ImGui::OpenPopup("Rename Light");
     }
-    const char *newNameString = "Enter a new name for the operator %s.";
-    sprintf_s(stringBuffer, newNameString, csgOp.getName().c_str());
-    if(ImGuiUtils::InputTextPopup("Rename Operator", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
-        csgOp.setName(inputBuffer);
+    const char *newNameString = "Enter a new name for the light %s.";
+    sprintf_s(stringBuffer, newNameString, light.getName().c_str());
+    if(ImGuiUtils::InputTextPopup("Rename Light", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
+        light.setName(inputBuffer);
     }
 
     if(openDeletePopup) {
-        ImGui::OpenPopup("Delete Operator");
+        ImGui::OpenPopup("Delete Light");
     }
-
-    if(openDeleteChildrenPopup) {
-        ImGui::OpenPopup("Delete Operator Children");
-    }
-    const char *clearString = "Delete the operator %s children?\nThis operation cannot be undone!";
-    sprintf_s(stringBuffer, clearString, csgOp.getName().c_str());
-    if(ImGuiUtils::YesNoPopup("Delete Operator Children", stringBuffer)) {
-        scene.deleteCsgTreeNodeChildren(node);
-    }
-
-    const char *deleteString = "Delete the operator %s?\nThis operation cannot be undone!";
-    sprintf_s(stringBuffer, deleteString, csgOp.getName().c_str());
-    if(ImGuiUtils::YesNoPopup("Delete Operator", stringBuffer)) {
-        scene.deleteCsgTreeNode(node);
+    const char *deleteString = "Delete the light %s?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, deleteString, light.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Light", stringBuffer)) {
+        scene.deleteLight(light);
     }
 }
 
@@ -296,49 +360,6 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transf
         ImGui::TreePop();
     }
     ImGui::PopID();
-}
-
-void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
-    scene.getCsgTreeRootNode().traverseBfs([&scene, treeIndex, &node, this](TreeNode<SceneEntity> &entityNode, TreeNode<SceneEntity> *parent) -> bool {
-        if(entityNode->isObject()) {
-            Object &obj = static_cast<Object&>(*entityNode);
-            if(obj.isAttachedToTransform() && obj.getTransformId() == node->getId()) {
-                uint32 id = obj.getId();
-
-                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;
-
-                SceneEntity *selectedEntity = scene.getSelectedEntity();
-                if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
-
-                ImGui::PushID(obj.getId());
-                ImGui::PushStyleColor(ImGuiCol_Text, COLOR_GRAY);
-                bool isNodeOpen = ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
-                ImGui::PopStyleColor();
-
-                if(isNodeOpen) {
-                    if(ImGui::IsItemClicked())
-                        scene.setSelectedEntity(obj);
-
-                    if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-                        DndPayload payload = {DndPayload::DndType::TransformAtttachment, treeIndex, &obj};
-                        ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
-                        ImGui::Text(obj.getName().c_str());
-                        ImGui::EndDragDropSource();
-                    }
-
-                    if(ImGui::BeginPopupContextItem()) {
-                        if(ImGui::Selectable("Detach")) {
-                            scene.detachObjectToTransformTreeNode(obj);
-                        }
-                        ImGui::EndPopup();
-                    }
-                    ImGui::TreePop();
-                }
-                ImGui::PopID();
-            }
-        }
-        return false;
-    });
 }
 
 void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
@@ -406,4 +427,47 @@ void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode
         scene.deleteTransformTreeNode(treeIndex, node);
 
     }
+}
+
+void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
+    scene.getCsgTreeRootNode().traverseBfs([&scene, treeIndex, &node, this](TreeNode<SceneEntity> &entityNode, TreeNode<SceneEntity> *parent) -> bool {
+        if(entityNode->isObject()) {
+            Object &obj = static_cast<Object&>(*entityNode);
+            if(obj.isAttachedToTransform() && obj.getTransformId() == node->getId()) {
+                uint32 id = obj.getId();
+
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;
+
+                SceneEntity *selectedEntity = scene.getSelectedEntity();
+                if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
+
+                ImGui::PushID(obj.getId());
+                ImGui::PushStyleColor(ImGuiCol_Text, COLOR_GRAY);
+                bool isNodeOpen = ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
+                ImGui::PopStyleColor();
+
+                if(isNodeOpen) {
+                    if(ImGui::IsItemClicked())
+                        scene.setSelectedEntity(obj);
+
+                    if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+                        DndPayload payload = {DndPayload::DndType::TransformAtttachment, treeIndex, &obj};
+                        ImGui::SetDragDropPayload(DND_PAYLOAD, &payload, sizeof(DndPayload));
+                        ImGui::Text(obj.getName().c_str());
+                        ImGui::EndDragDropSource();
+                    }
+
+                    if(ImGui::BeginPopupContextItem()) {
+                        if(ImGui::Selectable("Detach")) {
+                            scene.detachObjectToTransformTreeNode(obj);
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::TreePop();
+                }
+                ImGui::PopID();
+            }
+        }
+        return false;
+    });
 }

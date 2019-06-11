@@ -5,11 +5,13 @@ const char* CsgTypeStrings[static_cast<int>(CsgType::Size)];
 const char* ObjectTypeStrings[static_cast<int>(ObjectType::Size)];
 const char* PanelTypeStrings[static_cast<int>(PanelType::Size)];
 const char* TransformTypeStrings[static_cast<int>(TransformType::Size)];
+const char* LightTypeStrings[static_cast<int>(LightType::Size)];
 
 void initDataRepo() {
     SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Object)] = "Object";
     SceneEntityTypeStrings[static_cast<int>(SceneEntityType::CsgOperator)] = "CSG Operator";
     SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Transform)] = "Transform";
+    SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Light)] = "Light";
 
     CsgTypeStrings[static_cast<int>(CsgType::Union)] = "Union";
     CsgTypeStrings[static_cast<int>(CsgType::Intersection)] = "Intersection";
@@ -28,4 +30,7 @@ void initDataRepo() {
     TransformTypeStrings[static_cast<int>(TransformType::Translation)] = "Translation";
     TransformTypeStrings[static_cast<int>(TransformType::Rotation)] = "Rotation";
     TransformTypeStrings[static_cast<int>(TransformType::Custom)] = "Custom";
+
+    LightTypeStrings[static_cast<int>(LightType::Directional)] = "Directional";
+    LightTypeStrings[static_cast<int>(LightType::Point)] = "Point";
 }

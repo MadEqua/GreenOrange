@@ -30,7 +30,7 @@ void Scene::createObject(const char *name, ObjectType type, TreeNode<SceneEntity
 }
 
 void Scene::deleteCsgTreeNode(TreeNode<SceneEntity> &toDelete) {
-    pendingDeleteCsgTreeNode.emplace_back(&toDelete);
+    pendingDeleteCsgTreeNodes.emplace_back(&toDelete);
 }
 
 void Scene::moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination) {
@@ -45,7 +45,7 @@ void Scene::swapCsgTreeSiblingNodes(TreeNode<SceneEntity> &node1, TreeNode<Scene
 
 void Scene::deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren) {
     for(uint32 i = 0; i < toDeleteChildren.getChildCount(); ++i) {
-        pendingDeleteCsgTreeNode.emplace_back(&toDeleteChildren.getChildByIndex(i));
+        pendingDeleteCsgTreeNodes.emplace_back(&toDeleteChildren.getChildByIndex(i));
     }
 }
 
@@ -64,7 +64,7 @@ void Scene::createTransform(const char *name, TransformType type, TreeNode<Trans
 
 void Scene::deleteTransformTreeNode(uint32 treeIndex, TreeNode<Transform> &toDelete) {
     GO_ASSERT(treeIndex < transformTreeDummyRoot->getChildCount());
-    pendingDeleteTransformTreeNode.emplace_back(treeIndex, &toDelete);
+    pendingDeleteTransformTreeNodes.emplace_back(treeIndex, &toDelete);
 }
 
 void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &toMove, TreeNode<Transform> &destination) {
@@ -84,11 +84,21 @@ void Scene::detachObjectToTransformTreeNode(Object &object) {
     GEN_SET_DIRTY();
 }
 
-
 void Scene::deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform> &toDeleteChildren) {
     for(uint32 i = 0; i < toDeleteChildren.getChildCount(); ++i) {
-        pendingDeleteTransformTreeNode.emplace_back(treeIndex, &toDeleteChildren.getChildByIndex(i));
+        pendingDeleteTransformTreeNodes.emplace_back(treeIndex, &toDeleteChildren.getChildByIndex(i));
     }
+}
+
+void Scene::createLight(const char *name, LightType type) {
+    auto lightPtr = internalCreateLight(name, type);
+    lights.emplace_back(lightPtr.get());
+    sceneEntities.emplace_back(std::move(lightPtr));
+    GEN_SET_DIRTY();
+}
+
+void Scene::deleteLight(Light &light) {
+    pendingDeleteLights.emplace_back(&light);
 }
 
 std::unique_ptr<Object> Scene::internalCreateObject(const char *name, ObjectType type) {
@@ -114,6 +124,18 @@ std::unique_ptr<Transform> Scene::internalCreateTransform(const char *name, Tran
     default:
         GO_ASSERT_ALWAYS()
         return std::unique_ptr<Transform>();
+    }
+}
+
+std::unique_ptr<Light> Scene::internalCreateLight(const char *name, LightType type) {
+    switch(type) {
+    case LightType::Directional:
+        return std::make_unique<DirectionalLight>(generateId(), name);
+    case LightType::Point:
+        return std::make_unique<PointLight>(generateId(), name);
+    default:
+        GO_ASSERT_ALWAYS()
+        return std::unique_ptr<Light>();
     }
 }
 
@@ -159,9 +181,11 @@ bool Scene::deleteSceneEntity(SceneEntity &toDelete) {
 }
 
 void Scene::doPendingOperations() {
-    bool deleted = !pendingDeleteCsgTreeNode.empty() || !pendingDeleteTransformTreeNode.empty();
+    bool deleted = !pendingDeleteCsgTreeNodes.empty() ||
+        !pendingDeleteTransformTreeNodes.empty() ||
+        !pendingDeleteLights.empty();
 
-    for(auto toDeleteNodePtr : pendingDeleteCsgTreeNode) {
+    for(auto toDeleteNodePtr : pendingDeleteCsgTreeNodes) {
         auto parentOfToDeleteNode = csgTreeRoot->findNodeParent(*toDeleteNodePtr);
 
         toDeleteNodePtr->traverseBfs([this, &toDeleteNodePtr](TreeNode<SceneEntity> &op, TreeNode<SceneEntity> *parent) -> bool {
@@ -174,7 +198,7 @@ void Scene::doPendingOperations() {
             parentOfToDeleteNode->deleteChild(*toDeleteNodePtr);
     }
 
-    for(auto &pair : pendingDeleteTransformTreeNode) {
+    for(auto &pair : pendingDeleteTransformTreeNodes) {
         auto &toDeleteNode = *pair.second;
 
         auto parentOfToDeleteNode = transformTreeDummyRoot->findNodeParent(toDeleteNode);
@@ -188,8 +212,16 @@ void Scene::doPendingOperations() {
             parentOfToDeleteNode->deleteChild(*pair.second);
     }
 
-    pendingDeleteCsgTreeNode.clear();
-    pendingDeleteTransformTreeNode.clear();
+    for(auto *light : pendingDeleteLights) {
+        deleteSceneEntity(*light);
+        auto it = std::find(lights.begin(), lights.end(), light);
+        if(it != lights.end())
+            lights.erase(it);
+    }
+
+    pendingDeleteCsgTreeNodes.clear();
+    pendingDeleteTransformTreeNodes.clear();
+    pendingDeleteLights.clear();
 
     if(deleted)
         GEN_SET_DIRTY();
