@@ -12,12 +12,12 @@
 #include "model/Transform.h"
 #include "model/Project.h"
 #include "model/Scene.h"
+#include "model/Light.h"
 #include "Constants.h"
 
 #include "glsl/generated/template.frag.h"
 #include "glsl/generated/objects.frag.h"
 #include "glsl/generated/transforms.frag.h"
-#include "glsl/generated/raymarcher.frag.h"
 
 
 GlslGenerator::RpnElement::RpnElement(TreeNode<SceneEntity> &sceneEntityNode) :
@@ -44,25 +44,101 @@ void GlslGenerator::generateIfNeeded(Project &project) {
     if(needToGenerate) {
         initGeneration();
 
-        replaceMainParts();
+        //TODO: only add actually needed/used parts
+        replace(glslCode, REPLACE_OBJECTS, objects_frag);
+        replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
 
-        std::stringstream scenesStream;
-        for(uint32 i = 0; i < project.getSceneCount(); ++i) {
-            Scene &scene = project.getSceneByIndex(i);
-            scenesStream << generateScene(scene) << std::endl;
-        }
+        generateLights(project);
+        generateScenes(project);
 
-        replace(glslCode, REPLACE_SCENES, scenesStream.str());
         needToGenerate = false;
         currentCodeId++;
     }
 }
 
-void GlslGenerator::replaceMainParts() {
-    //TODO: only add actually needed parts
-    replace(glslCode, REPLACE_OBJECTS, objects_frag);
-    replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
-    replace(glslCode, REPLACE_RAYMARCHER, raymarcher_frag);
+void GlslGenerator::generateLights(Project &project) {
+    uint32 totalDirLightCount = 0;
+    uint32 totalPointLightCount = 0;
+
+    std::stringstream sstreamDirLightsSet;
+    std::stringstream sstreamPointLightsSet;
+
+    sstreamDirLightsSet << "switch(currentSceneIndex) {" << std::endl;
+    sstreamPointLightsSet << "switch(currentSceneIndex) {" << std::endl;
+
+    for(uint32 i = 0; i < project.getSceneCount(); ++i) {
+        Scene &scene = project.getSceneByIndex(i);
+
+        uint32 sceneDirLightCount = scene.getDirLightCount();
+        uint32 scenePointLightCount = scene.getPointLightCount();
+
+        sstreamDirLightsSet << "case " << i << ":" << std::endl;
+        sstreamDirLightsSet << "return ivec2(" << totalDirLightCount << "," << (totalDirLightCount + sceneDirLightCount - 1) << ");" << std::endl;
+
+        sstreamPointLightsSet << "case " << i << ":" << std::endl;
+        sstreamPointLightsSet << "return ivec2(" << totalPointLightCount << "," << (totalPointLightCount + scenePointLightCount - 1) << ");" << std::endl;
+
+        totalDirLightCount += sceneDirLightCount;
+        totalPointLightCount += scenePointLightCount;
+    }
+
+    sstreamDirLightsSet << "}" << std::endl;
+    sstreamPointLightsSet << "}" << std::endl;
+
+    replace(glslCode, REPLACE_DIR_LIGHTS_SET, sstreamDirLightsSet.str());
+    replace(glslCode, REPLACE_POINT_LIGHTS_SET, sstreamPointLightsSet.str());
+
+    replace(glslCode, REPLACE_DIR_LIGHT_COUNT, std::to_string(totalDirLightCount));
+    replace(glslCode, REPLACE_POINT_LIGHT_COUNT, std::to_string(totalPointLightCount));
+
+    std::stringstream sstreamLightInit;
+    if(totalDirLightCount) {
+        sstreamLightInit << "for(int i = 0; i < " << totalDirLightCount << "; ++i) {" << std::endl;
+        for(uint32 s = 0; s < project.getSceneCount(); ++s) {
+            Scene &scene = project.getSceneByIndex(s);
+
+            for(uint32 l = 0; l < scene.getLightCount(); ++l) {
+                Light &light = scene.getLightByIndex(l);
+                float *col = light.getColor();
+
+                if(light.isDirectional()) {
+                    float *dir = static_cast<DirectionalLight&>(light).getDirection();
+                    sstreamLightInit << "    dirLights[i].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
+                    sstreamLightInit << "    dirLights[i].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
+                }
+            }
+        }
+        sstreamLightInit << "}" << std::endl;
+    }
+
+    if(totalPointLightCount) {
+        sstreamLightInit << "for(int i = 0; i < " << totalPointLightCount << "; ++i) {" << std::endl;
+        for(uint32 s = 0; s < project.getSceneCount(); ++s) {
+            Scene &scene = project.getSceneByIndex(s);
+
+            for(uint32 l = 0; l < scene.getLightCount(); ++l) {
+                Light &light = scene.getLightByIndex(l);
+                float *col = light.getColor();
+                if(light.isPoint()) {
+                    float *pos = static_cast<PointLight&>(light).getPosition();
+                    sstreamLightInit << "    pointLights[i].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
+                    sstreamLightInit << "    pointLights[i].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
+                }
+            }
+        }
+        sstreamLightInit << "}" << std::endl;
+    }
+
+    replace(glslCode, REPLACE_LIGHTS_INIT, sstreamLightInit.str());
+}
+
+void GlslGenerator::generateScenes(Project &project) {
+    std::stringstream sstream;
+    for(uint32 i = 0; i < project.getSceneCount(); ++i) {
+        Scene &scene = project.getSceneByIndex(i);
+        sstream << generateScene(scene) << std::endl;
+    }
+    replace(glslCode, REPLACE_SCENE_SDFS, sstream.str());
 }
 
 std::string GlslGenerator::generateScene(Scene &scene) {
@@ -83,7 +159,6 @@ std::string GlslGenerator::generateScene(Scene &scene) {
     sstream << "}" << std::endl;
     return sstream.str();
 }
-
 
 std::string GlslGenerator::generateSceneTree(Scene &scene) {
     //RPN list of operations and operators (ex: AB+CD-+)
@@ -263,9 +338,14 @@ std::string GlslGenerator::generateTransformName(const Transform &transform) {
 }
 
 bool GlslGenerator::replace(std::string& str, const std::string& toReplace, const std::string& replacement) {
-    size_t start_pos = str.find(toReplace);
-    if(start_pos == std::string::npos)
-        return false;
-    str.replace(start_pos, toReplace.length(), replacement);
-    return true;
+    size_t index = 0;
+    bool replaced = false;
+    while(true) {
+        index = str.find(toReplace, index);
+        if(index == std::string::npos) break;
+        str.replace(index, toReplace.length(), replacement);
+        index += toReplace.length();
+        replaced = true;
+    }
+    return replaced;
 }

@@ -15,6 +15,8 @@ public:
     void setColor(float r, float g, float b) { color[0] = r; color[1] = g; color[2] = b; GEN_SET_DIRTY(); }
     void setColor(float *color) { memcpy(color, this->color, 3 * sizeof(float)); GEN_SET_DIRTY(); }
     float* getColor() { return color; }
+    bool isDirectional() const { return type == LightType::Directional; }
+    bool isPoint() const { return type == LightType::Point; }
 
     LightType getType() const { return type; }
 

@@ -121,13 +121,6 @@ void InspectorPanel::doLight(Light &light) {
     ImGui::Text(LightTypeStrings[static_cast<int>(light.getType())]);
     ImGui::NewLine();
 
-    ImGuiColorEditFlags colorPickerFlags = 0; //ImGuiColorEditFlags_RGB;
-    float *color = light.getColor();
-    if(ImGui::ColorPicker3("Color", color, colorPickerFlags))
-        light.setColor(color);
-
-    ImGui::NewLine();
-
     switch(light.getType()) {
     case LightType::Directional:
     {
@@ -149,4 +142,11 @@ void InspectorPanel::doLight(Light &light) {
         GO_ASSERT_ALWAYS();
         break;
     }
+
+    ImGui::NewLine();
+
+    ImGuiColorEditFlags colorPickerFlags = 0;// ImGuiColorEditFlags_NoInputs;
+    float *color = light.getColor();
+    if(ImGui::ColorPicker3("Color", color, colorPickerFlags))
+        light.setColor(color);
 }

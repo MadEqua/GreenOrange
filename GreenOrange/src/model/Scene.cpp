@@ -13,6 +13,9 @@ Scene::Scene(const char* name) :
 
     sceneEntities.emplace_back(internalCreateTransform("Root Transform", TransformType::Translation));
     transformTreeDummyRoot = std::make_unique<TreeNode<Transform>>(static_cast<Transform&>(*sceneEntities[1]));
+
+    createObject("Default Sphere", ObjectType::Sphere, *csgTreeRoot);
+    createLight("Default Light", LightType::Directional);
 }
 
 void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<SceneEntity> &parent) {
@@ -99,6 +102,22 @@ void Scene::createLight(const char *name, LightType type) {
 
 void Scene::deleteLight(Light &light) {
     pendingDeleteLights.emplace_back(&light);
+}
+
+uint32 Scene::getDirLightCount() const {
+    uint32 sum = 0;
+    for(const Light *l : lights) {
+        if(l->isDirectional()) sum++;
+    }
+    return sum;
+}
+
+uint32 Scene::getPointLightCount() const {
+    uint32 sum = 0;
+    for(const Light *l : lights) {
+        if(l->isPoint()) sum++;
+    }
+    return sum;
 }
 
 std::unique_ptr<Object> Scene::internalCreateObject(const char *name, ObjectType type) {

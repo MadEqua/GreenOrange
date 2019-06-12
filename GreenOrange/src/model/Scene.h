@@ -56,6 +56,8 @@ public:
     void deleteLight(Light &light);
     size_t getLightCount() const { return lights.size(); }
     Light& getLightByIndex(uint32 i) { GO_ASSERT(i < lights.size()); return *lights[i]; }
+    uint32 getDirLightCount() const;
+    uint32 getPointLightCount() const;
 
     //-----------------------------------------
     //Current selection

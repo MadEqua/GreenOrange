@@ -59,9 +59,9 @@ private:
 
     void initGeneration();
 
-    void replaceMainParts();
+    void generateLights(Project &project);
+    void generateScenes(Project &project);
 
-    static uint32 countNonEmptyOperands(TreeNode<SceneEntity> &node);
     static std::string generateScene(Scene &scene);
     static std::string generateSceneTree(Scene &scene);
     static std::string generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
@@ -69,6 +69,7 @@ private:
     static std::string generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode);
 
     static std::string generateTransformName(const Transform &transform);
+    static uint32 countNonEmptyOperands(TreeNode<SceneEntity> &node);
     
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };
