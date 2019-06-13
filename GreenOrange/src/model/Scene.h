@@ -12,7 +12,7 @@
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
 
-class SceneEntity;
+class Entity;
 
 
 class Scene
@@ -25,16 +25,16 @@ public:
 
     //-----------------------------------------
     //CSG tree
-    TreeNode<SceneEntity>& getCsgTreeRootNode() { return *csgTreeRoot; }
+    TreeNode<Entity>& getCsgTreeRootNode() { return *csgTreeRoot; }
     CsgOperator& getCsgRootOperator() { return static_cast<CsgOperator&>(csgTreeRoot->getPayload()); }
 
-    void createCsgOperator(const char *name, CsgType type, TreeNode<SceneEntity> &parent);
-    void createObject(const char *name, ObjectType type, TreeNode<SceneEntity> &parent);
+    void createCsgOperator(const char *name, CsgType type, TreeNode<Entity> &parent);
+    void createObject(const char *name, ObjectType type, TreeNode<Entity> &parent);
 
-    void deleteCsgTreeNode(TreeNode<SceneEntity> &toDelete);
-    void moveCsgTreeNode(TreeNode<SceneEntity> &toMove, TreeNode<SceneEntity> &destination);
-    void swapCsgTreeSiblingNodes(TreeNode<SceneEntity> &node1, TreeNode<SceneEntity> &node2);
-    void deleteCsgTreeNodeChildren(TreeNode<SceneEntity> &toDeleteChildren);
+    void deleteCsgTreeNode(TreeNode<Entity> &toDelete);
+    void moveCsgTreeNode(TreeNode<Entity> &toMove, TreeNode<Entity> &destination);
+    void swapCsgTreeSiblingNodes(TreeNode<Entity> &node1, TreeNode<Entity> &node2);
+    void deleteCsgTreeNodeChildren(TreeNode<Entity> &toDeleteChildren);
 
     //-----------------------------------------
     //Transform trees
@@ -60,14 +60,8 @@ public:
     uint32 getPointLightCount() const;
 
     //-----------------------------------------
-    //Current selection
-    void setSelectedEntity(SceneEntity &ent) { selectedEntityId = ent.getId(); }
-    SceneEntity* getSelectedEntity();
-    void clearSelectedEntity() { selectedEntityId = -1; }
-
-    //-----------------------------------------
-    //SceneEntity
-    SceneEntity* findSceneEntity(uint32 id);
+    //Entity
+    Entity* findSceneEntity(uint32 id);
 
     //-----------------------------------------
     //Deletion postponing
@@ -77,33 +71,29 @@ private:
     std::string name;
 
     //All SceneEntities are owned here. The trees and other lists only have references.
-    std::vector<std::unique_ptr<SceneEntity>> sceneEntities;
+    std::vector<std::unique_ptr<Entity>> sceneEntities;
 
-    std::unique_ptr<TreeNode<SceneEntity>> csgTreeRoot;
+    std::unique_ptr<TreeNode<Entity>> csgTreeRoot;
 
     //Every transform tree will be a direct child of this one, allowing for easy moving between any nodes. This root will be hidden on the UI.
     std::unique_ptr<TreeNode<Transform>> transformTreeDummyRoot;
 
     std::vector<Light*> lights;
 
-    uint32 nextId = 0;
-    uint32 selectedEntityId = -1;
-
     //-----------------------------------------
     //Aux functions
-    uint32 generateId() { return nextId++; }
     std::unique_ptr<Object> internalCreateObject(const char *name, ObjectType type);
     std::unique_ptr<Transform> internalCreateTransform(const char *name, TransformType type);
     std::unique_ptr<Light> internalCreateLight(const char *name, LightType type);
 
     //-----------------------------------------
-    //Internal SceneEntity management
-    typename std::vector<std::unique_ptr<SceneEntity>>::iterator getIteratorToSceneEntityId(uint32 id);
-    bool deleteSceneEntity(SceneEntity &toDelete);
+    //Internal Entity management
+    typename std::vector<std::unique_ptr<Entity>>::iterator getIteratorToSceneEntityId(uint32 id);
+    bool deleteSceneEntity(Entity &toDelete);
 
     //-----------------------------------------
     //Deletion postponing
-    std::vector<TreeNode<SceneEntity>*> pendingDeleteCsgTreeNodes;
+    std::vector<TreeNode<Entity>*> pendingDeleteCsgTreeNodes;
     std::vector<std::pair<uint32, TreeNode<Transform>*>> pendingDeleteTransformTreeNodes;
     std::vector<Light*> pendingDeleteLights;
 };

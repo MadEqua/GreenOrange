@@ -1,6 +1,6 @@
 #include "DataRepo.h"
 
-const char* SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Size)];
+const char* EntityTypeStrings[static_cast<int>(EntityType::Size)];
 const char* CsgTypeStrings[static_cast<int>(CsgType::Size)];
 const char* ObjectTypeStrings[static_cast<int>(ObjectType::Size)];
 const char* PanelTypeStrings[static_cast<int>(PanelType::Size)];
@@ -8,10 +8,11 @@ const char* TransformTypeStrings[static_cast<int>(TransformType::Size)];
 const char* LightTypeStrings[static_cast<int>(LightType::Size)];
 
 void initDataRepo() {
-    SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Object)] = "Object";
-    SceneEntityTypeStrings[static_cast<int>(SceneEntityType::CsgOperator)] = "CSG Operator";
-    SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Transform)] = "Transform";
-    SceneEntityTypeStrings[static_cast<int>(SceneEntityType::Light)] = "Light";
+    EntityTypeStrings[static_cast<int>(EntityType::Object)] = "Object";
+    EntityTypeStrings[static_cast<int>(EntityType::CsgOperator)] = "CSG Operator";
+    EntityTypeStrings[static_cast<int>(EntityType::Transform)] = "Transform";
+    EntityTypeStrings[static_cast<int>(EntityType::Light)] = "Light";
+    EntityTypeStrings[static_cast<int>(EntityType::Material)] = "Material";
 
     CsgTypeStrings[static_cast<int>(CsgType::Union)] = "Union";
     CsgTypeStrings[static_cast<int>(CsgType::Intersection)] = "Intersection";

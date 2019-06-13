@@ -20,11 +20,11 @@ GuiRoot::GuiRoot(GreenOrange &greenOrange, GLFWwindow &glfwWindow) :
     greenOrange(greenOrange),
     glfwWindow(glfwWindow) {
 
-    panels.emplace_back(std::make_unique<ProjectPanel>());
-    panels.emplace_back(std::make_unique<ScenePanel>());
-    panels.emplace_back(std::make_unique<InspectorPanel>());
-    panels.emplace_back(std::make_unique<PreviewPanel>());
-    panels.emplace_back(std::make_unique<GeneratedGlslPanel>());
+    panels.emplace_back(std::make_unique<ProjectPanel>(*this));
+    panels.emplace_back(std::make_unique<ScenePanel>(*this));
+    panels.emplace_back(std::make_unique<InspectorPanel>(*this));
+    panels.emplace_back(std::make_unique<PreviewPanel>(*this));
+    panels.emplace_back(std::make_unique<GeneratedGlslPanel>(*this));
 }
 
 bool GuiRoot::init() {
@@ -72,6 +72,23 @@ void GuiRoot::drawFrame() {
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+Entity* GuiRoot::getSelectedEntity() {
+    if(selectedEntityId != -1) {
+        auto project = greenOrange.getOpenProject();
+        auto sceneEnt = project->getSelectedScene().findSceneEntity(selectedEntityId);
+        auto projectEnt = project->findSceneEntity(selectedEntityId);
+        if(sceneEnt) 
+            return sceneEnt;
+        else if(projectEnt) 
+            return projectEnt;
+        else {
+            clearSelectedEntity();
+            return nullptr;
+        }
+    }
+    return nullptr;
 }
 
 void GuiRoot::drawGui() {

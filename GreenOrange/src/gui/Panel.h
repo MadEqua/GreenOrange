@@ -3,11 +3,13 @@
 #include "../DataRepo.h"
 
 class GreenOrange;
+class GuiRoot;
 
 
 class Panel {
 public:
-    Panel(PanelType type, bool open) : 
+    Panel(GuiRoot &guiRoot, PanelType type, bool open) :
+        guiRoot(guiRoot),
         type(type),
         name(PanelTypeStrings[static_cast<int>(type)]),
         open(open) {}
@@ -25,6 +27,8 @@ public:
     void flipOpen() { open = !open; }
 
 protected:
+    GuiRoot &guiRoot;
+
     PanelType type;
     const char * const name; //Pointer to a literal
     bool open;

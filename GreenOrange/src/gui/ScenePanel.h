@@ -10,19 +10,20 @@
 class CsgOperator;
 class Object;
 
+
 class ScenePanel : public Panel
 {
 public:
-    ScenePanel() : Panel(PanelType::Scene, true) {}
+    ScenePanel(GuiRoot &guiRoot) : Panel(guiRoot, PanelType::Scene, true) {}
 
 private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;
 
-    void doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const;
-    void doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
+    void doOperatorNode(Scene &scene, TreeNode<Entity> &node) const;
+    void doOperatorContextMenu(Scene &scene, TreeNode<Entity> &node) const;
     
-    void doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const;
-    void doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const;
+    void doObjectNode(Scene &scene, TreeNode<Entity> &node) const;
+    void doObjectContextMenu(Scene &scene, TreeNode<Entity> &node) const;
     
     void doLightContextMenu(Scene &scene, Light &light) const;
 

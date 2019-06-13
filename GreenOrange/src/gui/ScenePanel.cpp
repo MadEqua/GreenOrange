@@ -9,6 +9,7 @@
 #include "../DataRepo.h"
 #include "../Constants.h"
 #include "../Assert.h"
+#include "GuiRoot.h"
 #include "imgui/ImGuiUtils.h"
 
 
@@ -53,10 +54,12 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
         ImGui::NewLine();
 
         if(ImGui::CollapsingHeader("Lights", treeNodeFlags)) {
+            auto selectedEntity = guiRoot.getSelectedEntity();
+            
             for(uint32 i = 0; i < scene.getLightCount(); ++i) {
                 auto &light = scene.getLightByIndex(i);
-                if(ImGui::Selectable(light.getName().c_str())) {
-                    scene.setSelectedEntity(light);
+                if(ImGui::Selectable(light.getName().c_str(), selectedEntity && light == *selectedEntity)) {
+                    guiRoot.setSelectedEntity(light);
                 }
                 doLightContextMenu(scene, light);
             }
@@ -81,7 +84,7 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
     return open;
 }
 
-void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const {
+void ScenePanel::doOperatorNode(Scene &scene, TreeNode<Entity> &node) const {
     CsgOperator &csgOp = static_cast<CsgOperator&>(*node);
     
     uint32 id = csgOp.getId();
@@ -90,14 +93,14 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
     if(!node.hasChildren()) flags |= ImGuiTreeNodeFlags_Leaf;
 
-    SceneEntity *selectedEntity = scene.getSelectedEntity();
+    Entity *selectedEntity = guiRoot.getSelectedEntity();
     if(selectedEntity && csgOp == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
     ImGui::PushStyleColor(ImGuiCol_Text, COLOR_BLUE);
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, csgOp.getName().c_str(), "");
     ImGui::PopStyleColor();
     if(ImGui::IsItemClicked()) 
-        scene.setSelectedEntity(csgOp);
+        guiRoot.setSelectedEntity(csgOp);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         DndPayload payload = {DndPayload::DndType::Csg, 0, &node};
@@ -111,9 +114,9 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
             if(dndPayload->type == DndPayload::DndType::Csg || dndPayload->type == DndPayload::DndType::Object) {
                 if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL))
-                    scene.moveCsgTreeNode(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+                    scene.moveCsgTreeNode(*static_cast<TreeNode<Entity>*>(dndPayload->dataPtr), node);
                 else
-                    scene.swapCsgTreeSiblingNodes(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+                    scene.swapCsgTreeSiblingNodes(*static_cast<TreeNode<Entity>*>(dndPayload->dataPtr), node);
             }
         }
         ImGui::EndDragDropTarget();
@@ -123,7 +126,7 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
 
     if(treeNodeOpen) {
         for(uint32 i = 0; i < node.getChildCount(); ++i) {
-            TreeNode<SceneEntity> &childNode = node.getChildByIndex(i);
+            TreeNode<Entity> &childNode = node.getChildByIndex(i);
             if(childNode->isCsgOperator())
                 doOperatorNode(scene, childNode);
             else if(childNode->isObject())
@@ -134,7 +137,7 @@ void ScenePanel::doOperatorNode(Scene &scene, TreeNode<SceneEntity> &node) const
     ImGui::PopID();
 }
 
-void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const {
+void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<Entity> &node) const {
     CsgOperator &csgOp = static_cast<CsgOperator&>(*node);
 
     bool openRenamePopup = false;
@@ -201,7 +204,7 @@ void ScenePanel::doOperatorContextMenu(Scene &scene, TreeNode<SceneEntity> &node
     }
 }
 
-void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
+void ScenePanel::doObjectNode(Scene &scene, TreeNode<Entity> &node) const {
     Object &obj = static_cast<Object&>(*node);
 
     uint32 id = obj.getId();
@@ -209,13 +212,13 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf;
 
-    SceneEntity *selectedEntity = scene.getSelectedEntity();
+    Entity *selectedEntity = guiRoot.getSelectedEntity();
     if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
     ImGui::PushStyleColor(ImGuiCol_Text, COLOR_GRAY);
     ImGui::TreeNodeExV(&id, flags, obj.getName().c_str(), "");
     ImGui::PopStyleColor();
-    if(ImGui::IsItemClicked()) scene.setSelectedEntity(obj);
+    if(ImGui::IsItemClicked()) guiRoot.setSelectedEntity(obj);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         DndPayload payload = {DndPayload::DndType::Object, 0, &node};
@@ -228,7 +231,7 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
             GO_ASSERT(payload->DataSize == sizeof(DndPayload));
             DndPayload *dndPayload = static_cast<DndPayload*>(payload->Data);
             if(dndPayload->type == DndPayload::DndType::Csg || dndPayload->type == DndPayload::DndType::Object)
-                scene.swapCsgTreeSiblingNodes(*static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr), node);
+                scene.swapCsgTreeSiblingNodes(*static_cast<TreeNode<Entity>*>(dndPayload->dataPtr), node);
         }
         ImGui::EndDragDropTarget();
     }
@@ -239,7 +242,7 @@ void ScenePanel::doObjectNode(Scene &scene, TreeNode<SceneEntity> &node) const {
     ImGui::PopID();
 }
 
-void ScenePanel::doObjectContextMenu(Scene &scene, TreeNode<SceneEntity> &node) const {
+void ScenePanel::doObjectContextMenu(Scene &scene, TreeNode<Entity> &node) const {
     Object &obj = static_cast<Object&>(*node);
 
     bool openRenamePopup = false;
@@ -320,14 +323,14 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transf
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
     if(!node.hasChildren()) flags |= ImGuiTreeNodeFlags_Leaf;
 
-    SceneEntity *selectedEntity = scene.getSelectedEntity();
+    Entity *selectedEntity = guiRoot.getSelectedEntity();
     if(selectedEntity && transform == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
     ImGui::PushStyleColor(ImGuiCol_Text, COLOR_BLUE);
     bool treeNodeOpen = ImGui::TreeNodeExV(&id, flags, transform.getName().c_str(), "");
     ImGui::PopStyleColor();
     if(ImGui::IsItemClicked())
-        scene.setSelectedEntity(transform);
+        guiRoot.setSelectedEntity(transform);
 
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         DndPayload payload = {DndPayload::DndType::Transform, treeIndex, &node};
@@ -342,7 +345,7 @@ void ScenePanel::doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transf
             if(dndPayload->type == DndPayload::DndType::Transform)
                 scene.moveTransformTreeNode(dndPayload->intData, *static_cast<TreeNode<Transform>*>(dndPayload->dataPtr), node);
             else if(dndPayload->type == DndPayload::DndType::Object)
-                scene.attachObjectToTransformTreeNode(static_cast<Object&>(static_cast<TreeNode<SceneEntity>*>(dndPayload->dataPtr)->getPayload()), node);
+                scene.attachObjectToTransformTreeNode(static_cast<Object&>(static_cast<TreeNode<Entity>*>(dndPayload->dataPtr)->getPayload()), node);
             else if(dndPayload->type == DndPayload::DndType::TransformAtttachment)
                 scene.attachObjectToTransformTreeNode(*static_cast<Object*>(dndPayload->dataPtr), node);
         }
@@ -430,7 +433,7 @@ void ScenePanel::doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode
 }
 
 void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const {
-    scene.getCsgTreeRootNode().traverseBfs([&scene, treeIndex, &node, this](TreeNode<SceneEntity> &entityNode, TreeNode<SceneEntity> *parent) -> bool {
+    scene.getCsgTreeRootNode().traverseBfs([&scene, treeIndex, &node, this](TreeNode<Entity> &entityNode, TreeNode<Entity> *parent) -> bool {
         if(entityNode->isObject()) {
             Object &obj = static_cast<Object&>(*entityNode);
             if(obj.isAttachedToTransform() && obj.getTransformId() == node->getId()) {
@@ -438,7 +441,7 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
 
                 ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;
 
-                SceneEntity *selectedEntity = scene.getSelectedEntity();
+                Entity *selectedEntity = guiRoot.getSelectedEntity();
                 if(selectedEntity && obj == *selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
                 ImGui::PushID(obj.getId());
@@ -448,7 +451,7 @@ void ScenePanel::doTransformAttachments(Scene &scene, uint32 treeIndex, TreeNode
 
                 if(isNodeOpen) {
                     if(ImGui::IsItemClicked())
-                        scene.setSelectedEntity(obj);
+                        guiRoot.setSelectedEntity(obj);
 
                     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
                         DndPayload payload = {DndPayload::DndType::TransformAtttachment, treeIndex, &obj};

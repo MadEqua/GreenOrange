@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SceneEntity.h"
+#include "Entity.h"
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include <glm/glm.hpp>
 
 
-class Transform : public SceneEntity
+class Transform : public Entity
 {
 public:
     Transform(uint32 id, const char *name, TransformType type);

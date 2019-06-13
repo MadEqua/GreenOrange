@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SceneEntity.h"
+#include "Entity.h"
 
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 
 
-class Light : public SceneEntity
+class Light : public Entity
 {
 public:
     Light(LightType type, uint32 id, const char *name);

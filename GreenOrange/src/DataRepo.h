@@ -2,15 +2,16 @@
 
 //Place to declare enum types that will need a string representation
 
-enum class SceneEntityType {
+enum class EntityType {
     CsgOperator,
     Object,
     Transform,
     Light,
+    Material,
 
     Size
 };
-extern const char* SceneEntityTypeStrings[];
+extern const char* EntityTypeStrings[];
 
 
 enum class CsgType {

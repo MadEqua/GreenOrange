@@ -8,12 +8,13 @@
 
 class Project;
 class GreenOrange;
+class GuiRoot;
 
 
 class PreviewPanel : public Panel
 {
 public:
-    PreviewPanel();
+    PreviewPanel(GuiRoot &guiRoot);
 
 private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;

@@ -9,12 +9,13 @@
 #include "../model/Light.h"
 #include "../DataRepo.h"
 #include "../Constants.h"
+#include "GuiRoot.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
 
 bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
-    SceneEntity *selectedEntity = greenOrange.getOpenProject()->getSelectedScene().getSelectedEntity();
+    Entity *selectedEntity = guiRoot.getSelectedEntity();
     bool open;
     
     ImGui::Begin("Inspector", &open);
@@ -22,7 +23,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
         if(selectedEntity != nullptr) {
             ImGui::Text(selectedEntity->getName().c_str());
 
-            ImGui::Text(SceneEntityTypeStrings[static_cast<int>(selectedEntity->getType())]);
+            ImGui::Text(EntityTypeStrings[static_cast<int>(selectedEntity->getType())]);
             ImGui::SameLine();
             ImGui::Text("Type: ");
             ImGui::SameLine();

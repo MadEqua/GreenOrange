@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SceneEntity.h"
+#include "Entity.h"
 
 #include "../Types.h"
 #include "../DataRepo.h"
@@ -10,7 +10,7 @@
 #include <glm/glm.hpp>
 
 
-class Object : public SceneEntity
+class Object : public Entity
 {
 public:
     Object(uint32 id, const char *name, ObjectType type);

@@ -3,10 +3,11 @@
 #include "../model/GreenOrange.h"
 #include "../Constants.h"
 #include "../GlslGenerator.h"
+#include "GuiRoot.h"
 
 
-PreviewPanel::PreviewPanel() :
-    Panel(PanelType::Preview, true),
+PreviewPanel::PreviewPanel(GuiRoot &guiRoot) :
+    Panel(guiRoot, PanelType::Preview, true),
     previousSize(-1.0f, -1.0f) {
 }
 

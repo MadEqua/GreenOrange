@@ -10,7 +10,7 @@ class Project;
 class CsgOperator;
 class Object;
 class Scene;
-class SceneEntity;
+class Entity;
 class Transform;
 
 
@@ -44,10 +44,10 @@ private:
     //or some already generated code to be composed with other operators/operations.
     class RpnElement {
     public:
-        RpnElement(TreeNode<SceneEntity> &sceneEntityNode);
+        RpnElement(TreeNode<Entity> &sceneEntityNode);
         RpnElement(std::string &&generatedCode);
 
-        TreeNode<SceneEntity> *sceneEntityNode;
+        TreeNode<Entity> *sceneEntityNode;
         std::string generatedCode;
 
         bool isGeneratedCode;
@@ -69,7 +69,7 @@ private:
     static std::string generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode);
 
     static std::string generateTransformName(const Transform &transform);
-    static uint32 countNonEmptyOperands(TreeNode<SceneEntity> &node);
+    static uint32 countNonEmptyOperands(TreeNode<Entity> &node);
     
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };

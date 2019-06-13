@@ -6,7 +6,7 @@
 #include <forward_list>
 #include <sstream>
 
-#include "model/SceneEntity.h"
+#include "model/Entity.h"
 #include "model/Object.h"
 #include "model/CsgOperator.h"
 #include "model/Transform.h"
@@ -20,7 +20,7 @@
 #include "glsl/generated/transforms.frag.h"
 
 
-GlslGenerator::RpnElement::RpnElement(TreeNode<SceneEntity> &sceneEntityNode) :
+GlslGenerator::RpnElement::RpnElement(TreeNode<Entity> &sceneEntityNode) :
     sceneEntityNode(&sceneEntityNode),
     isGeneratedCode(false) {
 }
@@ -165,7 +165,7 @@ std::string GlslGenerator::generateSceneTree(Scene &scene) {
     std::forward_list<RpnElement> rpnList;
 
     //The list is initialized by doing a DFS and reversing the visit order
-    scene.getCsgTreeRootNode().traverseDfs([&rpnList](TreeNode<SceneEntity> &ent) -> bool {
+    scene.getCsgTreeRootNode().traverseDfs([&rpnList](TreeNode<Entity> &ent) -> bool {
         rpnList.emplace_front(ent);
         return false;
     });
@@ -181,7 +181,7 @@ std::string GlslGenerator::generateSceneTree(Scene &scene) {
         }
         //If is operator pop related operands, generate code and push it into the stack as a new operand
         else {
-            TreeNode<SceneEntity> &node = *rpnElem.sceneEntityNode;
+            TreeNode<Entity> &node = *rpnElem.sceneEntityNode;
             CsgOperator &op = static_cast<CsgOperator&>(*node);
 
             //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators
@@ -209,11 +209,11 @@ std::string GlslGenerator::generateSceneTree(Scene &scene) {
     return "";
 }
 
-uint32 GlslGenerator::countNonEmptyOperands(TreeNode<SceneEntity> &root) {
+uint32 GlslGenerator::countNonEmptyOperands(TreeNode<Entity> &root) {
     uint32 count = 0;
 
     for(uint32 i = 0; i < root.getChildCount(); ++i) {
-        TreeNode<SceneEntity> &child = root.getChildByIndex(i);
+        TreeNode<Entity> &child = root.getChildByIndex(i);
         
         if(child->isCsgOperator()) {
             if(countNonEmptyOperands(child))
@@ -269,7 +269,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         std::string p = "p";
         Object &obj = static_cast<Object&>(rpnElement.sceneEntityNode->getPayload());
         if(obj.isAttachedToTransform()) {
-            SceneEntity *transform = scene.findSceneEntity(obj.getTransformId());
+            Entity *transform = scene.findSceneEntity(obj.getTransformId());
             if(transform)
                 p = generateTransformName(static_cast<Transform&>(*transform));
         }

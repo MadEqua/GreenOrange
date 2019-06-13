@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SceneEntity.h"
+#include "Entity.h"
 #include "../Types.h"
 #include "../DataRepo.h"
 
 
-class CsgOperator : public SceneEntity
+class CsgOperator : public Entity
 {
 public:
     CsgOperator(uint32 id, const char *name, CsgType type);

@@ -11,7 +11,7 @@ class Light;
 class InspectorPanel : public Panel
 {
 public:
-    InspectorPanel() : Panel(PanelType::Inspector, true) {}
+    InspectorPanel(GuiRoot &guiRoot) : Panel(guiRoot, PanelType::Inspector, true) {}
 
 private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;

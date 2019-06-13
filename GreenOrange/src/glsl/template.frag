@@ -62,6 +62,19 @@ void initLights() {
 }
 
 /////////////////////////////////////////////
+// Materials
+/////////////////////////////////////////////
+/*struct Material {
+    vec3 color;
+    vec3 specular;
+};
+Material materials[#GO_REPLACE_MATERIAL_COUNT];
+
+void initMaterials() {
+    #GO_REPLACE_MATERIALS_INIT
+}*/
+
+/////////////////////////////////////////////
 // Raymarcher
 /////////////////////////////////////////////
 vec3 cam2world(vec3 v, vec3 pos, vec3 lookAt) {

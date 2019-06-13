@@ -6,6 +6,7 @@
 
 #include "../Types.h"
 #include "Scene.h"
+#include "Material.h"
 
 
 class Project
@@ -13,10 +14,9 @@ class Project
 public:
     explicit Project(const char *path);
 
-    void addScene(const char *name);
-
     const std::string& getName() const { return name; }
     
+    void createScene(const char *name);
     size_t getSceneCount() const { return scenes.size(); }
     Scene& getSceneByIndex(uint32 idx);
     void deleteSceneByIndex(uint32 idx);
@@ -25,13 +25,24 @@ public:
     uint32 getSelectedSceneIdx() const { return selectedSceneIdx; }
     Scene& getSelectedScene() { return getSceneByIndex(selectedSceneIdx); }
 
+    void createMaterial(const char *name);
+    size_t getMaterialCount() const { return materials.size(); }
+    Material& getMaterialByIndex(uint32 idx);
+    void deleteMaterialByIndex(uint32 idx);
+
+    Entity* findSceneEntity(uint32 id);
+
     void doPendingOperations();
+
+    static uint32 generateId() { return nextId++; }
 
 private:
     std::string path;
     std::string name;
     std::vector<std::unique_ptr<Scene>> scenes;
+    std::vector<std::unique_ptr<Material>> materials;
 
     uint32 selectedSceneIdx = 0;
+    static uint32 nextId;
 };
 
