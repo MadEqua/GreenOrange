@@ -7,6 +7,7 @@
 #include "../model/Object.h"
 #include "../model/Transform.h"
 #include "../model/Light.h"
+#include "../model/Material.h"
 #include "../DataRepo.h"
 #include "../Constants.h"
 #include "GuiRoot.h"
@@ -39,6 +40,9 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
             }
             else if(selectedEntity->isLight()) {
                 doLight(static_cast<Light&>(*selectedEntity));
+            }
+            else if(selectedEntity->isMaterial()) {
+                doMaterial(static_cast<Material&>(*selectedEntity));
             }
         }
         else {
@@ -152,4 +156,14 @@ void InspectorPanel::doLight(Light &light) {
     auto color = light.getColor();
     if(ImGui::ColorPicker3("Color", glm::value_ptr(color), colorPickerFlags))
         light.setColor(color);
+}
+
+void InspectorPanel::doMaterial(Material &material) {
+    ImGui::Text("N/A");
+    ImGui::NewLine();
+
+    ImGuiColorEditFlags colorPickerFlags = 0;// ImGuiColorEditFlags_NoInputs;
+    auto color = material.getColor();
+    if(ImGui::ColorPicker3("Color", glm::value_ptr(color), colorPickerFlags))
+        material.setColor(color);
 }

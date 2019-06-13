@@ -7,6 +7,7 @@ class CsgOperator;
 class Object;
 class Transform;
 class Light;
+class Material;
 
 class InspectorPanel : public Panel
 {
@@ -20,6 +21,7 @@ private:
     void doObject(Object &object);
     void doTransform(Transform &transform);
     void doLight(Light &light);
+    void doMaterial(Material &material);
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
 };

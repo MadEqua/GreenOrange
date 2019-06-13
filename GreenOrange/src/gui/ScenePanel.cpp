@@ -25,6 +25,30 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
         }
 
         ImGui::NewLine();
+        if(ImGui::Button("New Object / CSG Operator")) {
+            ImGui::OpenPopup("newObjectPopup");
+        }
+
+        if(ImGui::BeginPopupContextItem("newObjectPopup")) {
+            if(ImGui::BeginMenu("CSG Operator")) {
+                for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
+                    if(ImGui::MenuItem(CsgTypeStrings[i])) {
+                        scene.createCsgOperator(CsgTypeStrings[i], static_cast<CsgType>(i), scene.getCsgTreeRootNode());
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            if(ImGui::BeginMenu("Object")) {
+                for(uint32 i = 0; i < static_cast<int>(ObjectType::Size); ++i) {
+                    if(ImGui::MenuItem(ObjectTypeStrings[i])) {
+                        scene.createObject(ObjectTypeStrings[i], static_cast<ObjectType>(i), scene.getCsgTreeRootNode());
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndPopup();
+        }
+
         ImGui::NewLine();
         ImGui::NewLine();
         ImGui::NewLine();
@@ -48,7 +72,6 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
             }
         }
 
-        ImGui::NewLine();
         ImGui::NewLine();
         ImGui::NewLine();
         ImGui::NewLine();
