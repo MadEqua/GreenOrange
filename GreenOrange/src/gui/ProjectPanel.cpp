@@ -102,10 +102,12 @@ void ProjectPanel::doMaterialList(Project &project) const {
 
         for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
             auto &material = project.getMaterialByIndex(i);
+            ImGui::PushID(material.getId());
             if(ImGui::Selectable(material.getName().c_str(), selectedEntity && material == *selectedEntity)) {
                 guiRoot.setSelectedEntity(material);
             }
             doMaterialContextMenu(project, material, i);
+            ImGui::PopID();
         }
 
         ImGui::NewLine();

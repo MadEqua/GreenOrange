@@ -22,43 +22,43 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
         ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
         if(ImGui::CollapsingHeader("CSG Tree", treeNodeFlags)) {
             doOperatorNode(scene, scene.getCsgTreeRootNode());
-        }
 
-        ImGui::NewLine();
-        if(ImGui::Button("New Object / CSG Operator")) {
-            ImGui::OpenPopup("newObjectPopup");
-        }
-
-        if(ImGui::BeginPopupContextItem("newObjectPopup")) {
-            if(ImGui::BeginMenu("CSG Operator")) {
-                for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
-                    if(ImGui::MenuItem(CsgTypeStrings[i])) {
-                        scene.createCsgOperator(CsgTypeStrings[i], static_cast<CsgType>(i), scene.getCsgTreeRootNode());
-                    }
-                }
-                ImGui::EndMenu();
+            ImGui::NewLine();
+            if(ImGui::Button("New Object / CSG Operator")) {
+                ImGui::OpenPopup("newObjectPopup");
             }
-            if(ImGui::BeginMenu("Object")) {
-                for(uint32 i = 0; i < static_cast<int>(ObjectType::Size); ++i) {
-                    if(ImGui::MenuItem(ObjectTypeStrings[i])) {
-                        scene.createObject(ObjectTypeStrings[i], static_cast<ObjectType>(i), scene.getCsgTreeRootNode());
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndPopup();
-        }
 
-        ImGui::NewLine();
-        ImGui::NewLine();
-        ImGui::NewLine();
+            if(ImGui::BeginPopupContextItem("newObjectPopup")) {
+                if(ImGui::BeginMenu("CSG Operator")) {
+                    for(uint32 i = 0; i < static_cast<int>(CsgType::Size); ++i) {
+                        if(ImGui::MenuItem(CsgTypeStrings[i])) {
+                            scene.createCsgOperator(CsgTypeStrings[i], static_cast<CsgType>(i), scene.getCsgTreeRootNode());
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                if(ImGui::BeginMenu("Object")) {
+                    for(uint32 i = 0; i < static_cast<int>(ObjectType::Size); ++i) {
+                        if(ImGui::MenuItem(ObjectTypeStrings[i])) {
+                            scene.createObject(ObjectTypeStrings[i], static_cast<ObjectType>(i), scene.getCsgTreeRootNode());
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndPopup();
+            }
+
+            ImGui::NewLine();
+            ImGui::NewLine();
+            ImGui::NewLine();
+        }
 
         if(ImGui::CollapsingHeader("Transform Trees", treeNodeFlags)) {
             for(uint32 i = 0; i < scene.getTransformTreeCount(); ++i)
                 doTransformNode(scene, i, scene.getTransformTreeRootNodeByIndex(i));
 
             ImGui::NewLine();
-            if(ImGui::Button("New Tree")) {
+            if(ImGui::Button("New Transform")) {
                 ImGui::OpenPopup("newTreePopup");
             }
 
@@ -70,21 +70,24 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
                 }
                 ImGui::EndPopup();
             }
-        }
 
-        ImGui::NewLine();
-        ImGui::NewLine();
-        ImGui::NewLine();
+            ImGui::NewLine();
+            ImGui::NewLine();
+            ImGui::NewLine();
+        }
 
         if(ImGui::CollapsingHeader("Lights", treeNodeFlags)) {
             auto selectedEntity = guiRoot.getSelectedEntity();
             
             for(uint32 i = 0; i < scene.getLightCount(); ++i) {
                 auto &light = scene.getLightByIndex(i);
+
+                ImGui::PushID(light.getId());
                 if(ImGui::Selectable(light.getName().c_str(), selectedEntity && light == *selectedEntity)) {
                     guiRoot.setSelectedEntity(light);
                 }
                 doLightContextMenu(scene, light);
+                ImGui::PopID();
             }
 
             ImGui::NewLine();
