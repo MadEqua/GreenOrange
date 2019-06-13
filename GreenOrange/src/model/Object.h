@@ -7,6 +7,8 @@
 #include "../GlslGenerator.h"
 #include "Transform.h"
 
+#include <glm/glm.hpp>
+
 
 class Object : public SceneEntity
 {
@@ -42,12 +44,11 @@ class Box : public Object {
 public:
     Box(uint32 id, const char *name) :
         Object(id, name, ObjectType::Box),
-        dimensions {1.0f, 1.0f, 1.0f} {}
+        dimensions(1.0f, 1.0f, 1.0f) {}
 
-    void setDimensions(float x, float y, float z) { dimensions[0] = x; dimensions[1] = y; dimensions[2] = z; GEN_SET_DIRTY(); }
-    void setDimensions(float *dims) { memcpy(dimensions, dims, 3 * sizeof(float)); GEN_SET_DIRTY(); }
-    float* getDimensions() { return dimensions; }
+    void setDimensions(const glm::vec3 &dimensions) { this->dimensions = dimensions; GEN_SET_DIRTY(); }
+    const glm::vec3& getDimensions() const { return dimensions; }
 
 private:
-    float dimensions[3];
+    glm::vec3 dimensions;
 };

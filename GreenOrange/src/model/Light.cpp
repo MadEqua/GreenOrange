@@ -4,17 +4,17 @@
 Light::Light(LightType type, uint32 id, const char *name) :
     SceneEntity(SceneEntityType::Light, id, name),
     type(type),
-    color {1.0f, 1.0f, 1.0f} {
+    color(1.0f, 1.0f, 1.0f) {
 }
 
 
 DirectionalLight::DirectionalLight(uint32 id, const char *name) :
     Light(LightType::Directional, id, name),
-    direction {0.0f, -1.0f, 0.0f} {
+    direction(0.0f, -1.0f, 0.0f) {
 }
 
 
 PointLight::PointLight(uint32 id, const char *name) :
     Light(LightType::Point, id, name),
-    position {0.0f, 0.0f, 0.0f} {
+    position(0.0f, 0.0f, 0.0f) {
 }

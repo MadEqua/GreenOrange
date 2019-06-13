@@ -8,6 +8,8 @@
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
 
+#include <glm/glm.hpp>
+
 
 class Transform : public SceneEntity
 {
@@ -25,12 +27,11 @@ public:
         Transform(id, name, TransformType::Translation),
         ammount{0.0f} {}
 
-    void setAmmount(float x, float y, float z) { ammount[0] = x; ammount[1] = y; ammount[2] = z; GEN_SET_DIRTY(); }
-    void setAmmount(float *dims) { memcpy(ammount, dims, 3 * sizeof(float)); GEN_SET_DIRTY(); }
-    float* getAmmount() { return ammount; }
+    void setAmmount(const glm::vec3 &ammount) { this->ammount = ammount; GEN_SET_DIRTY(); }
+    const glm::vec3& getAmmount() const { return ammount; }
 
 private:
-    float ammount[3];
+    glm::vec3 ammount;
 };
 
 class Rotation : public Transform {
@@ -39,12 +40,11 @@ public:
         Transform(id, name, TransformType::Rotation),
         ammount {0.0f} {}
 
-    void setAmmount(float x, float y, float z) { ammount[0] = x; ammount[1] = y; ammount[2] = z; GEN_SET_DIRTY(); }
-    void setAmmount(float *dims) { memcpy(ammount, dims, 3 * sizeof(float)); GEN_SET_DIRTY(); }
-    float* getAmmount() { return ammount; }
+    void setAmmount(const glm::vec3 &ammount) { this->ammount = ammount; GEN_SET_DIRTY(); }
+    const glm::vec3& getAmmount() const { return ammount; }
 
 private:
-    float ammount[3];
+    glm::vec3 ammount;
 };
 
 class CustomTransform : public Transform {

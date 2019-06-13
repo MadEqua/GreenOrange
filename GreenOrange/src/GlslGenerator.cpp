@@ -99,10 +99,10 @@ void GlslGenerator::generateLights(Project &project) {
 
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
-                float *col = light.getColor();
+                auto &col = light.getColor();
 
                 if(light.isDirectional()) {
-                    float *dir = static_cast<DirectionalLight&>(light).getDirection();
+                    auto &dir = static_cast<DirectionalLight&>(light).getDirection();
                     sstreamLightInit << "    dirLights[i].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "    dirLights[i].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
                 }
@@ -118,9 +118,9 @@ void GlslGenerator::generateLights(Project &project) {
 
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
-                float *col = light.getColor();
+                auto &col = light.getColor();
                 if(light.isPoint()) {
-                    float *pos = static_cast<PointLight&>(light).getPosition();
+                    auto &pos = static_cast<PointLight&>(light).getPosition();
                     sstreamLightInit << "    pointLights[i].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "    pointLights[i].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
                 }
@@ -279,7 +279,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         {
             sstream << "box(" << p << ", vec3(";
             Box &box = static_cast<Box&>(obj);
-            float *dims = box.getDimensions();
+            auto &dims = box.getDimensions();
             sstream << dims[0] << ", " << dims[1] << ", " << dims[2] << "))";
             break;
         }

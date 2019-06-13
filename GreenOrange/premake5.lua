@@ -21,6 +21,7 @@ project "GreenOrange"
     includeDir["GLFW"] = "dependencies/GLFW/include"
     includeDir["glad"] = "dependencies/glad/include"
     includeDir["ImGui"] = "dependencies/ImGui"
+    includeDir["glm"] = "dependencies/glm"
 
     files
     {
@@ -33,7 +34,8 @@ project "GreenOrange"
         "%{includeDir.GLFW}",
         "%{includeDir.glad}",
         "%{includeDir.ImGui}",
-        "%{includeDir.ImGui}/examples"
+        "%{includeDir.ImGui}/examples",
+        "%{includeDir.glm}",
     }
 
     links

@@ -10,6 +10,8 @@
 #include "../DataRepo.h"
 #include "../Constants.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 
 bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
     SceneEntity *selectedEntity = greenOrange.getOpenProject()->getSelectedScene().getSelectedEntity();
@@ -68,8 +70,8 @@ void InspectorPanel::doObject(Object &object) {
     case ObjectType::Box:
     {
         Box &box = static_cast<Box&>(object);
-        float *dims = box.getDimensions();
-        if(ImGui::DragFloat3("Size", dims, 0.01f, 0.0f, DRAG_MAX))
+        auto dims = box.getDimensions();
+        if(ImGui::DragFloat3("Size", glm::value_ptr(dims), 0.01f, 0.0f, DRAG_MAX))
             box.setDimensions(dims);
         break;
     }
@@ -87,16 +89,16 @@ void InspectorPanel::doTransform(Transform &transform) {
     case TransformType::Translation:
     {
         Translation &trans = static_cast<Translation&>(transform);
-        float *ammount = trans.getAmmount();
-        if(ImGui::DragFloat3("Ammount", ammount, 0.05f, DRAG_MIN, DRAG_MAX))
+        auto ammount = trans.getAmmount();
+        if(ImGui::DragFloat3("Ammount", glm::value_ptr(ammount), 0.05f, DRAG_MIN, DRAG_MAX))
             trans.setAmmount(ammount);
         break;
     }
     case TransformType::Rotation:
     {
         Rotation &rot = static_cast<Rotation&>(transform);
-        float *ammount = rot.getAmmount();
-        if(ImGui::DragFloat3("Ammount", ammount, 1.0f, -180.0f, 180.0f))
+        auto ammount = rot.getAmmount();
+        if(ImGui::DragFloat3("Ammount", glm::value_ptr(ammount), 1.0f, -180.0f, 180.0f))
             rot.setAmmount(ammount);
         break;
     }
@@ -125,16 +127,16 @@ void InspectorPanel::doLight(Light &light) {
     case LightType::Directional:
     {
         DirectionalLight &dirLight = static_cast<DirectionalLight&>(light);
-        float *dir = dirLight.getDirection();
-        if(ImGui::DragFloat3("Direction", dir, 0.01f, -1.0f, 1.0f))
+        auto dir = dirLight.getDirection();
+        if(ImGui::DragFloat3("Direction", glm::value_ptr(dir), 0.01f, -1.0f, 1.0f))
             dirLight.setDirection(dir);
         break;
     }
     case LightType::Point:
     {
         PointLight &pointLight = static_cast<PointLight&>(light);
-        float *pos = pointLight.getPosition();
-        if(ImGui::DragFloat3("Position", pos, 0.05f, DRAG_MIN, DRAG_MAX))
+        auto pos = pointLight.getPosition();
+        if(ImGui::DragFloat3("Position", glm::value_ptr(pos), 0.05f, DRAG_MIN, DRAG_MAX))
             pointLight.setPosition(pos);
         break;
     }
@@ -146,7 +148,7 @@ void InspectorPanel::doLight(Light &light) {
     ImGui::NewLine();
 
     ImGuiColorEditFlags colorPickerFlags = 0;// ImGuiColorEditFlags_NoInputs;
-    float *color = light.getColor();
-    if(ImGui::ColorPicker3("Color", color, colorPickerFlags))
+    auto color = light.getColor();
+    if(ImGui::ColorPicker3("Color", glm::value_ptr(color), colorPickerFlags))
         light.setColor(color);
 }
