@@ -14,6 +14,7 @@ constexpr const char *UNIFORM_TIME = "time";
 
 constexpr const char *REPLACE_TRANSFORMS = "#GO_REPLACE_TRANSFORMS";
 constexpr const char *REPLACE_OBJECTS = "#GO_REPLACE_OBJECTS";
+constexpr const char *REPLACE_OPERATORS = "#GO_REPLACE_OPERATORS";
 constexpr const char *REPLACE_SCENE_SDFS = "#GO_REPLACE_SCENE_SDFS";
 
 constexpr const char *REPLACE_MATERIAL_COUNT = "#GO_REPLACE_MATERIAL_COUNT";

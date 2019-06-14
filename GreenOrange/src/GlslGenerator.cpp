@@ -19,6 +19,7 @@
 #include "glsl/generated/template.frag.h"
 #include "glsl/generated/objects.frag.h"
 #include "glsl/generated/transforms.frag.h"
+#include "glsl/generated/operators.frag.h"
 
 
 GlslGenerator::RpnElement::RpnElement(TreeNode<Entity> &sceneEntityNode) :
@@ -48,6 +49,7 @@ void GlslGenerator::generateIfNeeded(Project &project) {
         //TODO: only add actually needed/used parts
         replace(glslCode, REPLACE_OBJECTS, objects_frag);
         replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
+        replace(glslCode, REPLACE_OPERATORS, operators_frag);
 
         generateScenes(project);
         generateLights(project);
