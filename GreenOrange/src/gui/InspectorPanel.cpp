@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include "../model/GreenOrange.h"
+#include "../model/Project.h"
 #include "../model/CsgOperator.h"
 #include "../model/Object.h"
 #include "../model/Transform.h"
@@ -14,6 +15,17 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+
+static bool materialComboItemGetter(void* data, int idx, const char** out_str) {
+    if(data != nullptr) {
+        Project *project = static_cast<Project*>(data);
+        if(idx < project->getMaterialCount()) {
+            (*out_str) = project->getMaterialByIndex(idx).getName().c_str();
+            return true;
+        }
+    }
+    return false;
+}
 
 bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
     Entity *selectedEntity = guiRoot.getSelectedEntity();
@@ -33,7 +45,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 doCsgOperator(static_cast<CsgOperator&>(*selectedEntity));
             }
             else if(selectedEntity->isObject()) {
-                doObject(static_cast<Object&>(*selectedEntity));
+                doObject(*greenOrange.getOpenProject(), static_cast<Object&>(*selectedEntity));
             }
             else if(selectedEntity->isTransform()) {
                 doTransform(static_cast<Transform&>(*selectedEntity));
@@ -59,7 +71,7 @@ void InspectorPanel::doCsgOperator(CsgOperator &csgOperator) {
     ImGui::NewLine();
 }
 
-void InspectorPanel::doObject(Object &object) {
+void InspectorPanel::doObject(Project &project, Object &object) {
     ImGui::Text(ObjectTypeStrings[static_cast<int>(object.getType())]);
     ImGui::NewLine();
 
@@ -83,6 +95,26 @@ void InspectorPanel::doObject(Object &object) {
     default:
         GO_ASSERT_ALWAYS();
         break;
+    }
+
+    ImGui::NewLine();
+
+    Material *attachedMat = static_cast<Material*>(project.findSceneEntity(object.getMaterialId()));
+    const char* matName = attachedMat ? attachedMat->getName().c_str() : "No Material";
+    
+    if(ImGui::BeginCombo("Material", matName, 0)) {
+        int current = attachedMat ? attachedMat->getId() : -1;
+        for(int i = 0; i < project.getMaterialCount(); ++i) {
+            Material &mat = project.getMaterialByIndex(i);
+            bool isSelected = current == mat.getId();
+            if(ImGui::Selectable(mat.getName().c_str(), isSelected))
+                object.attachToMaterial(mat);
+            
+            if(isSelected)
+                // Set the initial focus when opening the combo
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
     }
 }
 

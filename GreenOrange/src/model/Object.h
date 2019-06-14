@@ -6,6 +6,7 @@
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
 #include "Transform.h"
+#include "Material.h"
 
 #include <glm/glm.hpp>
 
@@ -16,14 +17,20 @@ public:
     Object(uint32 id, const char *name, ObjectType type);
     ObjectType getType() const { return type; }
 
-    void attachToTransform(Transform &t) { parentTransformId = t.getId(); }
-    uint32 getTransformId() { return parentTransformId; }
-    void detachFromTransform() { parentTransformId = -1; }
-    bool isAttachedToTransform() const { return parentTransformId != -1; }
+    void attachToTransform(Transform &t) { transformId = t.getId(); }
+    uint32 getTransformId() { return transformId; }
+    void detachFromTransform() { transformId = -1; }
+    bool isAttachedToTransform() const { return transformId != -1; }
+
+    void attachToMaterial(Material &m) { materialId = m.getId(); }
+    uint32 getMaterialId() { return materialId; }
+    void detachFromMaterial() { materialId = -1; }
+    bool isAttachedToMaterial() const { return materialId != -1; }
 
 private:
     ObjectType type;
-    uint32 parentTransformId = -1;
+    uint32 transformId = -1;
+    uint32 materialId = -1;
 };
 
 

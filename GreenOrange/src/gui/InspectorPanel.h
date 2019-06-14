@@ -5,6 +5,7 @@
 
 class CsgOperator;
 class Object;
+class Project;
 class Transform;
 class Light;
 class Material;
@@ -18,7 +19,7 @@ private:
     bool internalDrawGui(const GreenOrange &greenOrange) override;
 
     void doCsgOperator(CsgOperator &csgOperator);
-    void doObject(Object &object);
+    void doObject(Project &project, Object &object);
     void doTransform(Transform &transform);
     void doLight(Light &light);
     void doMaterial(Material &material);
