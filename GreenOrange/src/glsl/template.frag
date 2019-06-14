@@ -137,7 +137,7 @@ vec3 shade(RayPoint rp) {
     #if #GO_REPLACE_POINT_LIGHT_COUNT
     ivec2 pointLightSet = getPointLightSetForCurrentScene();
     for(int i = pointLightSet.x; i <= pointLightSet.y; ++i) {
-        vec3 L = normalize(pointLights[i].position - p);
+        vec3 L = normalize(pointLights[i].position - rp.point);
         float diff = max(0.0, dot(L, N));
         sum += diff * pointLights[i].color * matColor;
     }

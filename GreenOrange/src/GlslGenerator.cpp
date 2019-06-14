@@ -95,40 +95,42 @@ void GlslGenerator::generateLights(Project &project) {
 
     std::stringstream sstreamLightInit;
     if(totalDirLightCount) {
-        sstreamLightInit << "for(int i = 0; i < " << totalDirLightCount << "; ++i) {" << std::endl;
         for(uint32 s = 0; s < project.getSceneCount(); ++s) {
             Scene &scene = project.getSceneByIndex(s);
 
+            int idx = 0;
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
 
                 if(light.isDirectional()) {
                     auto &dir = static_cast<DirectionalLight&>(light).getDirection();
-                    sstreamLightInit << "    dirLights[i].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
-                    sstreamLightInit << "    dirLights[i].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
+                    sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
+                    sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
+                    idx++;
                 }
             }
         }
-        sstreamLightInit << "}" << std::endl;
+        sstreamLightInit << std::endl;
     }
 
     if(totalPointLightCount) {
-        sstreamLightInit << "for(int i = 0; i < " << totalPointLightCount << "; ++i) {" << std::endl;
         for(uint32 s = 0; s < project.getSceneCount(); ++s) {
             Scene &scene = project.getSceneByIndex(s);
 
+            int idx = 0;
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
                 if(light.isPoint()) {
                     auto &pos = static_cast<PointLight&>(light).getPosition();
-                    sstreamLightInit << "    pointLights[i].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
-                    sstreamLightInit << "    pointLights[i].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
+                    sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
+                    sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
+                    idx++;
                 }
             }
         }
-        sstreamLightInit << "}" << std::endl;
+        sstreamLightInit << std::endl;
     }
 
     replace(glslCode, REPLACE_LIGHTS_INIT, sstreamLightInit.str());
