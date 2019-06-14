@@ -152,12 +152,12 @@ void GlslGenerator::generateScenes(Project &project) {
     std::stringstream sstream;
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
         Scene &scene = project.getSceneByIndex(i);
-        sstream << generateScene(scene) << std::endl;
+        sstream << generateScene(project, scene) << std::endl;
     }
     replace(glslCode, REPLACE_SCENE_SDFS, sstream.str());
 }
 
-std::string GlslGenerator::generateScene(Scene &scene) {
+std::string GlslGenerator::generateScene(Project &project, Scene &scene) {
     std::stringstream sstream;
     sstream << "SceneQuery " << scene.getName() << "(vec3 p) {" << std::endl;
     sstream << "SceneQuery sq;" << std::endl;
@@ -172,13 +172,13 @@ std::string GlslGenerator::generateScene(Scene &scene) {
         });
     }
 
-    sstream << "vec2 result = " << generateSceneTree(scene) << ";" << std::endl;
+    sstream << "vec2 result = " << generateSceneTree(project, scene) << ";" << std::endl;
     sstream << "sq.dist = result.x; sq.matIdx = int(result.y); return sq;" << std::endl;
     sstream << "}" << std::endl;
     return sstream.str();
 }
 
-std::string GlslGenerator::generateSceneTree(Scene &scene) {
+std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
     //RPN list of operations and operators (ex: AB+CD-+)
     std::forward_list<RpnElement> rpnList;
 
@@ -213,7 +213,7 @@ std::string GlslGenerator::generateSceneTree(Scene &scene) {
                     rpnStack.pop();
                 }
 
-                std::string code = generateOperator(scene, op, operandList, 0, operandCount);
+                std::string code = generateOperator(project, scene, op, operandList, 0, operandCount);
                 rpnStack.push(std::move(code));
             }
         }
@@ -244,19 +244,19 @@ uint32 GlslGenerator::countNonEmptyOperands(TreeNode<Entity> &root) {
     return count;
 }
 
-std::string GlslGenerator::generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
+std::string GlslGenerator::generateOperator(Project &project, Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx) {
     std::string templateString;
     templateString.reserve(512);
 
     switch(csgOperator.getType()) {
     case CsgType::Union:
-        templateString = "goMin(#OP1,#OP2)";
+        templateString = "union_(#OP1,#OP2)";
         break;
     case CsgType::Intersection:
-        templateString = "goMax(#OP1,#OP2)";
+        templateString = "intersection(#OP1,#OP2)";
         break;
     case CsgType::Subtraction:
-        templateString = "goMax(#OP1,-#OP2)";
+        templateString = "subtraction(#OP1,#OP2)";
         break;
     default:
         GO_ASSERT_ALWAYS();
@@ -264,21 +264,21 @@ std::string GlslGenerator::generateOperator(Scene &scene, const CsgOperator &csg
 
     int size = endIdx - startIdx;
     if(size == 1) {
-        return generateOperand(scene, operands[startIdx]);
+        return generateOperand(project, scene, operands[startIdx]);
     }
     else if(size == 2) {
-        replace(templateString, "#OP1", generateOperand(scene, operands[startIdx]));
-        replace(templateString, "#OP2", generateOperand(scene, operands[startIdx + 1]));
+        replace(templateString, "#OP1", generateOperand(project, scene, operands[startIdx]));
+        replace(templateString, "#OP2", generateOperand(project, scene, operands[startIdx + 1]));
     }
     else {
-        replace(templateString, "#OP1", generateOperator(scene, csgOperator, operands, 0, 2));
-        replace(templateString, "#OP2", generateOperator(scene, csgOperator, operands, 2, size));
+        replace(templateString, "#OP1", generateOperator(project, scene, csgOperator, operands, 0, 2));
+        replace(templateString, "#OP2", generateOperator(project, scene, csgOperator, operands, 2, size));
     }
 
     return templateString;
 }
 
-std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnElement) {
+std::string GlslGenerator::generateOperand(Project &project, Scene &scene, const RpnElement &rpnElement) {
     std::stringstream sstream;
 
     if(rpnElement.isGeneratedCode)
@@ -314,7 +314,18 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         default:
             GO_ASSERT_ALWAYS();
         }
-        sstream << ", 0.0)"; //TODO: materialIndex
+
+        uint32 matIdx = 0;
+        if(obj.isAttachedToMaterial()) {
+            for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
+                Material &mat = project.getMaterialByIndex(i);
+                if(obj.getMaterialId() == mat.getId()) {
+                    matIdx = i;
+                    break;
+                }
+            }
+        }
+        sstream << "," << matIdx << ")";
     }
 
     return sstream.str();

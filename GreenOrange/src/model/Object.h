@@ -22,7 +22,7 @@ public:
     void detachFromTransform() { transformId = -1; }
     bool isAttachedToTransform() const { return transformId != -1; }
 
-    void attachToMaterial(Material &m) { materialId = m.getId(); }
+    void attachToMaterial(Material &m) { materialId = m.getId(); GEN_SET_DIRTY(); }
     uint32 getMaterialId() { return materialId; }
     void detachFromMaterial() { materialId = -1; }
     bool isAttachedToMaterial() const { return materialId != -1; }

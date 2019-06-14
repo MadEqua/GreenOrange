@@ -63,10 +63,10 @@ private:
     void generateScenes(Project &project);
     void generateMaterials(Project &project);
 
-    static std::string generateScene(Scene &scene);
-    static std::string generateSceneTree(Scene &scene);
-    static std::string generateOperator(Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
-    static std::string generateOperand(Scene &scene, const RpnElement &rpnElement);
+    static std::string generateScene(Project &project, Scene &scene);
+    static std::string generateSceneTree(Project &project, Scene &scene);
+    static std::string generateOperator(Project &project, Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
+    static std::string generateOperand(Project &project, Scene &scene, const RpnElement &rpnElement);
     static std::string generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode);
 
     static std::string generateTransformName(const Transform &transform);
