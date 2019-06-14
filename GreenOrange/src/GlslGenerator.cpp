@@ -13,6 +13,7 @@
 #include "model/Project.h"
 #include "model/Scene.h"
 #include "model/Light.h"
+#include "model/Material.h"
 #include "Constants.h"
 
 #include "glsl/generated/template.frag.h"
@@ -48,8 +49,9 @@ void GlslGenerator::generateIfNeeded(Project &project) {
         replace(glslCode, REPLACE_OBJECTS, objects_frag);
         replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
 
-        generateLights(project);
         generateScenes(project);
+        generateLights(project);
+        generateMaterials(project);
 
         needToGenerate = false;
         currentCodeId++;
@@ -132,6 +134,18 @@ void GlslGenerator::generateLights(Project &project) {
     replace(glslCode, REPLACE_LIGHTS_INIT, sstreamLightInit.str());
 }
 
+void GlslGenerator::generateMaterials(Project &project) {
+    replace(glslCode, REPLACE_MATERIAL_COUNT, std::to_string(project.getMaterialCount()));
+    
+    std::stringstream sstream;
+    for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
+        Material &mat = project.getMaterialByIndex(i);
+        auto &col = mat.getColor();
+        sstream << "materials[" << i <<"].color = vec3(" << col[0] << ", " << col[1] << ", " << col[2] << "); " << std::endl;
+    }
+    replace(glslCode, REPLACE_MATERIALS_INIT, sstream.str());
+}
+
 void GlslGenerator::generateScenes(Project &project) {
     std::stringstream sstream;
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
@@ -143,7 +157,8 @@ void GlslGenerator::generateScenes(Project &project) {
 
 std::string GlslGenerator::generateScene(Scene &scene) {
     std::stringstream sstream;
-    sstream << "float " << scene.getName() << "(vec3 p) {" << std::endl;
+    sstream << "SceneQuery " << scene.getName() << "(vec3 p) {" << std::endl;
+    sstream << "SceneQuery sq;" << std::endl;
 
     //Transformed Ps
     //TODO: only put transforms that are actually in use
@@ -155,7 +170,8 @@ std::string GlslGenerator::generateScene(Scene &scene) {
         });
     }
 
-    sstream << "    return " << generateSceneTree(scene) << ";" << std::endl;
+    sstream << "vec2 result = " << generateSceneTree(scene) << ";" << std::endl;
+    sstream << "sq.dist = result.x; sq.matIdx = int(result.y); return sq;" << std::endl;
     sstream << "}" << std::endl;
     return sstream.str();
 }
@@ -232,13 +248,13 @@ std::string GlslGenerator::generateOperator(Scene &scene, const CsgOperator &csg
 
     switch(csgOperator.getType()) {
     case CsgType::Union:
-        templateString = "min(#OP1,#OP2)";
+        templateString = "goMin(#OP1,#OP2)";
         break;
     case CsgType::Intersection:
-        templateString = "max(#OP1,#OP2)";
+        templateString = "goMax(#OP1,#OP2)";
         break;
     case CsgType::Subtraction:
-        templateString = "max(#OP1,-#OP2)";
+        templateString = "goMax(#OP1,-#OP2)";
         break;
     default:
         GO_ASSERT_ALWAYS();
@@ -274,6 +290,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
                 p = generateTransformName(static_cast<Transform&>(*transform));
         }
 
+        sstream << "vec2(";
         switch(obj.getType()) {
         case ObjectType::Box:
         {
@@ -295,6 +312,7 @@ std::string GlslGenerator::generateOperand(Scene &scene, const RpnElement &rpnEl
         default:
             GO_ASSERT_ALWAYS();
         }
+        sstream << ", 0.0)"; //TODO: materialIndex
     }
 
     return sstream.str();

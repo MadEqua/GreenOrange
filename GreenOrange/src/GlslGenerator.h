@@ -61,6 +61,7 @@ private:
 
     void generateLights(Project &project);
     void generateScenes(Project &project);
+    void generateMaterials(Project &project);
 
     static std::string generateScene(Scene &scene);
     static std::string generateSceneTree(Scene &scene);
