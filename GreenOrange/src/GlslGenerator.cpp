@@ -109,6 +109,7 @@ void GlslGenerator::generateLights(Project &project) {
                     auto &dir = static_cast<DirectionalLight&>(light).getDirection();
                     sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
+                    sstreamLightInit << "dirLights[" << idx << "].intensity = " << light.getIntensity() << ";" << std::endl;
                     idx++;
                 }
             }
@@ -128,6 +129,7 @@ void GlslGenerator::generateLights(Project &project) {
                     auto &pos = static_cast<PointLight&>(light).getPosition();
                     sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
+                    sstreamLightInit << "pointLights[" << idx << "].intensity = " << light.getIntensity() << ";" << std::endl;
                     idx++;
                 }
             }
@@ -144,8 +146,13 @@ void GlslGenerator::generateMaterials(Project &project) {
     std::stringstream sstream;
     for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
         Material &mat = project.getMaterialByIndex(i);
-        auto &col = mat.getColor();
-        sstream << "materials[" << i <<"].color = vec3(" << col[0] << ", " << col[1] << ", " << col[2] << "); " << std::endl;
+        auto &baseCol = mat.getBaseColor();
+        auto &emissiveColor = mat.getEmissiveColor();
+        sstream << "materials[" << i << "].baseColor = vec3(" << baseCol[0] << ", " << baseCol[1] << ", " << baseCol[2] << "); " << std::endl;
+        sstream << "materials[" << i << "].metallic = " << mat.getMetallic() << ";" <<std::endl;
+        sstream << "materials[" << i << "].roughness = " << mat.getRoughness() << ";" << std::endl;
+        sstream << "materials[" << i << "].emissiveColor = vec3(" << emissiveColor[0] << ", " << emissiveColor[1] << ", " << emissiveColor[2] << "); " << std::endl;
+        sstream << "materials[" << i << "].emissiveIntensity = " << mat.getEmissiveIntensity() << ";" << std::endl;
     }
     replace(glslCode, REPLACE_MATERIALS_INIT, sstream.str());
 }

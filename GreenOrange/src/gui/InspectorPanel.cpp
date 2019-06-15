@@ -184,6 +184,12 @@ void InspectorPanel::doLight(Light &light) {
 
     ImGui::NewLine();
 
+    float intensity = light.getIntensity();
+    if(ImGui::DragFloat("Intensity", &intensity, 0.5f, 0.0f, DRAG_MAX))
+        light.setIntensity(intensity);
+
+    ImGui::NewLine();
+
     ImGuiColorEditFlags colorPickerFlags = 0;// ImGuiColorEditFlags_NoInputs;
     auto color = light.getColor();
     if(ImGui::ColorPicker3("Color", glm::value_ptr(color), colorPickerFlags))
@@ -195,7 +201,31 @@ void InspectorPanel::doMaterial(Material &material) {
     ImGui::NewLine();
 
     ImGuiColorEditFlags colorPickerFlags = 0;// ImGuiColorEditFlags_NoInputs;
-    auto color = material.getColor();
-    if(ImGui::ColorPicker3("Color", glm::value_ptr(color), colorPickerFlags))
-        material.setColor(color);
+    auto baseColor = material.getBaseColor();
+    if(ImGui::ColorPicker3("BaseColor", glm::value_ptr(baseColor), colorPickerFlags))
+        material.setBaseColor(baseColor);
+
+    ImGui::NewLine();
+
+    float metallic = material.getMetallic();
+    if(ImGui::DragFloat("Metallic", &metallic, 0.01f, 0.0f, 1.0f))
+        material.setMetallic(metallic);
+
+    ImGui::NewLine();
+
+    float roughness = material.getRoughness();
+    if(ImGui::DragFloat("Roughness", &roughness, 0.005f, 0.0f, 1.0f))
+        material.setRoughness(roughness);
+
+    ImGui::NewLine();
+
+    auto emissiveColor = material.getEmissiveColor();
+    if(ImGui::ColorPicker3("Emissive Color", glm::value_ptr(emissiveColor), colorPickerFlags))
+        material.setEmissiveColor(emissiveColor);
+
+    ImGui::NewLine();
+
+    float emmisiveIntensity = material.getEmissiveIntensity();
+    if(ImGui::DragFloat("Emmisive Intensity", &emmisiveIntensity, 0.5f, 0.0f, DRAG_MAX))
+        material.setEmissiveIntensity(emmisiveIntensity);
 }

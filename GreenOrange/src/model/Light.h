@@ -16,15 +16,19 @@ public:
 
     void setColor(const glm::vec3 &color) { this->color = color; GEN_SET_DIRTY(); }
     const glm::vec3& getColor() const { return color; }
+
+    void setIntensity(float intensity) { this->intensity = intensity; GEN_SET_DIRTY(); }
+    float getIntensity() const { return intensity; }
     
     bool isDirectional() const { return type == LightType::Directional; }
     bool isPoint() const { return type == LightType::Point; }
 
     LightType getType() const { return type; }
 
-private:
+protected:
     LightType type;
     glm::vec3 color;
+    float intensity;
 };
 
 
