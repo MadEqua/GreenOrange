@@ -88,7 +88,7 @@ static void GLAPIENTRY openglCallbackFunction(GLenum source, GLenum type, GLuint
         severityString = "Unknown";
     }
 
-    printf("OpenGL Debug - Id: 0x%04X. Source: %s, Type: %s, Severity: %s.\n", id, sourceString, typeString, severityString);
+    printf("OpenGL Debug - Id: 0x%04X. Source: %s, Type: %s, Severity: %s. Message: %s\n", id, sourceString, typeString, severityString, message);
 }
 
 bool initGlfw() {
@@ -152,8 +152,9 @@ bool initGlad() {
     if(res == GL_LINEAR) {
         printf("Linear RGB Default Framebuffer (This reporting may be wrong on nVidia drivers).\n");
 
-        //TODO This should be glDisable. But on nVidia drivers the return value is always GL_LINEAR.
+        //FIXME: This should be glDisable. But on nVidia drivers the return value is always GL_LINEAR.
         //https://devtalk.nvidia.com/default/topic/776591/opengl/gl_framebuffer_srgb-functions-incorrectly/
+        //Not very bad because every system should return a srgb framebuffer anyway.
         glEnable(GL_FRAMEBUFFER_SRGB);
     }
     else if(res == GL_SRGB) {
@@ -175,7 +176,9 @@ bool initGlad() {
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(openglCallbackFunction, nullptr);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE); //Filter Notification messages
+
+    //Filter Notification messages. Disabling notifications, avoiding spam...
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 #else
     glDisable(GL_DEBUG_OUTPUT);
 #endif
