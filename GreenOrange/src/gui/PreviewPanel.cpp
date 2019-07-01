@@ -16,6 +16,10 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
 
     ImGui::Begin("Preview", &open);
     {
+        bool onlyPreviewStatic = greenOrange.getOpenProject()->getOnlyPreviewStaticObjects();
+        ImGui::Checkbox("Show Only Static Objects", &onlyPreviewStatic);
+        greenOrange.getOpenProject()->setOnlyPreviewStaticObjects(onlyPreviewStatic);
+
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         if(size.x > 0.0f && size.y > 0.0f) {

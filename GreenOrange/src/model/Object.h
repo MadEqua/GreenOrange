@@ -27,10 +27,14 @@ public:
     void detachFromMaterial() { materialId = -1; }
     bool isAttachedToMaterial() const { return materialId != -1; }
 
+    bool isStatic() const { return isStatic_; }
+    void setStatic(bool isStatic) { isStatic_ = isStatic; GEN_SET_DIRTY(); }
+
 private:
     ObjectType type;
     uint32 transformId = -1;
     uint32 materialId = -1;
+    bool isStatic_ = false;
 };
 
 

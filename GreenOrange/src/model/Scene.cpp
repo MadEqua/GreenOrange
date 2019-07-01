@@ -105,6 +105,14 @@ void Scene::deleteLight(Light &light) {
     pendingDeleteLights.emplace_back(&light);
 }
 
+uint32 Scene::getStaticLightCount() const {
+    uint32 sum = 0;
+    for(const Light *l : lights) {
+        if(l->isStatic()) sum++;
+    }
+    return sum;
+}
+
 uint32 Scene::getDirLightCount() const {
     uint32 sum = 0;
     for(const Light *l : lights) {
@@ -113,10 +121,26 @@ uint32 Scene::getDirLightCount() const {
     return sum;
 }
 
+uint32 Scene::getStaticDirLightCount() const {
+    uint32 sum = 0;
+    for(const Light *l : lights) {
+        if(l->isStatic() && l->isDirectional()) sum++;
+    }
+    return sum;
+}
+
 uint32 Scene::getPointLightCount() const {
     uint32 sum = 0;
     for(const Light *l : lights) {
         if(l->isPoint()) sum++;
+    }
+    return sum;
+}
+
+uint32 Scene::getStaticPointLightCount() const {
+    uint32 sum = 0;
+    for(const Light *l : lights) {
+        if(l->isStatic() && l->isPoint()) sum++;
     }
     return sum;
 }

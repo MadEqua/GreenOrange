@@ -34,6 +34,9 @@ public:
 
     void doPendingOperations();
 
+    void setOnlyPreviewStaticObjects(bool b) { onlyPreviewStaticObjects = b; GEN_SET_DIRTY(); }
+    bool getOnlyPreviewStaticObjects() const { return onlyPreviewStaticObjects; }
+
     static uint32 generateId() { return nextId++; }
 
 private:
@@ -44,5 +47,7 @@ private:
 
     uint32 selectedSceneIdx = 0;
     static uint32 nextId;
+
+    bool onlyPreviewStaticObjects = false;
 };
 

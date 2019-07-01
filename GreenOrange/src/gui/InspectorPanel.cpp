@@ -75,6 +75,10 @@ void InspectorPanel::doObject(Project &project, Object &object) {
     ImGui::Text(ObjectTypeStrings[static_cast<int>(object.getType())]);
     ImGui::NewLine();
 
+    bool isStatic = object.isStatic();
+    ImGui::Checkbox("Static", &isStatic);
+    object.setStatic(isStatic);
+
     switch(object.getType()) {
     case ObjectType::Sphere:
     {
@@ -160,6 +164,10 @@ void InspectorPanel::doLight(Light &light) {
     ImGui::Text(LightTypeStrings[static_cast<int>(light.getType())]);
     ImGui::NewLine();
 
+    bool isStatic = light.isStatic();
+    ImGui::Checkbox("Static", &isStatic);
+    light.setStatic(isStatic);
+
     switch(light.getType()) {
     case LightType::Directional:
     {
@@ -226,6 +234,6 @@ void InspectorPanel::doMaterial(Material &material) {
     ImGui::NewLine();
 
     float emmisiveIntensity = material.getEmissiveIntensity();
-    if(ImGui::DragFloat("Emmisive Intensity", &emmisiveIntensity, 0.5f, 0.0f, DRAG_MAX))
+    if(ImGui::DragFloat("Emisive Intensity", &emmisiveIntensity, 0.5f, 0.0f, DRAG_MAX))
         material.setEmissiveIntensity(emmisiveIntensity);
 }

@@ -25,10 +25,14 @@ public:
 
     LightType getType() const { return type; }
 
+    bool isStatic() const { return isStatic_; }
+    void setStatic(bool isStatic) { isStatic_ = isStatic; GEN_SET_DIRTY(); }
+
 protected:
     LightType type;
     glm::vec3 color;
     float intensity;
+    bool isStatic_ = false;
 };
 
 

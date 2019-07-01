@@ -42,25 +42,29 @@ void GlslGenerator::initGeneration() {
     glslCode.append(GLSL_VERSION).append("\n").append(template_frag);
 }
 
-void GlslGenerator::generateIfNeeded(Project &project) {
+void GlslGenerator::generateForPreview(Project &project) {
     if(needToGenerate) {
-        initGeneration();
-
-        //TODO: only add actually needed/used parts
-        replace(glslCode, REPLACE_OBJECTS, objects_frag);
-        replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
-        replace(glslCode, REPLACE_OPERATORS, operators_frag);
-
-        generateScenes(project);
-        generateLights(project);
-        generateMaterials(project);
-
-        needToGenerate = false;
-        currentCodeId++;
+        generate(project, project.getOnlyPreviewStaticObjects());
     }
 }
 
-void GlslGenerator::generateLights(Project &project) {
+void GlslGenerator::generate(Project &project, bool onlyStaticObjects) {
+    initGeneration();
+
+    //TODO: only add actually needed/used parts
+    replace(glslCode, REPLACE_OBJECTS, objects_frag);
+    replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
+    replace(glslCode, REPLACE_OPERATORS, operators_frag);
+
+    generateScenes(project, onlyStaticObjects);
+    generateLights(project, onlyStaticObjects);
+    generateMaterials(project);
+
+    needToGenerate = false;
+    currentCodeId++;
+}
+
+void GlslGenerator::generateLights(Project &project, bool onlyStaticLights) {
     uint32 totalDirLightCount = 0;
     uint32 totalPointLightCount = 0;
 
@@ -73,8 +77,8 @@ void GlslGenerator::generateLights(Project &project) {
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
         Scene &scene = project.getSceneByIndex(i);
 
-        uint32 sceneDirLightCount = scene.getDirLightCount();
-        uint32 scenePointLightCount = scene.getPointLightCount();
+        uint32 sceneDirLightCount = onlyStaticLights ? scene.getStaticDirLightCount() : scene.getDirLightCount();
+        uint32 scenePointLightCount = onlyStaticLights ? scene.getStaticPointLightCount() : scene.getPointLightCount();
 
         sstreamDirLightsSet << "case " << i << ":" << std::endl;
         sstreamDirLightsSet << "return ivec2(" << totalDirLightCount << "," << (totalDirLightCount + sceneDirLightCount - 1) << ");" << std::endl;
@@ -104,8 +108,7 @@ void GlslGenerator::generateLights(Project &project) {
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
-
-                if(light.isDirectional()) {
+                if(light.isDirectional() && (!onlyStaticLights || (onlyStaticLights && light.isStatic()))) {
                     auto &dir = static_cast<DirectionalLight&>(light).getDirection();
                     sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
@@ -125,7 +128,7 @@ void GlslGenerator::generateLights(Project &project) {
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
-                if(light.isPoint()) {
+                if(light.isPoint() && (!onlyStaticLights || (onlyStaticLights && light.isStatic()))) {
                     auto &pos = static_cast<PointLight&>(light).getPosition();
                     sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
@@ -157,16 +160,16 @@ void GlslGenerator::generateMaterials(Project &project) {
     replace(glslCode, REPLACE_MATERIALS_INIT, sstream.str());
 }
 
-void GlslGenerator::generateScenes(Project &project) {
+void GlslGenerator::generateScenes(Project &project, bool onlyStaticObjects) {
     std::stringstream sstream;
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
         Scene &scene = project.getSceneByIndex(i);
-        sstream << generateScene(project, scene) << std::endl;
+        sstream << generateScene(project, scene, onlyStaticObjects) << std::endl;
     }
     replace(glslCode, REPLACE_SCENE_SDFS, sstream.str());
 }
 
-std::string GlslGenerator::generateScene(Project &project, Scene &scene) {
+std::string GlslGenerator::generateScene(Project &project, Scene &scene, bool onlyStaticObjects) {
     std::stringstream sstream;
     sstream << "SceneQuery " << scene.getName() << "(vec3 p) {" << std::endl;
     sstream << "SceneQuery sq;" << std::endl;
@@ -181,13 +184,13 @@ std::string GlslGenerator::generateScene(Project &project, Scene &scene) {
         });
     }
 
-    sstream << "vec2 result = " << generateSceneTree(project, scene) << ";" << std::endl;
+    sstream << "vec2 result = " << generateSceneTree(project, scene, onlyStaticObjects) << ";" << std::endl;
     sstream << "sq.dist = result.x; sq.matIdx = int(result.y); return sq;" << std::endl;
     sstream << "}" << std::endl;
     return sstream.str();
 }
 
-std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
+std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene, bool onlyStaticObjects) {
     //RPN list of operations and operators (ex: AB+CD-+)
     std::forward_list<RpnElement> rpnList;
 
@@ -203,8 +206,10 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
     for(RpnElement &rpnElem : rpnList) {
 
         //If is operand push into stack
-        if(rpnElem.isGeneratedCode || rpnElem.sceneEntityNode->getPayload().isObject()) {
-            rpnStack.push(std::move(rpnElem));
+        if((rpnElem.isGeneratedCode || rpnElem.sceneEntityNode->getPayload().isObject())) {
+            if(!onlyStaticObjects || static_cast<Object*>(&rpnElem.sceneEntityNode->getPayload())->isStatic()) {
+                rpnStack.push(std::move(rpnElem));
+            }
         }
         //If is operator pop related operands, generate code and push it into the stack as a new operand
         else {
@@ -212,7 +217,7 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
             CsgOperator &op = static_cast<CsgOperator&>(*node);
 
             //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators
-            uint32 operandCount = countNonEmptyOperands(node);
+            uint32 operandCount = countNonEmptyOperands(node, onlyStaticObjects);
             if(operandCount) {
 
                 //Create a list of operands to send to the operator code generator
@@ -236,18 +241,19 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
     return "";
 }
 
-uint32 GlslGenerator::countNonEmptyOperands(TreeNode<Entity> &root) {
+uint32 GlslGenerator::countNonEmptyOperands(TreeNode<Entity> &root, bool onlyStaticObjects) {
     uint32 count = 0;
 
     for(uint32 i = 0; i < root.getChildCount(); ++i) {
         TreeNode<Entity> &child = root.getChildByIndex(i);
         
         if(child->isCsgOperator()) {
-            if(countNonEmptyOperands(child))
+            if(countNonEmptyOperands(child, onlyStaticObjects))
                 count++;
         }
         else if(child->isObject()) {
-            count++;
+            if(!onlyStaticObjects || static_cast<Object*>(&child.getPayload())->isStatic())
+                count++;
         }
     }
     return count;

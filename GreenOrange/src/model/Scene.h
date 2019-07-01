@@ -55,9 +55,12 @@ public:
     void createLight(const char *name, LightType type);
     void deleteLight(Light &light);
     size_t getLightCount() const { return lights.size(); }
+    uint32 getStaticLightCount() const;
     Light& getLightByIndex(uint32 i) { GO_ASSERT(i < lights.size()); return *lights[i]; }
     uint32 getDirLightCount() const;
+    uint32 getStaticDirLightCount() const;
     uint32 getPointLightCount() const;
+    uint32 getStaticPointLightCount() const;
 
     //-----------------------------------------
     //Entity

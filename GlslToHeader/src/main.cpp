@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
         std::cout << "GlslToHeader: Successfully generated header " << outFilePath << "." << std::endl;
     }
     else {
-        std::cout << "GlslToHeader: Not enough arguments. Specify an input GLSL in." << std::endl;
+        std::cout << "GlslToHeader: Not enough arguments. Specify an input GLSL." << std::endl;
         return 1;
     }
     return 0;

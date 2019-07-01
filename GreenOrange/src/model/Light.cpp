@@ -5,7 +5,7 @@ Light::Light(LightType type, uint32 id, const char *name) :
     Entity(EntityType::Light, id, name),
     type(type),
     color(1.0f, 1.0f, 1.0f),
-    intensity(100.0f) {
+    intensity(10.0f) {
 }
 
 
