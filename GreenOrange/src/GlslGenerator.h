@@ -34,25 +34,34 @@ public:
 
     //Call once per frame for the PreviewPanel
     void generateForPreview(Project &project);
-   
-    void generate(Project &project, bool onlyStaticObjects = false);
+
+    void generate(Project &project);
 
     const std::string& getGlslCode() const { return glslCode; }
 
 private:
     GlslGenerator();
 
-    //Element on the code generation RPN list. It will be either a SceneElement (CsgOperator or Object)
-    //or some already generated code to be composed with other operators/operations.
+    //Element on the code generation RPN list. It will be an Entity or some already generated code.
     class RpnElement {
     public:
-        RpnElement(TreeNode<Entity> &sceneEntityNode);
+        RpnElement(TreeNode<Entity> &treeNode);
+        RpnElement(Entity &entity);
         RpnElement(std::string &&generatedCode);
 
-        TreeNode<Entity> *sceneEntityNode;
+        TreeNode<Entity> *csgTreeNode;
+        Entity *entity;
         std::string generatedCode;
 
-        bool isGeneratedCode;
+        bool containsGeneratedCode() const { return type == Type::Code; }
+        bool containsCsgTreeNode() const { return type == Type::CsgTreeNode; }
+        bool containsEntity() const { return type == Type::Entity; }
+    private:
+        enum class Type {
+            CsgTreeNode, Entity, Code
+        };
+
+        Type type;
     };
 
     bool needToGenerate = true;
@@ -61,18 +70,18 @@ private:
 
     void initGeneration();
 
-    void generateLights(Project &project, bool onlyStaticLights);
-    void generateScenes(Project &project, bool onlyStaticObjects);
+    void generateLights(Project &project);
+    void generateScenes(Project &project);
     void generateMaterials(Project &project);
 
-    static std::string generateScene(Project &project, Scene &scene, bool onlyStaticObjects);
-    static std::string generateSceneTree(Project &project, Scene &scene, bool onlyStaticObjects);
+    static std::string generateScene(Project &project, Scene &scene);
+    static std::string generateSceneTree(Project &project, Scene &scene);
     static std::string generateOperator(Project &project, Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
     static std::string generateOperand(Project &project, Scene &scene, const RpnElement &rpnElement);
     static std::string generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode);
 
     static std::string generateTransformName(const Transform &transform);
     static uint32 countNonEmptyOperands(TreeNode<Entity> &node, bool onlyStaticObjects);
-    
+
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };

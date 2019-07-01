@@ -22,14 +22,25 @@
 #include "glsl/generated/operators.frag.h"
 
 
-GlslGenerator::RpnElement::RpnElement(TreeNode<Entity> &sceneEntityNode) :
-    sceneEntityNode(&sceneEntityNode),
-    isGeneratedCode(false) {
+GlslGenerator::RpnElement::RpnElement(TreeNode<Entity> &treeNode) {
+    if(treeNode->isCsgOperator()) {
+        type = Type::CsgTreeNode;
+        this->csgTreeNode = &treeNode;
+    }
+    else {
+        type = Type::Entity;
+        entity = &treeNode.getPayload();
+    }
+}
+
+GlslGenerator::RpnElement::RpnElement(Entity &entity) :
+    entity(&entity),
+    type(Type::Entity) {
 }
 
 GlslGenerator::RpnElement::RpnElement(std::string &&generatedCode) :
     generatedCode(std::move(generatedCode)),
-    isGeneratedCode(true) {
+    type(Type::Code) {
 }
 
 
@@ -44,11 +55,12 @@ void GlslGenerator::initGeneration() {
 
 void GlslGenerator::generateForPreview(Project &project) {
     if(needToGenerate) {
-        generate(project, project.getOnlyPreviewStaticObjects());
+        generate(project);
+        needToGenerate = false;
     }
 }
 
-void GlslGenerator::generate(Project &project, bool onlyStaticObjects) {
+void GlslGenerator::generate(Project &project) {
     initGeneration();
 
     //TODO: only add actually needed/used parts
@@ -56,15 +68,15 @@ void GlslGenerator::generate(Project &project, bool onlyStaticObjects) {
     replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
     replace(glslCode, REPLACE_OPERATORS, operators_frag);
 
-    generateScenes(project, onlyStaticObjects);
-    generateLights(project, onlyStaticObjects);
+    generateScenes(project);
+    generateLights(project);
     generateMaterials(project);
 
     needToGenerate = false;
     currentCodeId++;
 }
 
-void GlslGenerator::generateLights(Project &project, bool onlyStaticLights) {
+void GlslGenerator::generateLights(Project &project) {
     uint32 totalDirLightCount = 0;
     uint32 totalPointLightCount = 0;
 
@@ -77,8 +89,8 @@ void GlslGenerator::generateLights(Project &project, bool onlyStaticLights) {
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
         Scene &scene = project.getSceneByIndex(i);
 
-        uint32 sceneDirLightCount = onlyStaticLights ? scene.getStaticDirLightCount() : scene.getDirLightCount();
-        uint32 scenePointLightCount = onlyStaticLights ? scene.getStaticPointLightCount() : scene.getPointLightCount();
+        uint32 sceneDirLightCount = project.getOnlyPreviewStaticObjects() ? scene.getStaticDirLightCount() : scene.getDirLightCount();
+        uint32 scenePointLightCount = project.getOnlyPreviewStaticObjects() ? scene.getStaticPointLightCount() : scene.getPointLightCount();
 
         sstreamDirLightsSet << "case " << i << ":" << std::endl;
         sstreamDirLightsSet << "return ivec2(" << totalDirLightCount << "," << (totalDirLightCount + sceneDirLightCount - 1) << ");" << std::endl;
@@ -108,7 +120,7 @@ void GlslGenerator::generateLights(Project &project, bool onlyStaticLights) {
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
-                if(light.isDirectional() && (!onlyStaticLights || (onlyStaticLights && light.isStatic()))) {
+                if(light.isDirectional() && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
                     auto &dir = static_cast<DirectionalLight&>(light).getDirection();
                     sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
@@ -128,7 +140,7 @@ void GlslGenerator::generateLights(Project &project, bool onlyStaticLights) {
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
-                if(light.isPoint() && (!onlyStaticLights || (onlyStaticLights && light.isStatic()))) {
+                if(light.isPoint() && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
                     auto &pos = static_cast<PointLight&>(light).getPosition();
                     sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
@@ -145,14 +157,14 @@ void GlslGenerator::generateLights(Project &project, bool onlyStaticLights) {
 
 void GlslGenerator::generateMaterials(Project &project) {
     replace(glslCode, REPLACE_MATERIAL_COUNT, std::to_string(project.getMaterialCount()));
-    
+
     std::stringstream sstream;
     for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
         Material &mat = project.getMaterialByIndex(i);
         auto &baseCol = mat.getBaseColor();
         auto &emissiveColor = mat.getEmissiveColor();
         sstream << "materials[" << i << "].baseColor = vec3(" << baseCol[0] << ", " << baseCol[1] << ", " << baseCol[2] << "); " << std::endl;
-        sstream << "materials[" << i << "].metallic = " << mat.getMetallic() << ";" <<std::endl;
+        sstream << "materials[" << i << "].metallic = " << mat.getMetallic() << ";" << std::endl;
         sstream << "materials[" << i << "].roughness = " << mat.getRoughness() << ";" << std::endl;
         sstream << "materials[" << i << "].emissiveColor = vec3(" << emissiveColor[0] << ", " << emissiveColor[1] << ", " << emissiveColor[2] << "); " << std::endl;
         sstream << "materials[" << i << "].emissiveIntensity = " << mat.getEmissiveIntensity() << ";" << std::endl;
@@ -160,16 +172,16 @@ void GlslGenerator::generateMaterials(Project &project) {
     replace(glslCode, REPLACE_MATERIALS_INIT, sstream.str());
 }
 
-void GlslGenerator::generateScenes(Project &project, bool onlyStaticObjects) {
+void GlslGenerator::generateScenes(Project &project) {
     std::stringstream sstream;
     for(uint32 i = 0; i < project.getSceneCount(); ++i) {
         Scene &scene = project.getSceneByIndex(i);
-        sstream << generateScene(project, scene, onlyStaticObjects) << std::endl;
+        sstream << generateScene(project, scene) << std::endl;
     }
     replace(glslCode, REPLACE_SCENE_SDFS, sstream.str());
 }
 
-std::string GlslGenerator::generateScene(Project &project, Scene &scene, bool onlyStaticObjects) {
+std::string GlslGenerator::generateScene(Project &project, Scene &scene) {
     std::stringstream sstream;
     sstream << "SceneQuery " << scene.getName() << "(vec3 p) {" << std::endl;
     sstream << "SceneQuery sq;" << std::endl;
@@ -184,21 +196,15 @@ std::string GlslGenerator::generateScene(Project &project, Scene &scene, bool on
         });
     }
 
-    sstream << "vec2 result = " << generateSceneTree(project, scene, onlyStaticObjects) << ";" << std::endl;
+    sstream << "vec2 result = " << generateSceneTree(project, scene) << ";" << std::endl;
     sstream << "sq.dist = result.x; sq.matIdx = int(result.y); return sq;" << std::endl;
     sstream << "}" << std::endl;
     return sstream.str();
 }
 
-std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene, bool onlyStaticObjects) {
+std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
     //RPN list of operations and operators (ex: AB+CD-+)
     std::forward_list<RpnElement> rpnList;
-
-    //TODO Preview probes
-    /*for(int i = 0; i < scene.getProbeCount(); ++i) {
-        auto &probe = scene.getProbeByIndex(i);
-        rpnList.emplace_front(probe);
-    }*/
 
     //The list is initialized by doing a DFS and reversing the visit order
     scene.getCsgTreeRootNode().traverseDfs([&rpnList](TreeNode<Entity> &ent) -> bool {
@@ -206,26 +212,45 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene, boo
         return false;
     });
 
+    //Add probe previews to the root union if needed.
+    if(project.getPreviewProbes()) {
+        for(int i = 0; i < scene.getProbeCount(); ++i) {
+            rpnList.emplace_front(scene.getProbeByIndex(i));
+        }
+    }
+
     //Stack for the RPN algorithm
     std::stack<RpnElement> rpnStack;
 
     for(RpnElement &rpnElem : rpnList) {
 
         //If is operand push into stack
-        if((rpnElem.isGeneratedCode || rpnElem.sceneEntityNode->getPayload().isObject())) {
-            if(!onlyStaticObjects || static_cast<Object*>(&rpnElem.sceneEntityNode->getPayload())->isStatic()) {
+        if(rpnElem.containsGeneratedCode()) {
+            rpnStack.push(std::move(rpnElem));
+        }
+        else if(rpnElem.containsEntity()) {
+            if(rpnElem.entity->isObject()) {
+                if(!project.getOnlyPreviewStaticObjects() || static_cast<Object*>(rpnElem.entity)->isStatic()) {
+                    rpnStack.push(std::move(rpnElem));
+                }
+            }
+            else if(rpnElem.entity->isProbe() && project.getPreviewProbes()) {
                 rpnStack.push(std::move(rpnElem));
             }
         }
         //If is operator pop related operands, generate code and push it into the stack as a new operand
-        else {
-            TreeNode<Entity> &node = *rpnElem.sceneEntityNode;
-            CsgOperator &op = static_cast<CsgOperator&>(*node);
+        else if(rpnElem.containsCsgTreeNode()) {
+            TreeNode<Entity> &csgNode = *rpnElem.csgTreeNode;
+            CsgOperator &op = static_cast<CsgOperator&>(*csgNode);
 
             //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators
-            uint32 operandCount = countNonEmptyOperands(node, onlyStaticObjects);
-            if(operandCount) {
+            //We also add the probe count for the root operator if previewing probes.
+            uint32 operandCount = countNonEmptyOperands(csgNode, project.getOnlyPreviewStaticObjects());
+            if(project.getPreviewProbes() && op == scene.getCsgRootOperator()) {
+                operandCount += scene.getProbeCount();
+            }
 
+            if(operandCount) {
                 //Create a list of operands to send to the operator code generator
                 std::vector<RpnElement> operandList;
                 for(uint32 i = 0; i < operandCount; ++i) {
@@ -240,7 +265,7 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene, boo
     }
 
     //At the end we should have one only RpnElement with the generated code
-    if(rpnStack.size() == 1 && rpnStack.top().isGeneratedCode && !rpnStack.top().generatedCode.empty())
+    if(rpnStack.size() == 1 && rpnStack.top().containsGeneratedCode() && !rpnStack.top().generatedCode.empty())
         return rpnStack.top().generatedCode;
     else
         printf("generateScene(). Something went wrong, check the Scene tree.\n");
@@ -252,7 +277,7 @@ uint32 GlslGenerator::countNonEmptyOperands(TreeNode<Entity> &root, bool onlySta
 
     for(uint32 i = 0; i < root.getChildCount(); ++i) {
         TreeNode<Entity> &child = root.getChildByIndex(i);
-        
+
         if(child->isCsgOperator()) {
             if(countNonEmptyOperands(child, onlyStaticObjects))
                 count++;
@@ -302,53 +327,60 @@ std::string GlslGenerator::generateOperator(Project &project, Scene &scene, cons
 std::string GlslGenerator::generateOperand(Project &project, Scene &scene, const RpnElement &rpnElement) {
     std::stringstream sstream;
 
-    if(rpnElement.isGeneratedCode)
+    if(rpnElement.containsGeneratedCode())
         sstream << rpnElement.generatedCode;
     else {
         std::string p = "p";
-        Object &obj = static_cast<Object&>(rpnElement.sceneEntityNode->getPayload());
-        if(obj.isAttachedToTransform()) {
-            Entity *transform = scene.findSceneEntity(obj.getTransformId());
-            if(transform)
-                p = generateTransformName(static_cast<Transform&>(*transform));
-        }
+        Entity &ent = *rpnElement.entity; //Guaranteed to be an entity
 
-        sstream << "vec2(";
-        switch(obj.getType()) {
-        case ObjectType::Box:
-        {
-            sstream << "box(" << p << ", vec3(";
-            Box &box = static_cast<Box&>(obj);
-            auto &dims = box.getDimensions();
-            sstream << dims[0] << ", " << dims[1] << ", " << dims[2] << "))";
-            break;
-        }
+        if(ent.isObject()) {
+            Object &obj = static_cast<Object&>(ent);
+            if(obj.isAttachedToTransform()) {
+                Entity *transform = scene.findSceneEntity(obj.getTransformId());
+                if(transform)
+                    p = generateTransformName(static_cast<Transform&>(*transform));
+            }
 
-        case ObjectType::Sphere:
-        {
-            sstream << "sphere(" << p << ", ";
-            Sphere &sphere = static_cast<Sphere&>(obj);
-            float r = sphere.getRadius();
-            sstream << r << ")";
-            break;
-        }
-        default:
-            GO_ASSERT_ALWAYS();
-        }
+            sstream << "vec2(";
+            switch(obj.getType()) {
+            case ObjectType::Box:
+            {
+                sstream << "box(" << p << ", vec3(";
+                Box &box = static_cast<Box&>(obj);
+                auto &dims = box.getDimensions();
+                sstream << dims[0] << ", " << dims[1] << ", " << dims[2] << "))";
+                break;
+            }
 
-        uint32 matIdx = 0;
-        if(obj.isAttachedToMaterial()) {
-            for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
-                Material &mat = project.getMaterialByIndex(i);
-                if(obj.getMaterialId() == mat.getId()) {
-                    matIdx = i;
-                    break;
+            case ObjectType::Sphere:
+            {
+                sstream << "sphere(" << p << ", ";
+                Sphere &sphere = static_cast<Sphere&>(obj);
+                float r = sphere.getRadius();
+                sstream << r << ")";
+                break;
+            }
+            default:
+                GO_ASSERT_ALWAYS();
+            }
+
+            uint32 matIdx = 0;
+            if(obj.isAttachedToMaterial()) {
+                for(uint32 i = 0; i < project.getMaterialCount(); ++i) {
+                    Material &mat = project.getMaterialByIndex(i);
+                    if(obj.getMaterialId() == mat.getId()) {
+                        matIdx = i;
+                        break;
+                    }
                 }
             }
+            sstream << "," << matIdx << ")";
         }
-        sstream << "," << matIdx << ")";
+        else if(ent.isProbe()) {
+            Probe &probe = static_cast<Probe&>(ent);
+            sstream << "vec2(sphere(p-vec3(" << probe.getPosition().x << ", " << probe.getPosition().y << ", " << probe.getPosition().z << "), 0.1), 0)";
+        }
     }
-
     return sstream.str();
 }
 
@@ -357,7 +389,7 @@ std::string GlslGenerator::generateTransform(TreeNode<Transform> &transformNode,
 
     Transform &transform = static_cast<Transform&>(*transformNode);
     std::string parentP = parentTransformNode ? generateTransformName(parentTransformNode->getPayload()) : "p";
-    
+
     sstream << "vec3 " << generateTransformName(transform) << " = ";
     switch(transform.getType()) {
     case TransformType::Translation:

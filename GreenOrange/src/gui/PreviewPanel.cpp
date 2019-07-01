@@ -17,14 +17,14 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
     ImGui::Begin("Preview", &open);
     {
         bool onlyPreviewStatic = greenOrange.getOpenProject()->getOnlyPreviewStaticObjects();
-        ImGui::Checkbox("Show Only Static Objects", &onlyPreviewStatic);
-        greenOrange.getOpenProject()->setOnlyPreviewStaticObjects(onlyPreviewStatic);
+        if(ImGui::Checkbox("Show Only Static Objects", &onlyPreviewStatic))
+            greenOrange.getOpenProject()->setOnlyPreviewStaticObjects(onlyPreviewStatic);
 
         ImGui::SameLine();
 
         bool previewProbes = greenOrange.getOpenProject()->getPreviewProbes();
-        ImGui::Checkbox("Show Probes", &previewProbes);
-        greenOrange.getOpenProject()->setPreviewProbes(previewProbes);
+        if(ImGui::Checkbox("Show Probes", &previewProbes))
+            greenOrange.getOpenProject()->setPreviewProbes(previewProbes);
 
         ImVec2 size = ImGui::GetContentRegionAvail();
 
