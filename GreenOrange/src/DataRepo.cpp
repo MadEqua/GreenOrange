@@ -13,6 +13,7 @@ void initDataRepo() {
     EntityTypeStrings[static_cast<int>(EntityType::Transform)] = "Transform";
     EntityTypeStrings[static_cast<int>(EntityType::Light)] = "Light";
     EntityTypeStrings[static_cast<int>(EntityType::Material)] = "Material";
+    EntityTypeStrings[static_cast<int>(EntityType::Probe)] = "Probe";
 
     CsgTypeStrings[static_cast<int>(CsgType::Union)] = "Union";
     CsgTypeStrings[static_cast<int>(CsgType::Intersection)] = "Intersection";

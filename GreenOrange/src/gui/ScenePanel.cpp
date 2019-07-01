@@ -103,6 +103,30 @@ bool ScenePanel::internalDrawGui(const GreenOrange &greenOrange) {
                 }
                 ImGui::EndPopup();
             }
+
+            ImGui::NewLine();
+            ImGui::NewLine();
+            ImGui::NewLine();
+        }
+
+        if(ImGui::CollapsingHeader("Probes", treeNodeFlags)) {
+            auto selectedEntity = guiRoot.getSelectedEntity();
+
+            for(uint32 i = 0; i < scene.getProbeCount(); ++i) {
+                auto &probe = scene.getProbeByIndex(i);
+
+                ImGui::PushID(probe.getId());
+                if(ImGui::Selectable(probe.getName().c_str(), selectedEntity && probe == *selectedEntity)) {
+                    guiRoot.setSelectedEntity(probe);
+                }
+                doProbeContextMenu(scene, probe);
+                ImGui::PopID();
+            }
+
+            ImGui::NewLine();
+            if(ImGui::Button("New Probe")) {
+                scene.createProbe("Probe");
+            }
         }
     }
     ImGui::End();
@@ -302,6 +326,41 @@ void ScenePanel::doObjectContextMenu(Scene &scene, TreeNode<Entity> &node) const
     sprintf_s(stringBuffer, deleteString, obj.getName().c_str());
     if(ImGuiUtils::YesNoPopup("Delete Object", stringBuffer)) {
         scene.deleteCsgTreeNode(node);
+    }
+}
+
+void ScenePanel::doProbeContextMenu(Scene &scene, Probe &probe) const {
+    bool openRenamePopup = false;
+    bool openDeletePopup = false;
+
+    if(ImGui::BeginPopupContextItem()) {
+        if(ImGui::Selectable("Rename")) {
+            openRenamePopup = true;
+        }
+        if(ImGui::Selectable("Delete")) {
+            openDeletePopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if(openRenamePopup) {
+        strcpy_s(inputBuffer, probe.getName().c_str());
+        ImGui::OpenPopup("Rename Probe");
+    }
+    const char *newNameString = "Enter a new name for the probe %s.";
+    sprintf_s(stringBuffer, newNameString, probe.getName().c_str());
+    if(ImGuiUtils::InputTextPopup("Rename Probe", stringBuffer, inputBuffer, INPUT_STRING_MAX_SIZE)) {
+        probe.setName(inputBuffer);
+    }
+
+    if(openDeletePopup) {
+        ImGui::OpenPopup("Delete Probe");
+    }
+    const char *deleteString = "Delete the probe %s?\nThis operation cannot be undone!";
+    sprintf_s(stringBuffer, deleteString, probe.getName().c_str());
+    if(ImGuiUtils::YesNoPopup("Delete Probe", stringBuffer)) {
+        scene.deleteProbe(probe);
     }
 }
 

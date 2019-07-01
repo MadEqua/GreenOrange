@@ -194,6 +194,12 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene, boo
     //RPN list of operations and operators (ex: AB+CD-+)
     std::forward_list<RpnElement> rpnList;
 
+    //TODO Preview probes
+    /*for(int i = 0; i < scene.getProbeCount(); ++i) {
+        auto &probe = scene.getProbeByIndex(i);
+        rpnList.emplace_front(probe);
+    }*/
+
     //The list is initialized by doing a DFS and reversing the visit order
     scene.getCsgTreeRootNode().traverseDfs([&rpnList](TreeNode<Entity> &ent) -> bool {
         rpnList.emplace_front(ent);

@@ -8,6 +8,7 @@
 #include "CsgOperator.h"
 #include "Transform.h"
 #include "Light.h"
+#include "Probe.h"
 #include "../Tree.h"
 #include "../DataRepo.h"
 #include "../GlslGenerator.h"
@@ -63,6 +64,13 @@ public:
     uint32 getStaticPointLightCount() const;
 
     //-----------------------------------------
+    //Probes
+    void createProbe(const char *name);
+    void deleteProbe(Probe &probe);
+    size_t getProbeCount() const { return probes.size(); }
+    Probe& getProbeByIndex(uint32 i) { GO_ASSERT(i < probes.size()); return *probes[i]; }
+
+    //-----------------------------------------
     //Entity
     Entity* findSceneEntity(uint32 id);
 
@@ -82,6 +90,7 @@ private:
     std::unique_ptr<TreeNode<Transform>> transformTreeDummyRoot;
 
     std::vector<Light*> lights;
+    std::vector<Probe*> probes;
 
     //-----------------------------------------
     //Aux functions
@@ -99,4 +108,5 @@ private:
     std::vector<TreeNode<Entity>*> pendingDeleteCsgTreeNodes;
     std::vector<std::pair<uint32, TreeNode<Transform>*>> pendingDeleteTransformTreeNodes;
     std::vector<Light*> pendingDeleteLights;
+    std::vector<Probe*> pendingDeleteProbes;
 };

@@ -26,6 +26,7 @@ private:
     void doObjectContextMenu(Scene &scene, TreeNode<Entity> &node) const;
     
     void doLightContextMenu(Scene &scene, Light &light) const;
+    void doProbeContextMenu(Scene &scene, Probe &probe) const;
 
     void doTransformNode(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const;
     void doTransformContextMenu(Scene &scene, uint32 treeIndex, TreeNode<Transform> &node) const;

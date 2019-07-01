@@ -56,6 +56,9 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
             else if(selectedEntity->isMaterial()) {
                 doMaterial(static_cast<Material&>(*selectedEntity));
             }
+            else if(selectedEntity->isProbe()) {
+                doProbe(static_cast<Probe&>(*selectedEntity));
+            }
         }
         else {
             ImGui::Text("Nothing selected");
@@ -236,4 +239,13 @@ void InspectorPanel::doMaterial(Material &material) {
     float emmisiveIntensity = material.getEmissiveIntensity();
     if(ImGui::DragFloat("Emisive Intensity", &emmisiveIntensity, 0.5f, 0.0f, DRAG_MAX))
         material.setEmissiveIntensity(emmisiveIntensity);
+}
+
+void InspectorPanel::doProbe(Probe &probe) {
+    ImGui::Text("N/A");
+    ImGui::NewLine();
+
+    auto pos = probe.getPosition();
+    if(ImGui::DragFloat3("Position", glm::value_ptr(pos), 0.05f, DRAG_MIN, DRAG_MAX))
+        probe.setPosition(pos);
 }

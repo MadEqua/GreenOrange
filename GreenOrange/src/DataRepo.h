@@ -8,6 +8,7 @@ enum class EntityType {
     Transform,
     Light,
     Material,
+    Probe,
 
     Size
 };

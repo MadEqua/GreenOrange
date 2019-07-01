@@ -145,6 +145,17 @@ uint32 Scene::getStaticPointLightCount() const {
     return sum;
 }
 
+void Scene::createProbe(const char *name) {
+    auto probePtr = std::make_unique<Probe>(Project::generateId(), name);
+    probes.emplace_back(probePtr.get());
+    sceneEntities.emplace_back(std::move(probePtr));
+    GEN_SET_DIRTY();
+}
+
+void Scene::deleteProbe(Probe &probe) {
+    pendingDeleteProbes.emplace_back(&probe);
+}
+
 std::unique_ptr<Object> Scene::internalCreateObject(const char *name, ObjectType type) {
     switch(type) {
     case ObjectType::Sphere:
@@ -213,7 +224,8 @@ bool Scene::deleteSceneEntity(Entity &toDelete) {
 void Scene::doPendingOperations() {
     bool deleted = !pendingDeleteCsgTreeNodes.empty() ||
         !pendingDeleteTransformTreeNodes.empty() ||
-        !pendingDeleteLights.empty();
+        !pendingDeleteLights.empty() ||
+        !pendingDeleteProbes.empty();
 
     for(auto toDeleteNodePtr : pendingDeleteCsgTreeNodes) {
         auto parentOfToDeleteNode = csgTreeRoot->findNodeParent(*toDeleteNodePtr);
@@ -249,9 +261,17 @@ void Scene::doPendingOperations() {
             lights.erase(it);
     }
 
+    for(auto *probe : pendingDeleteProbes) {
+        deleteSceneEntity(*probe);
+        auto it = std::find(probes.begin(), probes.end(), probe);
+        if(it != probes.end())
+            probes.erase(it);
+    }
+
     pendingDeleteCsgTreeNodes.clear();
     pendingDeleteTransformTreeNodes.clear();
     pendingDeleteLights.clear();
+    pendingDeleteProbes.clear();
 
     if(deleted)
         GEN_SET_DIRTY();

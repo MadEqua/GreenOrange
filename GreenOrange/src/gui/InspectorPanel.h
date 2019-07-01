@@ -9,6 +9,7 @@ class Project;
 class Transform;
 class Light;
 class Material;
+class Probe;
 
 class InspectorPanel : public Panel
 {
@@ -23,6 +24,7 @@ private:
     void doTransform(Transform &transform);
     void doLight(Light &light);
     void doMaterial(Material &material);
+    void doProbe(Probe &probe);
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
 };

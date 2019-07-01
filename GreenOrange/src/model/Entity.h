@@ -23,6 +23,7 @@ public:
     bool isTransform() const { return type == EntityType::Transform; }
     bool isLight() const { return type == EntityType::Light; }
     bool isMaterial() const { return type == EntityType::Material; }
+    bool isProbe() const { return type == EntityType::Probe; }
 
     bool operator==(const Entity& other) { return id == other.id; }
     bool operator!=(const Entity& other) { return id != other.id; }

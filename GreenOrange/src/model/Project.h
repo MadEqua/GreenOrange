@@ -37,6 +37,9 @@ public:
     void setOnlyPreviewStaticObjects(bool b) { onlyPreviewStaticObjects = b; GEN_SET_DIRTY(); }
     bool getOnlyPreviewStaticObjects() const { return onlyPreviewStaticObjects; }
 
+    void setPreviewProbes(bool b) { previewProbes = b; GEN_SET_DIRTY(); }
+    bool getPreviewProbes() const { return previewProbes; }
+
     static uint32 generateId() { return nextId++; }
 
 private:
@@ -49,5 +52,6 @@ private:
     static uint32 nextId;
 
     bool onlyPreviewStaticObjects = false;
+    bool previewProbes = true;
 };
 
