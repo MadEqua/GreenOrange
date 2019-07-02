@@ -10,7 +10,7 @@ bool GeneratedGlslPanel::internalDrawGui(const GreenOrange &greenOrange) {
 
     ImGui::Begin("Generated GLSL", &open);
     {
-        const char *glsl = GlslGenerator::getInstance().getGlslCode().c_str();
+        const char *glsl = previewGenerator.getGlslCode().c_str();
         if(ImGui::Button("Copy")) {
             ImGui::SetClipboardText(glsl);
         }

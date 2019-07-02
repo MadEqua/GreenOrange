@@ -27,7 +27,7 @@ public:
         Transform(id, name, TransformType::Translation),
         ammount{0.0f} {}
 
-    void setAmmount(const glm::vec3 &ammount) { this->ammount = ammount; GEN_SET_DIRTY(); }
+    void setAmmount(const glm::vec3 &ammount) { this->ammount = ammount; PREVIEW_SET_DIRTY(); }
     const glm::vec3& getAmmount() const { return ammount; }
 
 private:
@@ -40,7 +40,7 @@ public:
         Transform(id, name, TransformType::Rotation),
         ammount {0.0f} {}
 
-    void setAmmount(const glm::vec3 &ammount) { this->ammount = ammount; GEN_SET_DIRTY(); }
+    void setAmmount(const glm::vec3 &ammount) { this->ammount = ammount; PREVIEW_SET_DIRTY(); }
     const glm::vec3& getAmmount() const { return ammount; }
 
 private:
@@ -53,7 +53,7 @@ public:
         Transform(id, name, TransformType::Custom),
         code("p") {}
 
-    void setCode(const char *code) { this->code = code; GEN_SET_DIRTY(); }
+    void setCode(const char *code) { this->code = code; PREVIEW_SET_DIRTY(); }
     const std::string& getCode() { return code; }
 
 private:

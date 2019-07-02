@@ -51,10 +51,10 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
             }
 
             //Only change shader if code has changed since last Panel update
-            uint64 currentCodeId = GlslGenerator::getInstance().getCurrentCodeId();
+            uint64 currentCodeId = previewGenerator.getCurrentCodeId();
             if(lastCodeId != currentCodeId) {
                 lastCodeId = currentCodeId;
-                previewRenderer.setFragmentShader(GlslGenerator::getInstance().getGlslCode().c_str());
+                previewRenderer.setFragmentShader(previewGenerator.getGlslCode().c_str());
                 previewRenderer.setDimensions(imageSize.x, imageSize.y);
             }
 

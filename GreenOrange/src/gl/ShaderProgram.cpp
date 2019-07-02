@@ -8,6 +8,8 @@
 #include "../glsl/generated/fullScreen.vert.h"
 #include "../glsl/generated/layered.geo.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 
 ShaderProgram::ShaderProgram(bool layeredRendering) {
     vsHandle = glCreateShader(GL_VERTEX_SHADER);
@@ -130,6 +132,24 @@ bool ShaderProgram::setUniformVec2(const char *name, float x, float y) const {
     if(uniformsByName.find(name) != uniformsByName.end()) {
         bind();
         glUniform2f(uniformsByName.at(name), x, y);
+        return true;
+    }
+    return false;
+}
+
+bool ShaderProgram::setUniformVec3(const char *name, float x, float y, float z) const {
+    if(uniformsByName.find(name) != uniformsByName.end()) {
+        bind();
+        glUniform3f(uniformsByName.at(name), x, y, z);
+        return true;
+    }
+    return false;
+}
+
+bool ShaderProgram::setUniformMat3(const char *name, const glm::mat3 &mat) const {
+    if(uniformsByName.find(name) != uniformsByName.end()) {
+        bind();
+        glUniformMatrix3fv(uniformsByName.at(name), 1, GL_FALSE, glm::value_ptr(mat));
         return true;
     }
     return false;

@@ -93,6 +93,27 @@ void initMaterials() {
 }
 
 /////////////////////////////////////////////
+// Cameras
+/////////////////////////////////////////////
+struct Camera {
+    vec3 pos;
+    mat3 axis;
+};
+Camera cameras[#GO_REPLACE_CAMERA_COUNT];
+
+int getCameraForCurrentTime() {
+    #GO_REPLACE_CAMERA_CURRENT
+}
+
+void initCameras() {
+    #GO_REPLACE_CAMERAS_INIT
+}
+
+vec3 cam2world(vec3 v, Camera cam) {
+    return normalize((cam.axis * v));
+}
+
+/////////////////////////////////////////////
 // Raymarcher
 /////////////////////////////////////////////
 struct RayPoint {
@@ -100,14 +121,6 @@ struct RayPoint {
     float t; //Distance travelled along the ray to get to 'point'
     SceneQuery sq; //Data from closest point of the scene to 'point'
 };
-
-vec3 cam2world(vec3 v, vec3 pos, vec3 lookAt) {
-    vec3 z = normalize(lookAt - pos);
-    vec3 y = vec3(0, 1, 0);
-    vec3 x = normalize(cross(z, y));
-    y = normalize(cross(x, z));
-    return normalize(mat3(x, y, z) * v);
-}
 
 //Should fill rp.point and rp.t, rp.sq is delegated to scene()
 bool rm(int steps, vec3 ro, vec3 rd, out RayPoint rp) {
@@ -217,19 +230,17 @@ vec3 shade(vec3 cameraPos, RayPoint rp) {
 void main() {
     initLights();
     initMaterials();
+    initCameras();
 
     vec2 uv = (gl_FragCoord.xy - .5 * dimensions.xy) / dimensions.y;
-
-    vec3 cameraPos = vec3(0., 0., 5.);
-    vec3 lookAt = vec3(0.);
-
-    vec3 rd = cam2world(vec3(uv, 1.), cameraPos, lookAt); 
+    Camera cam = cameras[getCameraForCurrentTime()];
+    vec3 rd = cam2world(vec3(uv, 1.), cam); 
 
     vec3 col = vec3(.2);
     RayPoint rp;
-    bool hit = rm(PRIMARY_STEPS, cameraPos, rd, rp);
+    bool hit = rm(PRIMARY_STEPS, cam.pos, rd, rp);
     if(hit) {
-        col = shade(cameraPos, rp);
+        col = shade(cam.pos, rp);
     }
 
     //Tone mapping

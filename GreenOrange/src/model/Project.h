@@ -34,10 +34,10 @@ public:
 
     void doPendingOperations();
 
-    void setOnlyPreviewStaticObjects(bool b) { onlyPreviewStaticObjects = b; GEN_SET_DIRTY(); }
+    void setOnlyPreviewStaticObjects(bool b) { onlyPreviewStaticObjects = b; PREVIEW_SET_DIRTY(); }
     bool getOnlyPreviewStaticObjects() const { return onlyPreviewStaticObjects; }
 
-    void setPreviewProbes(bool b) { previewProbes = b; GEN_SET_DIRTY(); }
+    void setPreviewProbes(bool b) { previewProbes = b; PREVIEW_SET_DIRTY(); }
     bool getPreviewProbes() const { return previewProbes; }
 
     static uint32 generateId() { return nextId++; }

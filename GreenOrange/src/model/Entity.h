@@ -15,7 +15,7 @@ public:
     uint32 getId() const { return id; }
 
     const std::string& getName() const { return name; }
-    void setName(const char* newName) { name = newName; GEN_SET_DIRTY(); }
+    void setName(const char* newName) { name = newName; PREVIEW_SET_DIRTY(); }
 
     EntityType getType() const { return type; }
     bool isCsgOperator() const { return type == EntityType::CsgOperator; }

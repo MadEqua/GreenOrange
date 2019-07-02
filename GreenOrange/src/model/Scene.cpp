@@ -23,14 +23,14 @@ void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<Entity> &
     std::unique_ptr<CsgOperator> ptr = std::make_unique<CsgOperator>(Project::generateId(), name, type);
     parent.createChild(*ptr);
     sceneEntities.emplace_back(std::move(ptr));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::createObject(const char *name, ObjectType type, TreeNode<Entity> &parent) {
     auto objectPtr = internalCreateObject(name, type);
     parent.createChild(*objectPtr);
     sceneEntities.emplace_back(std::move(objectPtr));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::deleteCsgTreeNode(TreeNode<Entity> &toDelete) {
@@ -39,12 +39,12 @@ void Scene::deleteCsgTreeNode(TreeNode<Entity> &toDelete) {
 
 void Scene::moveCsgTreeNode(TreeNode<Entity> &toMove, TreeNode<Entity> &destination) {
     if(csgTreeRoot->moveNode(toMove, destination))
-        GEN_SET_DIRTY();
+        PREVIEW_SET_DIRTY();
 }
 
 void Scene::swapCsgTreeSiblingNodes(TreeNode<Entity> &node1, TreeNode<Entity> &node2) {
     if(csgTreeRoot->swapSiblingNodes(node1, node2))
-        GEN_SET_DIRTY();
+        PREVIEW_SET_DIRTY();
 }
 
 void Scene::deleteCsgTreeNodeChildren(TreeNode<Entity> &toDeleteChildren) {
@@ -63,7 +63,7 @@ void Scene::createTransform(const char *name, TransformType type, TreeNode<Trans
     auto transformPtr = internalCreateTransform(name, type);
     parent.createChild(*transformPtr);
     sceneEntities.emplace_back(std::move(transformPtr));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::deleteTransformTreeNode(uint32 treeIndex, TreeNode<Transform> &toDelete) {
@@ -75,17 +75,17 @@ void Scene::moveTransformTreeNode(uint32 toMoveTreeIndex, TreeNode<Transform> &t
     GO_ASSERT(toMoveTreeIndex < transformTreeDummyRoot->getChildCount());
 
     if(transformTreeDummyRoot->moveNode(toMove, destination))
-        GEN_SET_DIRTY();
+        PREVIEW_SET_DIRTY();
 }
 
 void Scene::attachObjectToTransformTreeNode(Object &object, TreeNode<Transform> &transform) {
     object.attachToTransform(*transform);
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::detachObjectToTransformTreeNode(Object &object) {
     object.detachFromTransform();
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::deleteTransformTreeNodeChildren(uint32 treeIndex, TreeNode<Transform> &toDeleteChildren) {
@@ -98,7 +98,7 @@ void Scene::createLight(const char *name, LightType type) {
     auto lightPtr = internalCreateLight(name, type);
     lights.emplace_back(lightPtr.get());
     sceneEntities.emplace_back(std::move(lightPtr));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::deleteLight(Light &light) {
@@ -149,7 +149,7 @@ void Scene::createProbe(const char *name) {
     auto probePtr = std::make_unique<Probe>(Project::generateId(), name);
     probes.emplace_back(probePtr.get());
     sceneEntities.emplace_back(std::move(probePtr));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 void Scene::deleteProbe(Probe &probe) {
@@ -274,5 +274,5 @@ void Scene::doPendingOperations() {
     pendingDeleteProbes.clear();
 
     if(deleted)
-        GEN_SET_DIRTY();
+        PREVIEW_SET_DIRTY();
 }

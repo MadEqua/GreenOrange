@@ -24,7 +24,7 @@ private:
     void doTransform(Transform &transform);
     void doLight(Light &light);
     void doMaterial(Material &material);
-    void doProbe(Probe &probe);
+    void doProbe(Project &project, Probe &probe);
 
     mutable char inputBuffer[INPUT_STRING_MAX_SIZE] = "";
 };

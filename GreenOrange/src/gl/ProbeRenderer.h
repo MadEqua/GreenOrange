@@ -14,6 +14,8 @@ public:
 
     void render() const;
 
+    //GLuint getRenderedImageId() const { return fbo.getColorTextureId(); }
+
 private:
     FBOCube fbo;
     ShaderProgram shader;

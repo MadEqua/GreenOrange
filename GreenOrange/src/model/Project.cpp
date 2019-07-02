@@ -18,7 +18,7 @@ Project::Project(const char *path) :
 
 void Project::createScene(const char *name) {
     scenes.emplace_back(std::make_unique<Scene>(name));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 Scene& Project::getSceneByIndex(uint32 idx) { 
@@ -32,13 +32,13 @@ void Project::deleteSceneByIndex(uint32 idx) {
         scenes.erase(scenes.begin() + idx);
         if(selectedSceneIdx == idx)
             selectedSceneIdx = 0;
-        GEN_SET_DIRTY();
+        PREVIEW_SET_DIRTY();
     }
 }
 
 void Project::createMaterial(const char *name) {
     materials.emplace_back(std::make_unique<Material>(generateId(), name));
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 Material& Project::getMaterialByIndex(uint32 idx) {
@@ -49,7 +49,7 @@ Material& Project::getMaterialByIndex(uint32 idx) {
 void Project::deleteMaterialByIndex(uint32 idx) {
     GO_ASSERT(idx < materials.size());
     materials.erase(materials.begin() + idx);
-    GEN_SET_DIRTY();
+    PREVIEW_SET_DIRTY();
 }
 
 Entity* Project::findSceneEntity(uint32 id) {

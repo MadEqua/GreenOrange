@@ -12,21 +12,13 @@ class Object;
 class Scene;
 class Entity;
 class Transform;
+class Probe;
 
-
-#define GEN_SET_DIRTY() GlslGenerator::getInstance().setNeedToGenerate();
 
 class GlslGenerator
 {
 public:
-    static GlslGenerator& getInstance() {
-        static GlslGenerator instance;
-        return instance;
-    }
-
-    GlslGenerator(GlslGenerator const&) = delete;
-    void operator=(GlslGenerator const&) = delete;
-
+    GlslGenerator();
     void setNeedToGenerate() { needToGenerate = true; }
 
     //Each time we generate new code, it will have a new id. Useful for clients to identify changes.
@@ -34,14 +26,12 @@ public:
 
     //Call once per frame for the PreviewPanel
     void generateForPreview(Project &project);
-
-    void generate(Project &project);
+    void generateForProbe(Project &project, const Probe &probe);
+    void generateForExport(Project &project);
 
     const std::string& getGlslCode() const { return glslCode; }
 
 private:
-    GlslGenerator();
-
     //Element on the code generation RPN list. It will be an Entity or some already generated code.
     class RpnElement {
     public:
@@ -64,15 +54,24 @@ private:
         Type type;
     };
 
-    bool needToGenerate = true;
+    enum class GenerationType {
+        Preview, Probe, Export
+    };
+
+    bool needToGenerate = true; //For Preview
+    const Probe *probe; //For Probe
+
     uint64 currentCodeId = 0;
     std::string glslCode;
 
     void initGeneration();
+    void generate(Project &project, GenerationType type);
 
     void generateLights(Project &project);
     void generateScenes(Project &project);
     void generateMaterials(Project &project);
+    void generateCameras(Project &project);
+    void generateCamerasForProbe(Project &project);
 
     static std::string generateScene(Project &project, Scene &scene);
     static std::string generateSceneTree(Project &project, Scene &scene);
@@ -85,3 +84,7 @@ private:
 
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };
+
+//Global GlslGenerator for use on the PreviewPanel
+extern GlslGenerator previewGenerator;
+#define PREVIEW_SET_DIRTY() previewGenerator.setNeedToGenerate();

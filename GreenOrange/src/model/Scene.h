@@ -22,7 +22,7 @@ public:
     explicit Scene(const char* name);
 
     const std::string& getName() const { return name; }
-    void setName(const char* newName) { name = newName; GEN_SET_DIRTY(); }
+    void setName(const char* newName) { name = newName; PREVIEW_SET_DIRTY(); }
 
     //-----------------------------------------
     //CSG tree

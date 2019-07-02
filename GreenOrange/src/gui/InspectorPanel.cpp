@@ -59,7 +59,7 @@ bool InspectorPanel::internalDrawGui(const GreenOrange &greenOrange) {
                 doMaterial(static_cast<Material&>(*selectedEntity));
             }
             else if(selectedEntity->isProbe()) {
-                doProbe(static_cast<Probe&>(*selectedEntity));
+                doProbe(*greenOrange.getOpenProject(), static_cast<Probe&>(*selectedEntity));
             }
         }
         else {
@@ -243,7 +243,7 @@ void InspectorPanel::doMaterial(Material &material) {
         material.setEmissiveIntensity(emmisiveIntensity);
 }
 
-void InspectorPanel::doProbe(Probe &probe) {
+void InspectorPanel::doProbe(Project &project, Probe &probe) {
     ImGui::Text("N/A");
     ImGui::NewLine();
 
@@ -251,8 +251,10 @@ void InspectorPanel::doProbe(Probe &probe) {
     if(ImGui::DragFloat3("Position", glm::value_ptr(pos), 0.05f, DRAG_MIN, DRAG_MAX))
         probe.setPosition(pos);
 
-    //if(ImGui::Button("Bake")) {
-        static ProbeRenderer renderer(GlslGenerator::getInstance().getGlslCode().c_str(), 128, 128);
+    if(ImGui::Button("Bake")) {
+        GlslGenerator gen;
+        gen.generateForProbe(project, probe);
+        ProbeRenderer renderer(gen.getGlslCode().c_str(), 128, 128);
         renderer.render();
-    //}
+    }
 }

@@ -6,6 +6,8 @@
 #include <forward_list>
 #include <sstream>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "model/Entity.h"
 #include "model/Object.h"
 #include "model/CsgOperator.h"
@@ -14,6 +16,7 @@
 #include "model/Scene.h"
 #include "model/Light.h"
 #include "model/Material.h"
+#include "model/Probe.h"
 #include "Constants.h"
 
 #include "glsl/generated/template.frag.h"
@@ -21,6 +24,8 @@
 #include "glsl/generated/transforms.frag.h"
 #include "glsl/generated/operators.frag.h"
 
+
+GlslGenerator previewGenerator;
 
 GlslGenerator::RpnElement::RpnElement(TreeNode<Entity> &treeNode) {
     if(treeNode->isCsgOperator()) {
@@ -48,19 +53,29 @@ GlslGenerator::GlslGenerator() {
     glslCode.reserve(1024 * 8);
 }
 
+void GlslGenerator::generateForPreview(Project &project) {
+    if(needToGenerate) {
+        generate(project, GenerationType::Preview);
+        needToGenerate = false;
+    }
+}
+
+void GlslGenerator::generateForProbe(Project &project, const Probe &probe) {
+    this->probe = &probe;
+    generate(project, GenerationType::Probe);
+}
+
+//TODO
+void GlslGenerator::generateForExport(Project &project) {
+    generate(project, GenerationType::Export);
+}
+
 void GlslGenerator::initGeneration() {
     glslCode.clear();
     glslCode.append(GLSL_VERSION).append("\n").append(template_frag);
 }
 
-void GlslGenerator::generateForPreview(Project &project) {
-    if(needToGenerate) {
-        generate(project);
-        needToGenerate = false;
-    }
-}
-
-void GlslGenerator::generate(Project &project) {
+void GlslGenerator::generate(Project &project, GenerationType type) {
     initGeneration();
 
     //TODO: only add actually needed/used parts
@@ -71,8 +86,12 @@ void GlslGenerator::generate(Project &project) {
     generateScenes(project);
     generateLights(project);
     generateMaterials(project);
+    
+    if(type == GenerationType::Probe)
+        generateCamerasForProbe(project);
+    else
+        generateCameras(project);
 
-    needToGenerate = false;
     currentCodeId++;
 }
 
@@ -170,6 +189,71 @@ void GlslGenerator::generateMaterials(Project &project) {
         sstream << "materials[" << i << "].emissiveIntensity = " << mat.getEmissiveIntensity() << ";" << std::endl;
     }
     replace(glslCode, REPLACE_MATERIALS_INIT, sstream.str());
+}
+
+void GlslGenerator::generateCameras(Project &project) {
+    //TODO
+    replace(glslCode, REPLACE_CAMERA_COUNT, std::to_string(1));
+    replace(glslCode, REPLACE_CAMERA_CURRENT, "return 0;");
+
+    //TODO
+    std::stringstream sstream;
+    glm::vec3 pos(0.0f, 0.0f, -5.0f);
+    glm::mat3 axis = glm::mat3(1.0f);
+    sstream << "cameras[0].pos = vec3(" << pos[0] << ", " << pos[1] << ", " << pos[2] << "); " << std::endl;
+    sstream << "cameras[0].axis = mat3(" << axis[0][0] << ", " << axis[0][1] << ", " << axis[0][2] << ", " <<
+                                            axis[1][0] << ", " << axis[1][1] << ", " << axis[1][2] << ", " <<
+                                            axis[2][0] << ", " << axis[2][1] << ", " << axis[2][2] << "); " << std::endl;
+    replace(glslCode, REPLACE_CAMERAS_INIT, sstream.str());
+}
+
+void GlslGenerator::generateCamerasForProbe(Project &project) {
+    replace(glslCode, REPLACE_CAMERA_COUNT, "6");
+    replace(glslCode, REPLACE_CAMERA_CURRENT, "return gl_Layer;");
+
+    std::stringstream sstream;
+    for(uint32 i = 0; i < 6; ++i) {
+        auto &pos = probe->getPosition();
+        sstream << "cameras[" << i << "].pos = vec3(" << pos[0] << ", " << pos[1] << ", " << pos[2] << "); " << std::endl;
+        glm::mat3 axis;
+        switch(i)
+        {
+        case 0: //X+
+            axis = glm::mat3(0, 0, -1,
+                            0, 1, 0,
+                            1, 0, 0);
+            break;
+        case 1: //X-
+            axis = glm::mat3(0, 0, 1,
+                            0, 1, 0,
+                            -1, 0, 0);
+            break;
+        case 2: //Y+
+            axis = glm::mat3(-1, 0, 0,
+                            0, 0, 1,
+                            0, 1, 0);
+            break;
+        case 3: //Y-
+            axis = glm::mat3(-1, 0, 0,
+                            0, 0, 1,
+                            0, -1, 0);
+            break;
+        case 4: //Z+
+            axis = glm::mat3(1, 0, 0,
+                            0, 1, 0,
+                            0, 0, 1);
+            break;
+        case 5: //Z-
+            axis = glm::mat3(-1, 0, 0,
+                            0, 1, 0,
+                            0, 0, -1);
+            break;
+        }
+        sstream << "cameras[" << i << "].axis = mat3(" << axis[0][0] << ", " << axis[0][1] << ", " << axis[0][2] << ", " <<
+                                                          axis[1][0] << ", " << axis[1][1] << ", " << axis[1][2] << ", " <<
+                                                          axis[2][0] << ", " << axis[2][1] << ", " << axis[2][2] << "); " << std::endl;
+    }
+    replace(glslCode, REPLACE_CAMERAS_INIT, sstream.str());
 }
 
 void GlslGenerator::generateScenes(Project &project) {

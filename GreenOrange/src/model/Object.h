@@ -22,13 +22,13 @@ public:
     void detachFromTransform() { transformId = -1; }
     bool isAttachedToTransform() const { return transformId != -1; }
 
-    void attachToMaterial(Material &m) { materialId = m.getId(); GEN_SET_DIRTY(); }
+    void attachToMaterial(Material &m) { materialId = m.getId(); PREVIEW_SET_DIRTY(); }
     uint32 getMaterialId() { return materialId; }
     void detachFromMaterial() { materialId = -1; }
     bool isAttachedToMaterial() const { return materialId != -1; }
 
     bool isStatic() const { return isStatic_; }
-    void setStatic(bool isStatic) { isStatic_ = isStatic; GEN_SET_DIRTY(); }
+    void setStatic(bool isStatic) { isStatic_ = isStatic; PREVIEW_SET_DIRTY(); }
 
 private:
     ObjectType type;
@@ -44,7 +44,7 @@ public:
         Object(id, name, ObjectType::Sphere),
         radius(1.0f) {}
 
-    void setRadius(float r) { radius = r; GEN_SET_DIRTY(); }
+    void setRadius(float r) { radius = r; PREVIEW_SET_DIRTY(); }
     float getRadius() const { return radius; }
 
 private:
@@ -57,7 +57,7 @@ public:
         Object(id, name, ObjectType::Box),
         dimensions(1.0f, 1.0f, 1.0f) {}
 
-    void setDimensions(const glm::vec3 &dimensions) { this->dimensions = dimensions; GEN_SET_DIRTY(); }
+    void setDimensions(const glm::vec3 &dimensions) { this->dimensions = dimensions; PREVIEW_SET_DIRTY(); }
     const glm::vec3& getDimensions() const { return dimensions; }
 
 private:

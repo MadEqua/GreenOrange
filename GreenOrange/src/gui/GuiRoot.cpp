@@ -123,7 +123,7 @@ void GuiRoot::drawGui() {
             greenOrange.getOpenProject()->doPendingOperations();
 
             //Generate (if needed) new GLSL for the upcoming frame preview
-            GlslGenerator::getInstance().generateForPreview(*greenOrange.getOpenProject());
+            previewGenerator.generateForPreview(*greenOrange.getOpenProject());
 
             for(auto &panelPtr : panels) {
                 panelPtr->drawGui(greenOrange);
