@@ -12,6 +12,7 @@ project "GreenOrange"
     -- Not pretty. Find a better way.
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/template.frag" }
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/fullScreen.vert" }
+    prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/layered.geo" }
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/fallback.frag" }
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/objects.frag" }
     prebuildcommands { "%{wks.location}GlslToHeader/bin/" .. outputDir .. "/GlslToHeader.exe %{prj.location}src/glsl/transforms.frag" }

@@ -6,13 +6,15 @@
 #include "../Constants.h"
 
 #include "../glsl/generated/fullScreen.vert.h"
+#include "../glsl/generated/layered.geo.h"
 
 
-ShaderProgram::ShaderProgram() {
+ShaderProgram::ShaderProgram(bool layeredRendering) {
     vsHandle = glCreateShader(GL_VERTEX_SHADER);
     fsHandle = glCreateShader(GL_FRAGMENT_SHADER);
+    if(layeredRendering) gsHandle = glCreateShader(GL_GEOMETRY_SHADER);
 
-    //Full screen triangle
+    //Full screen triangle.
     std::string vs;
     vs.append(GLSL_VERSION).append("\n").append(fullScreen_vert);
     const char * const vsc = vs.c_str();
@@ -22,14 +24,28 @@ ShaderProgram::ShaderProgram() {
     if(!checkCompilation(vsHandle))
         return;
 
+    if(layeredRendering) {
+        //Geometry shader to do layered rendering for cubemap generation.
+        std::string gs;
+        gs.append(GLSL_VERSION).append("\n").append(layered_geo);
+        const char * const gsc = gs.c_str();
+
+        glShaderSource(gsHandle, 1, &gsc, nullptr);
+        glCompileShader(gsHandle);
+        if(!checkCompilation(gsHandle))
+            return;
+    }
+
     handle = glCreateProgram();
     glAttachShader(handle, vsHandle);
     glAttachShader(handle, fsHandle);
+    if(layeredRendering) glAttachShader(handle, gsHandle);
 }
 
 ShaderProgram::~ShaderProgram() {
     glDeleteShader(vsHandle);
     glDeleteShader(fsHandle);
+    if(gsHandle != -1) glDeleteShader(gsHandle);
     glDeleteProgram(handle);
 }
 

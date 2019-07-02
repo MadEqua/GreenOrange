@@ -4,8 +4,10 @@
 
 #include "../Types.h"
 
-//FBO that contains only a color texture.
-//To use first call setDimensions() with the correct dimensions.
+/*
+ * FBO that renders to a 2D texture. Supports frequent redimensioning.
+ * To use, first call setDimensions() with the correct dimensions.
+ */
 class FBO
 {
 public:
@@ -24,3 +26,21 @@ private:
     uint32 width, height;
 };
 
+
+//FBO that renders to a CubeTexture.
+class FBOCube
+{
+public:
+    FBOCube(uint32 width, uint32 height);
+    ~FBOCube();
+
+    void bind() const;
+    static void bindDefault();
+
+    GLuint getColorTextureId() const { return colorTexId; }
+
+private:
+    GLuint id;
+    GLuint colorTexId;
+    uint32 width, height;
+};

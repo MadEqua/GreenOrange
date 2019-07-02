@@ -13,6 +13,8 @@
 #include "../Constants.h"
 #include "GuiRoot.h"
 
+#include "../gl/ProbeRenderer.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -248,4 +250,9 @@ void InspectorPanel::doProbe(Probe &probe) {
     auto pos = probe.getPosition();
     if(ImGui::DragFloat3("Position", glm::value_ptr(pos), 0.05f, DRAG_MIN, DRAG_MAX))
         probe.setPosition(pos);
+
+    //if(ImGui::Button("Bake")) {
+        static ProbeRenderer renderer(GlslGenerator::getInstance().getGlslCode().c_str(), 128, 128);
+        renderer.render();
+    //}
 }

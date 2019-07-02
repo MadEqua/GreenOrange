@@ -5,12 +5,15 @@
 #include <string>
 
 
-//This creates a program with a fixed full screen triangle vertex shader.
-//Call setFragmentShader() with fragment shader code to be able to use.
+/*
+ * This creates a program with a fixed full screen triangle vertex shader.
+ * Optional Geometry shading for layered rendering (cube map generation).
+ * Call setFragmentShader() with fragment shader code to be able to use.
+ */
 class ShaderProgram
 {
 public:
-    ShaderProgram();
+    ShaderProgram(bool layeredRendering = false);
     ~ShaderProgram();
 
     void bind() const;
@@ -24,6 +27,7 @@ private:
     GLuint handle;
     GLuint vsHandle;
     GLuint fsHandle;
+    GLuint gsHandle = -1;
 
     std::unordered_map<std::string, GLuint> uniformsByName;
 

@@ -30,7 +30,7 @@ void PreviewRenderer::setDimensions(float width, float height) {
     shader.setUniformVec2(UNIFORM_DIMENSIONS, width,  height);
     fbo.setDimensions(static_cast<uint32>(width), static_cast<uint32>(height));
 }
- 
+
 void PreviewRenderer::render() const {
     fbo.bind();
     shader.bind();
