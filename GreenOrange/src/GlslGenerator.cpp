@@ -144,22 +144,24 @@ void GlslGenerator::generateLights(Project &project) {
             int idx = 0;
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
-                auto &col = light.getColor();
+                if(light.isDirectional()) {
+                    auto &col = light.getColor();
 
-                bool useLight = false;
-                if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
-                    useLight = true;
-                }
-                else if(type == GenerationType::Probe && light.isStatic()) {
-                    useLight = true;
-                }
+                    bool useLight = false;
+                    if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
+                        useLight = true;
+                    }
+                    else if(type == GenerationType::Probe && light.isStatic()) {
+                        useLight = true;
+                    }
 
-                if(useLight) {
-                    auto &dir = static_cast<DirectionalLight&>(light).getDirection();
-                    sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
-                    sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
-                    sstreamLightInit << "dirLights[" << idx << "].intensity = " << light.getIntensity() << ";" << std::endl;
-                    idx++;
+                    if(useLight) {
+                        auto &dir = static_cast<DirectionalLight&>(light).getDirection();
+                        sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
+                        sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
+                        sstreamLightInit << "dirLights[" << idx << "].intensity = " << light.getIntensity() << ";" << std::endl;
+                        idx++;
+                    }
                 }
             }
         }
@@ -173,22 +175,24 @@ void GlslGenerator::generateLights(Project &project) {
             int idx = 0;
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
-                auto &col = light.getColor();
+                if(light.isPoint()) {
+                    auto &col = light.getColor();
 
-                bool useLight = false;
-                if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
-                    useLight = true;
-                }
-                else if(type == GenerationType::Probe && light.isStatic()) {
-                    useLight = true;
-                }
+                    bool useLight = false;
+                    if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
+                        useLight = true;
+                    }
+                    else if(type == GenerationType::Probe && light.isStatic()) {
+                        useLight = true;
+                    }
 
-                if(useLight) {
-                    auto &pos = static_cast<PointLight&>(light).getPosition();
-                    sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
-                    sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
-                    sstreamLightInit << "pointLights[" << idx << "].intensity = " << light.getIntensity() << ";" << std::endl;
-                    idx++;
+                    if(useLight) {
+                        auto &pos = static_cast<PointLight&>(light).getPosition();
+                        sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
+                        sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
+                        sstreamLightInit << "pointLights[" << idx << "].intensity = " << light.getIntensity() << ";" << std::endl;
+                        idx++;
+                    }
                 }
             }
         }
@@ -222,7 +226,7 @@ void GlslGenerator::generateCameras(Project &project) {
 
     //TODO
     std::stringstream sstream;
-    glm::vec3 pos(0.0f, 0.0f, -5.0f);
+    glm::vec3 pos(0.0f, 0.0f, -10.0f);
     glm::mat3 axis = glm::mat3(1.0f);
     sstream << "cameras[0].pos = vec3(" << pos[0] << ", " << pos[1] << ", " << pos[2] << "); " << std::endl;
     sstream << "cameras[0].axis = mat3(" << axis[0][0] << ", " << axis[0][1] << ", " << axis[0][2] << ", " <<

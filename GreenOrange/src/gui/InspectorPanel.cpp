@@ -81,8 +81,8 @@ void InspectorPanel::doObject(Project &project, Object &object) {
     ImGui::NewLine();
 
     bool isStatic = object.isStatic();
-    ImGui::Checkbox("Static", &isStatic);
-    object.setStatic(isStatic);
+    if(ImGui::Checkbox("Static", &isStatic))
+        object.setStatic(isStatic);
 
     switch(object.getType()) {
     case ObjectType::Sphere:
@@ -170,8 +170,8 @@ void InspectorPanel::doLight(Light &light) {
     ImGui::NewLine();
 
     bool isStatic = light.isStatic();
-    ImGui::Checkbox("Static", &isStatic);
-    light.setStatic(isStatic);
+    if(ImGui::Checkbox("Static", &isStatic))
+        light.setStatic(isStatic);
 
     switch(light.getType()) {
     case LightType::Directional:
