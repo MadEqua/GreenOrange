@@ -251,10 +251,24 @@ void InspectorPanel::doProbe(Project &project, Probe &probe) {
     if(ImGui::DragFloat3("Position", glm::value_ptr(pos), 0.05f, DRAG_MIN, DRAG_MAX))
         probe.setPosition(pos);
 
+    static ProbeRenderer probeRenderer(128, 128); //TODO: pick the size
     if(ImGui::Button("Bake")) {
         GlslGenerator gen;
         gen.generateForProbe(project, probe);
-        ProbeRenderer renderer(gen.getGlslCode().c_str(), 128, 128);
-        renderer.render();
+        probeRenderer.render(gen.getGlslCode().c_str());
     }
+
+    const float IMAGE_SIZE = 64;
+    ImVec2 size(IMAGE_SIZE, IMAGE_SIZE);
+    ImGui::SetCursorPosX(IMAGE_SIZE);
+    ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(2), size, ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(1), size, ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::SameLine();
+    ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(5), size, ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::SameLine();
+    ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(0), size, ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::SameLine();
+    ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(4), size, ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::SetCursorPosX(IMAGE_SIZE);
+    ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(3), size, ImVec2(0, 1), ImVec2(1, 0));
 }

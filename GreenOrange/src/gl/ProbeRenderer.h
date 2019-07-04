@@ -9,12 +9,12 @@
 class ProbeRenderer
 {
 public:
-    ProbeRenderer(const char *fs, uint32 width, uint32 height);
+    ProbeRenderer(uint32 width, uint32 height);
     ~ProbeRenderer();
 
-    void render() const;
+    void render(const char *fs);
 
-    //GLuint getRenderedImageId() const { return fbo.getColorTextureId(); }
+    GLuint getCopyTextureId(int face) const { return textureIds[face]; }
 
 private:
     FBOCube fbo;
@@ -23,5 +23,7 @@ private:
     uint32 width, height;
 
     GLuint dummyVao;
-};
 
+    //Copy of the CubeMap from the FBO. Useful for ImGui display.
+    GLuint textureIds[6];
+};

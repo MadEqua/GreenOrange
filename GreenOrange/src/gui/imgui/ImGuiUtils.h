@@ -9,4 +9,3 @@ namespace ImGuiUtils
     bool YesNoPopup(const char* label, const char* text);
     bool OkPopup(const char* label, const char* text);
 };
-

@@ -35,12 +35,11 @@ public:
     ~FBOCube();
 
     void bind() const;
-    static void bindDefault();
 
-    GLuint getColorTextureId() const { return colorTexId; }
+    GLuint getCubeTextureId() const { return cubeTexId; }
 
 private:
     GLuint id;
-    GLuint colorTexId;
+    GLuint cubeTexId;
     uint32 width, height;
 };
