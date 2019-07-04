@@ -1,12 +1,15 @@
 #include "ProbeRenderer.h"
 
 #include "../Constants.h"
+#include "../glsl/generated/fallback.frag.h"
 
 
 ProbeRenderer::ProbeRenderer(uint32 width, uint32 height) :
     shader(true),
     fbo(width, height),
     width(width), height(height) {
+
+    fallbackFragShader.append(GLSL_VERSION).append("\n").append(fallback_frag);
 
     glGenVertexArrays(1, &dummyVao);
 
@@ -24,7 +27,13 @@ ProbeRenderer::~ProbeRenderer() {
 }
 
 void ProbeRenderer::render(const char *fs) {
-    shader.setFragmentShader(fs);
+    bool result = shader.setFragmentShader(fs);
+    if(result) {
+        shader.addUniform(UNIFORM_TIME);
+    }
+    else {
+        shader.setFragmentShader(fallbackFragShader.c_str());
+    }
     shader.addUniform(UNIFORM_DIMENSIONS);
     shader.setUniformVec2(UNIFORM_DIMENSIONS, width, height);
 

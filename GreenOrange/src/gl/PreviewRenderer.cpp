@@ -1,8 +1,8 @@
 #include "PreviewRenderer.h"
 
 #include "../Constants.h"
-
 #include "../glsl/generated/fallback.frag.h"
+
 
 PreviewRenderer::PreviewRenderer() {
     glGenVertexArrays(1, &dummyVao);

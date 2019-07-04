@@ -253,8 +253,8 @@ void InspectorPanel::doProbe(Project &project, Probe &probe) {
 
     static ProbeRenderer probeRenderer(128, 128); //TODO: pick the size
     if(ImGui::Button("Bake")) {
-        GlslGenerator gen;
-        gen.generateForProbe(project, probe);
+        GlslGenerator gen(probe);
+        gen.generate(project);
         probeRenderer.render(gen.getGlslCode().c_str());
     }
 

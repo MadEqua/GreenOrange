@@ -25,7 +25,7 @@
 #include "glsl/generated/operators.frag.h"
 
 
-GlslGenerator previewGenerator;
+GlslGenerator previewGenerator(GlslGenerator::GenerationType::Preview);
 
 GlslGenerator::RpnElement::RpnElement(TreeNode<Entity> &treeNode) {
     if(treeNode->isCsgOperator()) {
@@ -49,25 +49,31 @@ GlslGenerator::RpnElement::RpnElement(std::string &&generatedCode) :
 }
 
 
-GlslGenerator::GlslGenerator() {
+GlslGenerator::GlslGenerator(GenerationType type) :
+    type(type) {
     glslCode.reserve(1024 * 8);
 }
 
-void GlslGenerator::generateForPreview(Project &project) {
-    if(needToGenerate) {
-        generate(project, GenerationType::Preview);
-        needToGenerate = false;
+GlslGenerator::GlslGenerator(const Probe &probe) :
+    type(GlslGenerator::GenerationType::Probe),
+    probe(&probe) {
+    glslCode.reserve(1024 * 8);
+}
+
+void GlslGenerator::generate(Project &project) {
+    switch(type) {
+    case GenerationType::Preview:
+        if(needToGenerate) {
+            internalGenerate(project);
+            needToGenerate = false;
+        }
+    break;
+    case GenerationType::Probe:
+    case GenerationType::Export:
+        internalGenerate(project);
+        break;
     }
-}
 
-void GlslGenerator::generateForProbe(Project &project, const Probe &probe) {
-    this->probe = &probe;
-    generate(project, GenerationType::Probe);
-}
-
-//TODO
-void GlslGenerator::generateForExport(Project &project) {
-    generate(project, GenerationType::Export);
 }
 
 void GlslGenerator::initGeneration() {
@@ -75,7 +81,7 @@ void GlslGenerator::initGeneration() {
     glslCode.append(GLSL_VERSION).append("\n").append(template_frag);
 }
 
-void GlslGenerator::generate(Project &project, GenerationType type) {
+void GlslGenerator::internalGenerate(Project &project) {
     initGeneration();
 
     //TODO: only add actually needed/used parts
@@ -139,7 +145,16 @@ void GlslGenerator::generateLights(Project &project) {
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
-                if(light.isDirectional() && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
+
+                bool useLight = false;
+                if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
+                    useLight = true;
+                }
+                else if(type == GenerationType::Probe && light.isStatic()) {
+                    useLight = true;
+                }
+
+                if(useLight) {
                     auto &dir = static_cast<DirectionalLight&>(light).getDirection();
                     sstreamLightInit << "dirLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "dirLights[" << idx << "].direction = vec3(" << dir[0] << "," << dir[1] << "," << dir[2] << ");" << std::endl;
@@ -159,7 +174,16 @@ void GlslGenerator::generateLights(Project &project) {
             for(uint32 l = 0; l < scene.getLightCount(); ++l) {
                 Light &light = scene.getLightByIndex(l);
                 auto &col = light.getColor();
-                if(light.isPoint() && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
+
+                bool useLight = false;
+                if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || light.isStatic())) {
+                    useLight = true;
+                }
+                else if(type == GenerationType::Probe && light.isStatic()) {
+                    useLight = true;
+                }
+
+                if(useLight) {
                     auto &pos = static_cast<PointLight&>(light).getPosition();
                     sstreamLightInit << "pointLights[" << idx << "].color = vec3(" << col[0] << "," << col[1] << "," << col[2] << ");" << std::endl;
                     sstreamLightInit << "pointLights[" << idx << "].position = vec3(" << pos[0] << "," << pos[1] << "," << pos[2] << ");" << std::endl;
@@ -297,7 +321,7 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
     });
 
     //Add probe previews to the root union if needed.
-    if(project.getPreviewProbes()) {
+    if(type == GenerationType::Preview && project.getPreviewProbes()) {
         for(int i = 0; i < scene.getProbeCount(); ++i) {
             rpnList.emplace_front(scene.getProbeByIndex(i));
         }
@@ -314,7 +338,11 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
         }
         else if(rpnElem.containsEntity()) {
             if(rpnElem.entity->isObject()) {
-                if(!project.getOnlyPreviewStaticObjects() || static_cast<Object*>(rpnElem.entity)->isStatic()) {
+                Object &obj = static_cast<Object&>(*rpnElem.entity);
+                if(type == GenerationType::Preview && (!project.getOnlyPreviewStaticObjects() || obj.isStatic())) {
+                    rpnStack.push(std::move(rpnElem));
+                }
+                else if(type == GenerationType::Probe && obj.isStatic()) {
                     rpnStack.push(std::move(rpnElem));
                 }
             }
@@ -330,7 +358,7 @@ std::string GlslGenerator::generateSceneTree(Project &project, Scene &scene) {
             //Find out how many *non-empty* operands the operator has. Basically we ignore all empty child CSG operators
             //We also add the probe count for the root operator if previewing probes.
             uint32 operandCount = countNonEmptyOperands(csgNode, project.getOnlyPreviewStaticObjects());
-            if(project.getPreviewProbes() && op == scene.getCsgRootOperator()) {
+            if(type == GenerationType::Preview && project.getPreviewProbes() && op == scene.getCsgRootOperator()) {
                 operandCount += scene.getProbeCount();
             }
 
@@ -367,8 +395,13 @@ uint32 GlslGenerator::countNonEmptyOperands(TreeNode<Entity> &root, bool onlySta
                 count++;
         }
         else if(child->isObject()) {
-            if(!onlyStaticObjects || static_cast<Object*>(&child.getPayload())->isStatic())
+            Object &obj = static_cast<Object&>(child.getPayload());
+            if(type == GenerationType::Preview && (!onlyStaticObjects || obj.isStatic())) {
                 count++;
+            }
+            else if(type == GenerationType::Probe && obj.isStatic()) {
+                count++;
+            }
         }
     }
     return count;

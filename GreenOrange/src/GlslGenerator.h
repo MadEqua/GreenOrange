@@ -18,16 +18,19 @@ class Probe;
 class GlslGenerator
 {
 public:
-    GlslGenerator();
+    enum class GenerationType {
+        Preview, Probe, Export
+    };
+
+    GlslGenerator(GenerationType type);
+    explicit GlslGenerator(const Probe &probe);
+
     void setNeedToGenerate() { needToGenerate = true; }
 
     //Each time we generate new code, it will have a new id. Useful for clients to identify changes.
     uint64 getCurrentCodeId() const { return currentCodeId; }
 
-    //Call once per frame for the PreviewPanel
-    void generateForPreview(Project &project);
-    void generateForProbe(Project &project, const Probe &probe);
-    void generateForExport(Project &project);
+    void generate(Project &project);
 
     const std::string& getGlslCode() const { return glslCode; }
 
@@ -54,9 +57,7 @@ private:
         Type type;
     };
 
-    enum class GenerationType {
-        Preview, Probe, Export
-    };
+    GenerationType type;
 
     bool needToGenerate = true; //For Preview
     const Probe *probe; //For Probe
@@ -65,7 +66,7 @@ private:
     std::string glslCode;
 
     void initGeneration();
-    void generate(Project &project, GenerationType type);
+    void internalGenerate(Project &project);
 
     void generateLights(Project &project);
     void generateScenes(Project &project);
@@ -73,14 +74,15 @@ private:
     void generateCameras(Project &project);
     void generateCamerasForProbe(Project &project);
 
-    static std::string generateScene(Project &project, Scene &scene);
-    static std::string generateSceneTree(Project &project, Scene &scene);
+    std::string generateScene(Project &project, Scene &scene);
+    std::string generateSceneTree(Project &project, Scene &scene);
+
     static std::string generateOperator(Project &project, Scene &scene, const CsgOperator &csgOperator, const std::vector<RpnElement> &operands, uint32 startIdx, uint32 endIdx);
     static std::string generateOperand(Project &project, Scene &scene, const RpnElement &rpnElement);
     static std::string generateTransform(TreeNode<Transform> &transformNode, TreeNode<Transform> *parentTransformNode);
 
     static std::string generateTransformName(const Transform &transform);
-    static uint32 countNonEmptyOperands(TreeNode<Entity> &node, bool onlyStaticObjects);
+    uint32 countNonEmptyOperands(TreeNode<Entity> &node, bool onlyStaticObjects);
 
     static bool replace(std::string& str, const std::string& toReplace, const std::string& replacement);
 };

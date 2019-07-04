@@ -23,6 +23,7 @@ private:
     uint32 width, height;
 
     GLuint dummyVao;
+    std::string fallbackFragShader;
 
     //Copy of the CubeMap from the FBO. Useful for ImGui display.
     GLuint textureIds[6];
