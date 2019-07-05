@@ -41,8 +41,8 @@ void FBO::setDimensions(uint32 width, uint32 height) {
 }
 
 
-FBOCube::FBOCube(uint32 width, uint32 height) :
-    width(width), height(height) {
+FBOCube::FBOCube(uint32 size) :
+    size(size) {
     glGenFramebuffers(1, &id);
     
     glGenTextures(1, &cubeTexId);
@@ -52,7 +52,7 @@ FBOCube::FBOCube(uint32 width, uint32 height) :
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_SRGB8, width, height);
+    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_SRGB8, size, size);
 
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubeTexId, 0);
@@ -70,5 +70,5 @@ void FBOCube::bind() const {
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, size, size);
 }

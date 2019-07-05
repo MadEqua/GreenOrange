@@ -9,7 +9,7 @@
 class ProbeRenderer
 {
 public:
-    ProbeRenderer(uint32 width, uint32 height);
+    ProbeRenderer(uint32 size);
     ~ProbeRenderer();
 
     void render(const char *fs);
@@ -20,7 +20,7 @@ private:
     FBOCube fbo;
     ShaderProgram shader;
 
-    uint32 width, height;
+    uint32 size;
 
     GLuint dummyVao;
     std::string fallbackFragShader;

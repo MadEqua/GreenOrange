@@ -4,10 +4,10 @@
 #include "../glsl/generated/fallback.frag.h"
 
 
-ProbeRenderer::ProbeRenderer(uint32 width, uint32 height) :
+ProbeRenderer::ProbeRenderer(uint32 size) :
     shader(true),
-    fbo(width, height),
-    width(width), height(height) {
+    fbo(size),
+    size(size) {
 
     fallbackFragShader.append(GLSL_VERSION).append("\n").append(fallback_frag);
 
@@ -16,7 +16,7 @@ ProbeRenderer::ProbeRenderer(uint32 width, uint32 height) :
     glGenTextures(6, textureIds);
     for(int i = 0; i < 6; ++i) {
         glBindTexture(GL_TEXTURE_2D, textureIds[i]);
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_SRGB8, width, height);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_SRGB8, size, size);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
@@ -35,7 +35,7 @@ void ProbeRenderer::render(const char *fs) {
         shader.setFragmentShader(fallbackFragShader.c_str());
     }
     shader.addUniform(UNIFORM_DIMENSIONS);
-    shader.setUniformVec2(UNIFORM_DIMENSIONS, width, height);
+    shader.setUniformVec2(UNIFORM_DIMENSIONS, size, size);
 
     fbo.bind();
     shader.bind();
@@ -48,7 +48,7 @@ void ProbeRenderer::render(const char *fs) {
     for(int i = 0; i < 6; ++i) {
         glCopyImageSubData(fbo.getCubeTextureId(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, i,
                            textureIds[i], GL_TEXTURE_2D, 0, 0, 0, 0,
-                           width, height, 1);
+                           size, size, 1);
 
     }
     FBO::bindDefault();

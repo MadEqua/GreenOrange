@@ -31,7 +31,7 @@ private:
 class FBOCube
 {
 public:
-    FBOCube(uint32 width, uint32 height);
+    FBOCube(uint32 size);
     ~FBOCube();
 
     void bind() const;
@@ -41,5 +41,5 @@ public:
 private:
     GLuint id;
     GLuint cubeTexId;
-    uint32 width, height;
+    uint32 size;
 };
