@@ -32,34 +32,34 @@ Scene::Scene(const char* name) :
     auto &trans3 = static_cast<Translation&>(*sceneEntities[sceneEntities.size() - 1]);
     trans3.setAmmount(glm::vec3(0.0f, 0.0f, size));
     
-    /*createRootTransform("TransformWall4", TransformType::Translation);
+    createRootTransform("TransformWall4", TransformType::Translation);
     auto &trans4 = static_cast<Translation&>(*sceneEntities[sceneEntities.size() - 1]);
     trans4.setAmmount(glm::vec3(0.0f, size, 0.0f));
-    
-    createRootTransform("TransformWall5", TransformType::Translation);
-    auto &trans5 = static_cast<Translation&>(*sceneEntities[sceneEntities.size() - 1]);
-    trans4.setAmmount(glm::vec3(0.0f, -size, 0.0f));*/
 
 
     createObject("Wall 1", ObjectType::Box, *csgTreeRoot);
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).setDimensions(glm::vec3(0.1f, size, size));
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).attachToTransform(trans1);
+    Box &wall1 = static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]);
+    wall1.setDimensions(glm::vec3(0.1f, size, size));
+    wall1.attachToTransform(trans1);
+    wall1.setStatic(true);
     
     createObject("Wall 2", ObjectType::Box, *csgTreeRoot);
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).setDimensions(glm::vec3(0.2f, size, size));
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).attachToTransform(trans2);
+    Box &wall2 = static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]);
+    wall2.setDimensions(glm::vec3(0.2f, size, size));
+    wall2.attachToTransform(trans2);
+    wall2.setStatic(true);
 
     createObject("Wall 3", ObjectType::Box, *csgTreeRoot);
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).setDimensions(glm::vec3(size, size, 0.2f));
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).attachToTransform(trans3);
+    Box &wall3 = static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]);
+    wall3.setDimensions(glm::vec3(size, size, 0.2f));
+    wall3.attachToTransform(trans3);
+    wall3.setStatic(true);
 
-    /*createObject("Wall 4", ObjectType::Box, *csgTreeRoot);
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).setDimensions(glm::vec3(size, 0.2f, size));
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).attachToTransform(trans4);
-
-    createObject("Wall 5", ObjectType::Box, *csgTreeRoot);
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).setDimensions(glm::vec3(size, 0.2f, size));
-    static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]).attachToTransform(trans5);*/
+    createObject("Wall 4", ObjectType::Box, *csgTreeRoot);
+    Box &wall4 = static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]);
+    wall4.setDimensions(glm::vec3(size, 0.2f, size));
+    wall4.attachToTransform(trans4);
+    wall4.setStatic(true);
 }
 
 void Scene::createCsgOperator(const char *name, CsgType type, TreeNode<Entity> &parent) {

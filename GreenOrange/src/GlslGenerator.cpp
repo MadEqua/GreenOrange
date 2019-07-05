@@ -438,8 +438,8 @@ std::string GlslGenerator::generateOperator(Project &project, Scene &scene, cons
         replace(templateString, "#OP2", generateOperand(project, scene, operands[startIdx + 1]));
     }
     else {
-        replace(templateString, "#OP1", generateOperator(project, scene, csgOperator, operands, 0, 2));
-        replace(templateString, "#OP2", generateOperator(project, scene, csgOperator, operands, 2, size));
+        replace(templateString, "#OP1", generateOperator(project, scene, csgOperator, operands, startIdx, startIdx + 2));
+        replace(templateString, "#OP2", generateOperator(project, scene, csgOperator, operands, startIdx + 2, endIdx));
     }
 
     return templateString;
