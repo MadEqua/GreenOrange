@@ -232,6 +232,7 @@ void GlslGenerator::generateCameras(Project &project) {
     sstream << "cameras[0].axis = mat3(" << axis[0][0] << ", " << axis[0][1] << ", " << axis[0][2] << ", " <<
                                             axis[1][0] << ", " << axis[1][1] << ", " << axis[1][2] << ", " <<
                                             axis[2][0] << ", " << axis[2][1] << ", " << axis[2][2] << "); " << std::endl;
+    sstream << "cameras[0].fovy =" << glm::half_pi<float>() << ";" << std::endl;
     replace(glslCode, REPLACE_CAMERAS_INIT, sstream.str());
 }
 
@@ -247,39 +248,28 @@ void GlslGenerator::generateCamerasForProbe(Project &project) {
         switch(i)
         {
         case 0: //X+
-            axis = glm::mat3(0, 0, -1,
-                            0, 1, 0,
-                            1, 0, 0);
+            axis = glm::mat3(0, 0, 1,  0, 1, 0,  1, 0, 0);
             break;
         case 1: //X-
-            axis = glm::mat3(0, 0, 1,
-                            0, 1, 0,
-                            -1, 0, 0);
+            axis = glm::mat3(0, 0, -1,  0, 1, 0,  -1, 0, 0);
             break;
         case 2: //Y+
-            axis = glm::mat3(-1, 0, 0,
-                            0, 0, 1,
-                            0, 1, 0);
+            axis = glm::mat3(1, 0, 0,  0, 0, -1,  0, 1, 0);
             break;
         case 3: //Y-
-            axis = glm::mat3(-1, 0, 0,
-                            0, 0, 1,
-                            0, -1, 0);
+            axis = glm::mat3(1, 0, 0,  0, 0, -1,  0, -1, 0);
             break;
         case 4: //Z+
-            axis = glm::mat3(1, 0, 0,
-                            0, 1, 0,
-                            0, 0, 1);
+            axis = glm::mat3(-1, 0, 0,  0, 1, 0,  0, 0, 1);
             break;
         case 5: //Z-
-            axis = glm::mat3(-1, 0, 0,
-                            0, 1, 0,
-                            0, 0, -1);
+            axis = glm::mat3(1, 0, 0,  0, 1, 0,  0, 0, -1);
             break;
         }
         sstream << "cameras[" << i << "].axis = mat3(" << axis[0][0] << ", " << axis[0][1] << ", " << axis[0][2] << ", " <<
                                                           axis[1][0] << ", " << axis[1][1] << ", " << axis[1][2] << ", " <<
                                                           axis[2][0] << ", " << axis[2][1] << ", " << axis[2][2] << "); " << std::endl;
+        sstream << "cameras[" << i << "].fovy =" << glm::half_pi<float>() << ";" << std::endl;
     }
     replace(glslCode, REPLACE_CAMERAS_INIT, sstream.str());
 }

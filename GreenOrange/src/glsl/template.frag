@@ -98,6 +98,7 @@ void initMaterials() {
 struct Camera {
     vec3 pos;
     mat3 axis;
+    float fovy; //In radians
 };
 Camera cameras[#GO_REPLACE_CAMERA_COUNT];
 
@@ -232,9 +233,13 @@ void main() {
     initMaterials();
     initCameras();
 
-    vec2 uv = (gl_FragCoord.xy - .5 * dimensions.xy) / dimensions.y;
+    vec2 uv = (gl_FragCoord.xy / dimensions.xy) * 2.0 - 1.0;
     Camera cam = cameras[getCameraForCurrentTime()];
-    vec3 rd = cam2world(vec3(uv, 1.), cam); 
+    float maxRdy = tan(cam.fovy * 0.5);
+    float maxRdx = maxRdy * (dimensions.x / dimensions.y);
+    vec3 rdCam = vec3(uv.x * maxRdx, uv.y * maxRdy, 1.0);
+    
+    vec3 rd = cam2world(rdCam, cam); 
 
     vec3 col = vec3(.2);
     RayPoint rp;

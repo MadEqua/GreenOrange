@@ -258,7 +258,7 @@ void InspectorPanel::doProbe(Project &project, Probe &probe) {
         probeRenderer.render(gen.getGlslCode().c_str());
     }
 
-    const float IMAGE_SIZE = 64;
+    const float IMAGE_SIZE = 128;
     ImVec2 size(IMAGE_SIZE, IMAGE_SIZE);
     ImGui::SetCursorPosX(IMAGE_SIZE);
     ImGui::Image((ImTextureID) (void*) probeRenderer.getCopyTextureId(2), size, ImVec2(0, 1), ImVec2(1, 0));

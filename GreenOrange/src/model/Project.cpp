@@ -14,6 +14,19 @@ Project::Project(const char *path) :
 
     createScene("Scene1");
     createMaterial("DefaultMaterial");
+
+    //TEST
+    createMaterial("Blue Material");
+    auto &mat1 = *materials[materials.size() - 1];
+    mat1.setBaseColor(glm::vec3(0, 0, 1));
+
+    createMaterial("Green Material");
+    auto &mat2 = *materials[materials.size() - 1];
+    mat2.setBaseColor(glm::vec3(0, 1, 0));
+
+    createMaterial("Red Material");
+    auto &mat3 = *materials[materials.size() - 1];
+    mat3.setBaseColor(glm::vec3(1, 0, 0));
 }
 
 void Project::createScene(const char *name) {

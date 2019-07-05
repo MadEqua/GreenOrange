@@ -15,11 +15,12 @@ Scene::Scene(const char* name) :
     sceneEntities.emplace_back(internalCreateTransform("Root Transform", TransformType::Translation));
     transformTreeDummyRoot = std::make_unique<TreeNode<Transform>>(static_cast<Transform&>(*sceneEntities[1]));
 
-    createLight("Default Light", LightType::Point);
+    createLight("Default Point Light", LightType::Point);
+    //createLight("Default Directional Light", LightType::Directional);
     createObject("Default Sphere", ObjectType::Sphere, *csgTreeRoot);
 
+    //TEST
     const float size = 15.0f;
-
     createRootTransform("TransformWall1", TransformType::Translation);
     auto &trans1 = static_cast<Translation&>(*sceneEntities[sceneEntities.size() - 1]);
     trans1.setAmmount(glm::vec3(size, 0.0f, 0.0f));
@@ -42,7 +43,7 @@ Scene::Scene(const char* name) :
     wall1.setDimensions(glm::vec3(0.1f, size, size));
     wall1.attachToTransform(trans1);
     wall1.setStatic(true);
-    
+
     createObject("Wall 2", ObjectType::Box, *csgTreeRoot);
     Box &wall2 = static_cast<Box&>(*sceneEntities[sceneEntities.size() - 1]);
     wall2.setDimensions(glm::vec3(0.2f, size, size));
