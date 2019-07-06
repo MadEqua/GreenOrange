@@ -8,4 +8,5 @@ namespace ImGuiUtils
     bool InputTextPopup(const char* label, const char* text, char* buffer, int bufferSize);
     bool YesNoPopup(const char* label, const char* text);
     bool OkPopup(const char* label, const char* text);
+    void HelpMarker(const char* desc);
 };

@@ -88,6 +88,7 @@ void GlslGenerator::internalGenerate(Project &project) {
     replace(glslCode, REPLACE_OBJECTS, objects_frag);
     replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
     replace(glslCode, REPLACE_OPERATORS, operators_frag);
+    replace(glslCode, REPLACE_TONE_MAPPING, type == GenerationType::Probe ? "0" : "1");
 
     generateScenes(project);
     generateLights(project);

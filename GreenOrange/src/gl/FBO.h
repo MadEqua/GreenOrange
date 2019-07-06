@@ -27,7 +27,7 @@ private:
 };
 
 
-//FBO that renders to a CubeTexture.
+//FBO that renders to a floating point CubeTexture.
 class FBOCube
 {
 public:

@@ -52,7 +52,7 @@ FBOCube::FBOCube(uint32 size) :
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_SRGB8, size, size);
+    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGB32F, size, size);
 
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubeTexId, 0);

@@ -32,5 +32,7 @@ constexpr const char *REPLACE_POINT_LIGHT_COUNT = "#GO_REPLACE_POINT_LIGHT_COUNT
 constexpr const char *REPLACE_DIR_LIGHTS_SET = "#GO_REPLACE_DIR_LIGHTS_SET";
 constexpr const char *REPLACE_POINT_LIGHTS_SET = "#GO_REPLACE_POINT_LIGHTS_SET";
 
+constexpr const char *REPLACE_TONE_MAPPING = "#GO_REPLACE_TONE_MAPPING";
+
 constexpr const float DRAG_MAX = 9999.0f;
 constexpr const float DRAG_MIN = -DRAG_MAX;

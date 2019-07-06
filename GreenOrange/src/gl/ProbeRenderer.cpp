@@ -16,7 +16,7 @@ ProbeRenderer::ProbeRenderer(uint32 size) :
     glGenTextures(6, textureIds);
     for(int i = 0; i < 6; ++i) {
         glBindTexture(GL_TEXTURE_2D, textureIds[i]);
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_SRGB8, size, size);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB32F, size, size); //Floating point to be a automatic conversion from the original FBO texture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }

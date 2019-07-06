@@ -248,8 +248,10 @@ void main() {
         col = shade(cam.pos, rp);
     }
 
+#if #GO_REPLACE_TONE_MAPPING
     //Tone mapping
     col = col / (col + vec3(1.0));
+#endif
 
     fragColor = vec4(col, 1.);
 }

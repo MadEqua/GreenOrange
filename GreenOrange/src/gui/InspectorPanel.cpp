@@ -1,6 +1,8 @@
 #include "InspectorPanel.h"
 
 #include <imgui.h>
+#include <glm/gtc/type_ptr.hpp>
+
 
 #include "../model/GreenOrange.h"
 #include "../model/Project.h"
@@ -13,9 +15,8 @@
 #include "../Constants.h"
 #include "GuiRoot.h"
 
+#include "imgui/ImGuiUtils.h"
 #include "../gl/ProbeRenderer.h"
-
-#include <glm/gtc/type_ptr.hpp>
 
 
 static bool materialComboItemGetter(void* data, int idx, const char** out_str) {
@@ -261,7 +262,11 @@ void InspectorPanel::doProbe(Project &project, Probe &probe) {
         }
 
         ImGui::NewLine();
-        ImGui::Text("Warning: This is a visualization of the *last* baked Probe.");
+        ImGui::Text("Warning");
+        ImGui::SameLine();
+        ImGuiUtils::HelpMarker("This is a visualization of the *last* baked Probe. The original data is floating point and it's being auto clamped for visualization, heavy saturation is expected.");
+        ImGui::NewLine();
+
         ImVec2 size(64, 64);
         ImGui::Dummy(size);
         ImGui::SameLine();
