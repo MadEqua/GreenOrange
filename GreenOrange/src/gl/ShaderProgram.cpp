@@ -97,7 +97,7 @@ void ShaderProgram::bind() const {
     glUseProgram(handle);
 }
 
-bool ShaderProgram::setFragmentShader(const char *fs) {
+bool ShaderProgram::setFragmentShaderCode(const char *fs) {
     glShaderSource(fsHandle, 1, &fs, nullptr);
     glCompileShader(fsHandle);
     if(!checkCompilation(fsHandle))

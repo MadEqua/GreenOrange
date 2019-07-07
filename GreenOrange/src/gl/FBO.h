@@ -43,3 +43,22 @@ private:
     GLuint cubeTexId;
     uint32 size;
 };
+
+
+//FBO that renders to a floating point 1D texture.
+class FBO1D
+{
+public:
+    FBO1D(uint32 length);
+    ~FBO1D();
+
+    void bind() const;
+
+    GLuint getTextureId() const { return texId; }
+
+private:
+    GLuint id;
+    GLuint texId;
+    uint32 length;
+};
+

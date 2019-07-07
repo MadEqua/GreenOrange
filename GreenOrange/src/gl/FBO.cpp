@@ -16,7 +16,7 @@ FBO::~FBO() {
 }
 
 void FBO::bind() const {
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glViewport(0, 0, width, height);
@@ -65,10 +65,36 @@ FBOCube::~FBOCube() {
 }
 
 void FBOCube::bind() const {
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
     glViewport(0, 0, size, size);
+}
+
+
+FBO1D::FBO1D(uint32 length) :
+    length(length) {
+    glGenFramebuffers(1, &id);
+
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_1D, texId);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage1D(GL_TEXTURE_1D, 1, GL_RGB32F, length);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texId, 0);
+    FBO::bindDefault();
+}
+
+FBO1D::~FBO1D() {
+    glDeleteFramebuffers(1, &id);
+    glDeleteTextures(1, &texId);
+}
+
+void FBO1D::bind() const {
+    //glBindTexture(GL_TEXTURE_1D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    glViewport(0, 0, length, 1);
 }

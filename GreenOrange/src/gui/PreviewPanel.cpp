@@ -54,7 +54,7 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
             uint64 currentCodeId = previewGenerator.getCurrentCodeId();
             if(lastCodeId != currentCodeId) {
                 lastCodeId = currentCodeId;
-                previewRenderer.setFragmentShader(previewGenerator.getGlslCode().c_str());
+                previewRenderer.setFragmentShaderCode(previewGenerator.getGlslCode().c_str());
                 previewRenderer.setDimensions(imageSize.x, imageSize.y);
             }
 

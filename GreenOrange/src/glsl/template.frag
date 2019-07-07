@@ -6,7 +6,7 @@
 
 #define PI 3.14159265359
 
-out vec4 fragColor;
+out vec3 fragColor;
 uniform vec2 dimensions;
 
 /////////////////////////////////////////////
@@ -241,17 +241,14 @@ void main() {
     
     vec3 rd = cam2world(rdCam, cam); 
 
-    vec3 col = vec3(.2);
+    fragColor = vec3(.2);
     RayPoint rp;
     bool hit = rm(PRIMARY_STEPS, cam.pos, rd, rp);
     if(hit) {
-        col = shade(cam.pos, rp);
+        fragColor = shade(cam.pos, rp);
     }
 
 #if #GO_REPLACE_TONE_MAPPING
-    //Tone mapping
-    col = col / (col + vec3(1.0));
+    fragColor = fragColor / (fragColor + vec3(1.0));
 #endif
-
-    fragColor = vec4(col, 1.);
 }

@@ -13,13 +13,13 @@ PreviewRenderer::~PreviewRenderer() {
     glDeleteVertexArrays(1, &dummyVao);
 }
 
-bool PreviewRenderer::setFragmentShader(const char *fs) {
-    bool result = shader.setFragmentShader(fs);
+bool PreviewRenderer::setFragmentShaderCode(const char *fs) {
+    bool result = shader.setFragmentShaderCode(fs);
     if(result) {
         shader.addUniform(UNIFORM_TIME);
     }
     else {
-        shader.setFragmentShader(fallbackFragShader.c_str());
+        shader.setFragmentShaderCode(fallbackFragShader.c_str());
     }
 
     shader.addUniform(UNIFORM_DIMENSIONS);

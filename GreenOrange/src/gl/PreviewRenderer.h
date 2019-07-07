@@ -13,7 +13,7 @@ public:
     ~PreviewRenderer();
 
     void setDimensions(float width, float height);
-    bool setFragmentShader(const char *fs);
+    bool setFragmentShaderCode(const char *fs);
     void render() const;
     
     GLuint getRenderedImageId() const { return fbo.getColorTextureId(); }
