@@ -128,6 +128,15 @@ bool ShaderProgram::setUniformFloat(const char *name, float v) const {
     return false;
 }
 
+bool ShaderProgram::setUniformInt(const char *name, int v) const {
+    if(uniformsByName.find(name) != uniformsByName.end()) {
+        bind();
+        glUniform1i(uniformsByName.at(name), v);
+        return true;
+    }
+    return false;
+}
+
 bool ShaderProgram::setUniformVec2(const char *name, float x, float y) const {
     if(uniformsByName.find(name) != uniformsByName.end()) {
         bind();

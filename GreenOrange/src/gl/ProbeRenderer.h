@@ -5,6 +5,7 @@
 #include "FBO.h"
 #include "ShaderProgram.h"
 
+class Probe;
 
 class ProbeRenderer
 {
@@ -12,7 +13,7 @@ public:
     ProbeRenderer(uint32 size);
     ~ProbeRenderer();
 
-    void render(const char *fs);
+    void render(const char *fs, Probe &probe);
 
     GLuint getCopyTextureId(int face) const { return copyTextureIds[face]; }
 
@@ -28,7 +29,7 @@ private:
     GLuint copyTextureIds[6];
 
     FBO1D fbo1d;
-    ShaderProgram spHarmonicsShader;
-    std::string spHarmonicsShaderCode;
+    ShaderProgram computeIrradianceShader;
+    std::string computeIrradianceShaderCode;
     float coeficients[9 * 3];
 };

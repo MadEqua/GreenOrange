@@ -40,6 +40,9 @@ public:
     void setPreviewProbes(bool b) { previewProbes = b; PREVIEW_SET_DIRTY(); }
     bool getPreviewProbes() const { return previewProbes; }
 
+    void setPreviewIndirectLight(bool b) { previewIndirectLight = b; PREVIEW_SET_DIRTY(); }
+    bool getPreviewIndirectLight() const { return previewIndirectLight; }
+
     static uint32 generateId() { return nextId++; }
 
 private:
@@ -53,5 +56,6 @@ private:
 
     bool onlyPreviewStaticObjects = false;
     bool previewProbes = true;
+    bool previewIndirectLight = true;
 };
 

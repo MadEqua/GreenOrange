@@ -26,6 +26,12 @@ bool PreviewPanel::internalDrawGui(const GreenOrange &greenOrange) {
         if(ImGui::Checkbox("Show Probes", &previewProbes))
             greenOrange.getOpenProject()->setPreviewProbes(previewProbes);
 
+        ImGui::SameLine();
+
+        bool previewIndirectLight = greenOrange.getOpenProject()->getPreviewIndirectLight();
+        if(ImGui::Checkbox("Preview Indirect Light", &previewIndirectLight))
+            greenOrange.getOpenProject()->setPreviewIndirectLight(previewIndirectLight);
+
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         if(size.x > 0.0f && size.y > 0.0f) {

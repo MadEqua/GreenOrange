@@ -73,6 +73,7 @@ private:
     void generateMaterials(Project &project);
     void generateCameras(Project &project);
     void generateCamerasForProbe(Project &project);
+    void generateIrradianceCoeffs(Project &project);
 
     std::string generateScene(Project &project, Scene &scene);
     std::string generateSceneTree(Project &project, Scene &scene);

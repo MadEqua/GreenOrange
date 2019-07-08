@@ -22,6 +22,7 @@ public:
     
     bool addUniform(const char *name);
     bool setUniformFloat(const char *name, float v) const;
+    bool setUniformInt(const char *name, int v) const;
     bool setUniformVec2(const char *name, float x, float y) const;
     bool setUniformVec3(const char *name, float x, float y, float z) const;
     bool setUniformMat3(const char *name, const glm::mat3 &mat) const;

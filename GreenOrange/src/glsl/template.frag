@@ -115,6 +115,48 @@ vec3 cam2world(vec3 v, Camera cam) {
 }
 
 /////////////////////////////////////////////
+// Irradiance Probes
+/////////////////////////////////////////////
+#if #GO_REPLACE_INDIRECT_LIGHT
+vec3[9] irradianceCoeffs[1]; //TODO: multiple probes and multiple scenes
+
+void initIrradianceCoeffs() {
+    #GO_REPLACE_IRRADIANCE_COEFFS
+}
+
+vec3 sphericalToCartesian(float theta, float phi) {
+    return vec3(sin(phi) * cos(theta), sin(theta) * sin(phi), cos(phi));
+}
+
+float[9] getSHBase(vec3 dir) {
+    float base[9];
+    base[0] = 0.282095;
+    base[1] = -0.488603 * dir.y;
+    base[2] = 0.488603 * dir.z;
+    base[3] = -0.488603 * dir.x;
+    base[4] = 1.092548 * dir.x * dir.y;
+    base[5] = -1.092548 * dir.y * dir.z;
+    base[6] = 0.315392 * (3.0 * dir.z * dir.z - 1.0);
+    base[7] = -1.092548 * dir.x * dir.z;
+    base[8] = 0.546274 * (dir.x * dir.x - dir.y * dir.y);
+    return base;
+}
+
+int getCoeffsForCurrentScene() {
+    return 0; //TODO
+}
+
+vec3 getIrradianceFromCoeffs(vec3 dir) {
+    vec3 res = vec3(0.0);
+    float[9] base = getSHBase(dir);
+    for(int i = 0; i < 9; ++i) {
+        res += base[i] * irradianceCoeffs[getCoeffsForCurrentScene()][i]; 
+    }
+    return res;
+}
+#endif
+
+/////////////////////////////////////////////
 // Raymarcher
 /////////////////////////////////////////////
 struct RayPoint {
@@ -191,12 +233,19 @@ vec3 cookTorrance(vec3 N, vec3 L, vec3 V, Material mat, vec3 light) {
     vec3 specular = (NDF * G * F) / max((4.0 * NdotV * NdotL), 0.001);
     vec3 kS = F;
     vec3 kD = (vec3(1.0) - kS) * (vec3(1.0) - mat.metallic);
-
-    vec3 Lout = (kD * mat.baseColor / PI + specular) * light * NdotL;
-    Lout += vec3(0.01) * mat.baseColor; //some ambient
-    
-    return Lout;
+    return (kD * mat.baseColor / PI + specular) * light * NdotL;    
 }
+
+#if #GO_REPLACE_INDIRECT_LIGHT
+vec3 indirectLight(vec3 N, vec3 V, Material mat) {
+    float NdotV = max(dot(N, V), 0.0);
+    vec3 F0 = mix(vec3(0.04), mat.baseColor, mat.metallic); //Hardcoded reflectance for dielectrics
+    vec3 F = fresnelSchlick(NdotV, F0);
+    vec3 kS = F;
+    vec3 kD = (vec3(1.0) - kS) * (vec3(1.0) - mat.metallic);
+    return (kD * mat.baseColor * getIrradianceFromCoeffs(N)); //TODO: modulate with ambient occlusion
+}
+#endif
 
 vec3 shade(vec3 cameraPos, RayPoint rp) {
     vec3 Lout = vec3(0.0);
@@ -204,16 +253,16 @@ vec3 shade(vec3 cameraPos, RayPoint rp) {
     vec3 V = normalize(cameraPos - rp.point);
     Material mat = materials[rp.sq.matIdx];
 
-    #if #GO_REPLACE_DIR_LIGHT_COUNT
+#if #GO_REPLACE_DIR_LIGHT_COUNT
     ivec2 dirLightSet = getDirLightSetForCurrentScene();
     for(int i = dirLightSet.x; i <= dirLightSet.y; ++i) {
         DirLight light = dirLights[i];
         vec3 L = -normalize(light.direction);
         Lout += mat.emissiveColor * mat.emissiveIntensity + cookTorrance(N, L, V, mat, light.color * light.intensity);
     }
-    #endif
+#endif
 
-    #if #GO_REPLACE_POINT_LIGHT_COUNT
+#if #GO_REPLACE_POINT_LIGHT_COUNT
     ivec2 pointLightSet = getPointLightSetForCurrentScene();
     for(int i = pointLightSet.x; i <= pointLightSet.y; ++i) {
         PointLight light = pointLights[i];
@@ -223,8 +272,11 @@ vec3 shade(vec3 cameraPos, RayPoint rp) {
         float attenuation = 1.0 / (Llength * Llength);
         Lout += mat.emissiveColor * mat.emissiveIntensity + cookTorrance(N, L, V, mat, light.color * light.intensity * attenuation);
     }
-    #endif 
-    
+#endif 
+
+#if #GO_REPLACE_INDIRECT_LIGHT
+    Lout += indirectLight(N, V, mat);
+#endif
     return Lout;
 }
 
@@ -232,6 +284,10 @@ void main() {
     initLights();
     initMaterials();
     initCameras();
+
+#if #GO_REPLACE_INDIRECT_LIGHT
+    initIrradianceCoeffs();
+#endif
 
     vec2 uv = (gl_FragCoord.xy / dimensions.xy) * 2.0 - 1.0;
     Camera cam = cameras[getCameraForCurrentTime()];
@@ -248,7 +304,7 @@ void main() {
         fragColor = shade(cam.pos, rp);
     }
 
-#if #GO_REPLACE_TONE_MAPPING
+#if !#GO_REPLACE_RENDERING_PROBE
     fragColor = fragColor / (fragColor + vec3(1.0));
 #endif
 }

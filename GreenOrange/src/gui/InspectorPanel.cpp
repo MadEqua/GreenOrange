@@ -258,7 +258,7 @@ void InspectorPanel::doProbe(Project &project, Probe &probe) {
         if(ImGui::Button("Bake")) {
             GlslGenerator gen(probe);
             gen.generate(project);
-            probeRenderer.render(gen.getGlslCode().c_str());
+            probeRenderer.render(gen.getGlslCode().c_str(), probe);
         }
 
         ImGui::NewLine();

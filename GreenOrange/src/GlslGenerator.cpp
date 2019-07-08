@@ -88,7 +88,6 @@ void GlslGenerator::internalGenerate(Project &project) {
     replace(glslCode, REPLACE_OBJECTS, objects_frag);
     replace(glslCode, REPLACE_TRANSFORMS, transforms_frag);
     replace(glslCode, REPLACE_OPERATORS, operators_frag);
-    replace(glslCode, REPLACE_TONE_MAPPING, type == GenerationType::Probe ? "0" : "1");
 
     generateScenes(project);
     generateLights(project);
@@ -98,6 +97,11 @@ void GlslGenerator::internalGenerate(Project &project) {
         generateCamerasForProbe(project);
     else
         generateCameras(project);
+
+    generateIrradianceCoeffs(project);
+
+    replace(glslCode, REPLACE_RENDERING_PROBE, type == GenerationType::Probe ? "1" : "0");
+    replace(glslCode, REPLACE_INDIRECT_LIGHT, type != GenerationType::Probe && project.getPreviewIndirectLight() ? "1" : "0");
 
     currentCodeId++;
 }
@@ -274,6 +278,23 @@ void GlslGenerator::generateCamerasForProbe(Project &project) {
     }
     replace(glslCode, REPLACE_CAMERAS_INIT, sstream.str());
 }
+
+void GlslGenerator::generateIrradianceCoeffs(Project &project) {
+    std::stringstream sstream;
+
+    //TODO multiple probes and multiple scenes
+    if(project.getSceneByIndex(0).getProbeCount()) {
+        auto coeffs = project.getSceneByIndex(0).getProbeByIndex(0).getIrradianceCoeffs();
+        for(int i = 0; i < 9; ++i) {
+            sstream << "irradianceCoeffs[0][" << i << "] = vec3(" << coeffs[i].x << "," << coeffs[i].y << "," << coeffs[i].z << ");" << std::endl;
+        }
+        replace(glslCode, REPLACE_IRRADIANCE_COEFFS, sstream.str());
+    }
+    else {
+        replace(glslCode, REPLACE_IRRADIANCE_COEFFS, "");
+    }
+}
+
 
 void GlslGenerator::generateScenes(Project &project) {
     std::stringstream sstream;

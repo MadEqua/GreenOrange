@@ -32,7 +32,10 @@ constexpr const char *REPLACE_POINT_LIGHT_COUNT = "#GO_REPLACE_POINT_LIGHT_COUNT
 constexpr const char *REPLACE_DIR_LIGHTS_SET = "#GO_REPLACE_DIR_LIGHTS_SET";
 constexpr const char *REPLACE_POINT_LIGHTS_SET = "#GO_REPLACE_POINT_LIGHTS_SET";
 
-constexpr const char *REPLACE_TONE_MAPPING = "#GO_REPLACE_TONE_MAPPING";
+constexpr const char *REPLACE_RENDERING_PROBE = "#GO_REPLACE_RENDERING_PROBE";
+constexpr const char *REPLACE_INDIRECT_LIGHT = "#GO_REPLACE_INDIRECT_LIGHT";
+
+constexpr const char *REPLACE_IRRADIANCE_COEFFS = "#GO_REPLACE_IRRADIANCE_COEFFS";
 
 constexpr const float DRAG_MAX = 9999.0f;
 constexpr const float DRAG_MIN = -DRAG_MAX;
