@@ -20,6 +20,6 @@ Scenes are created by composing basic objects and CSG operators on a tree. A hie
 
 # Gallery
 
-![GreenOrange](http://www.bmlourenco.com/public/images/greenorange/1.jpg)
+![GreenOrange](http://www.bmlourenco.com/portfolio/greenorange/images/gallery/1.jpg)
 
-![GreenOrange](http://www.bmlourenco.com/public/images/greenorange/2.jpg)
+![GreenOrange](http://www.bmlourenco.com/portfolio/greenorange/images/gallery/2.jpg)
